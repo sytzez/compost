@@ -1,0 +1,246 @@
+use std::collections::HashMap;
+use std::rc::Rc;
+use std::string::String;
+use crate::scope::ReferencePath;
+
+pub struct Class {
+    dependencies: HashMap<String, Type>,
+    definitions: HashMap<ReferencePath, Definition>
+}
+
+pub struct ClassInstance {
+    class: Rc<Class>,
+    dependencies: HashMap<String, Instance>
+}
+
+pub struct Struct {
+    fields: HashMap<String, RawType>,
+    definitions: HashMap<ReferencePath, Definition>,
+}
+
+pub struct Definition {
+    // Inputs and outputs are declared by the trait
+    pub call: fn(&Instance, HashMap<String, &Instance>) -> HashMap<String, Instance>,
+}
+
+impl Struct {
+    pub fn new() -> Self {
+        Struct {
+            fields: HashMap::new(),
+            definitions: HashMap::new(),
+        }
+    }
+
+    pub fn add_field(&mut self, name: String, typ: RawType) {
+        self.fields.insert(name, typ);
+    }
+
+    pub fn add_definition(&mut self, trait_path: ReferencePath, definition: Definition) {
+        self.definitions.insert(trait_path, definition);
+    }
+
+    pub fn constructor(self: &Rc<Self>) -> Let {
+        let cloned_self = Rc::clone(self);
+
+        let closure = move |inputs: HashMap<String, &Instance>| {
+            let values = inputs
+                .into_iter()
+                .map(|(name, instance)| match instance {
+                    Instance::Raw(ref value) => (name, value.clone()),
+                    _ => panic!(),
+                })
+                .collect::<HashMap<_, _>>();
+
+            HashMap::from([
+                (
+                    String::new(),
+                    Instance::Struct(
+                        StructInstance {
+                            strukt: Rc::clone(&cloned_self),
+                            values,
+                        }
+                    ),
+                ),
+            ])
+        };
+
+        let inputs = self.fields
+            .iter()
+            .map(|(name, typ)| {
+                (name.clone(), Type::Raw(*typ))
+            })
+            .collect::<HashMap<_, _>>();
+
+        Let {
+            inputs,
+            outputs: [(String::new(), self.interface())].into(),
+            call: Box::new(closure),
+        }
+    }
+
+    pub fn interface(&self) -> Type {
+        let types = self.definitions.keys()
+            .cloned()
+            .map(|path| Type::Trait(path))
+            .collect::<Vec<_>>();
+
+        combine_types(types)
+    }
+}
+
+pub struct StructInstance {
+    strukt: Rc<Struct>,
+    values: HashMap<String, RawValue>,
+}
+
+impl StructInstance {
+    pub fn new(strukt: &Rc<Struct>) -> Self {
+        Self {
+            strukt: Rc::clone(strukt),
+            values: HashMap::new(),
+        }
+    }
+
+    pub fn strukt(&self) -> &Rc<Struct> {
+        &self.strukt
+    }
+
+    pub fn set_value(&mut self, name: String, value: RawValue) {
+        self.values.insert(name, value);
+    }
+
+    pub fn value(&self, name: &str) -> &RawValue {
+        self.values.get(name).unwrap()
+    }
+}
+
+#[derive(Eq, PartialEq, Hash)]
+pub struct Interface {
+    pub traits: Vec<Trait>,
+}
+
+#[derive(Eq, PartialEq, Hash)]
+pub enum Type {
+    Trait(ReferencePath),
+    Raw(RawType),
+    And(Box<Type>, Box<Type>),
+    Or(Box<Type>, Box<Type>),
+    // Self, the class or struct the trait is defined on
+    Zelf,
+    // No traits, no interaction possible
+    Closed,
+}
+
+pub fn combine_types(types: Vec<Type>) -> Type {
+    let mut combined = None;
+
+    for typ in types {
+        combined = match combined {
+            None => Some(typ),
+            Some(prev_type) => Some(
+                Type::And(
+                    Box::new(prev_type),
+                    Box::new(typ)
+                )
+            ),
+        }
+    }
+
+    match combined {
+        Some(typ) => typ,
+        None => Type::Closed,
+    }
+}
+
+#[derive(Eq, PartialEq, Hash, Copy, Clone)]
+pub enum RawType {
+    Int,
+    UInt,
+    Float,
+    String,
+}
+
+#[derive(Clone)]
+pub enum RawValue {
+    Int(i64),
+    UInt(u64),
+    Float(f64),
+    String(String),
+}
+
+pub enum Instance {
+    Class(ClassInstance),
+    Struct(StructInstance),
+    Raw(RawValue),
+}
+
+impl Instance {
+    pub fn has_trait(&self, trait_path: &ReferencePath) -> bool {
+        self.definitions().contains_key(trait_path)
+    }
+
+    pub fn call(&self, trait_path: &ReferencePath, inputs: HashMap<String, &Instance>) -> HashMap<String, Instance> {
+        let definition = self.definitions().get(trait_path).expect("Trait not defined");
+
+        (definition.call)(self, inputs)
+    }
+
+    pub fn definitions(&self) -> &HashMap<ReferencePath, Definition> {
+        match self {
+            Instance::Class(instance) => &instance.class.definitions,
+            Instance::Struct(instance) => &instance.strukt.definitions,
+            _ => panic!(),
+        }
+    }
+
+    pub fn is_of_raw_type(&self, typ: &RawType) -> bool {
+        match self {
+            Instance::Raw(value) => {
+                match typ {
+                    RawType::Int => match value {
+                        RawValue::Int(_) => true,
+                        _ => false,
+                    }
+                    RawType::UInt => match value {
+                        RawValue::UInt(_) => true,
+                        _ => false,
+                    }
+                    RawType::Float => match value {
+                        RawValue::Float(_) => true,
+                        _ => false,
+                    }
+                    RawType::String => match value {
+                        RawValue::String(_) => true,
+                        _ => false,
+                    }
+                }
+            }
+            _ => false,
+        }
+    }
+
+    pub fn is_of_type(&self, typ: &Type, is_self: bool) -> bool {
+        match typ {
+            Type::Or(left, right) => self.is_of_type(left, is_self) || self.is_of_type(right, is_self),
+            Type::And(left, right) => self.is_of_type(left, is_self) && self.is_of_type(right, is_self),
+            Type::Trait(path) => self.has_trait(path),
+            Type::Raw(raw_type) => self.is_of_raw_type(raw_type),
+            Type::Zelf => is_self,
+            Type::Closed => true,
+        }
+    }
+}
+
+#[derive(Eq, PartialEq, Hash)]
+pub struct Trait {
+    pub reference_path: ReferencePath,
+    pub inputs: Vec<Type>,
+    pub outputs: Vec<Type>,
+}
+
+pub struct Let {
+    pub inputs: HashMap<String, Type>,
+    pub outputs: HashMap<String, Type>,
+    pub call: Box<dyn Fn(HashMap<String, &Instance>) -> HashMap<String, Instance>>,
+}
+

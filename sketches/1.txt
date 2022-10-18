@@ -1,0 +1,90 @@
+mod Vec2
+    class
+        x: Float { X }
+        y: Float { Y }
+    traits
+        Multiply: (factor: Float) -> Vec2
+    defs
+        Multiply: Vec2(x * factor, y * factor)
+        .Point: Point(x, y)
+
+mod Point
+    class
+        x: Float { X }
+        y: Float { Y }
+    traits
+        Translate: (offset: Vec2) -> Point
+    defs
+        Translate: Point(x + offset.X, y + offset.Y)
+        .Vec2: Vec2(x, y)
+
+mod Shape
+    traits
+        Center: Point
+        Area: Float
+        Perimeter: Float
+
+mod Rectangle
+    traits
+        TopLeft: Point
+        BottomRight: Point
+        Size: Vec2
+    defs
+        TopLeft: ?
+        BottomRight: TopLeft.Translate(Size)
+        Size: ?
+        Shape
+            Center: TopLeft.Translate(Size.Multiply(0.5))
+            Area: Size.X * Size.Y
+            Perimeter: (Size.X + Size.Y) * 2
+
+mod Square
+    traits
+        Size: Float
+    defs
+        Size: ?
+        Rectangle:
+            Size: Vec2(Square.Size, Square.Size)
+
+mod TopLeftSquare
+    class
+        top_left: Point
+        size: Float
+    defs
+        Square
+            Size: size
+        Rectangle
+            TopLeft: top_left
+
+mod CenterSquare
+    class
+        center: Point
+        size: Float
+    defs
+        Square
+            Size: size
+        Rectangle
+            Center: center
+            TopLeft: center.Translate(Rectangle.Size.Multiply(-0.5))
+
+mod TopLeftSizeRectangle
+
+mod TopLeftBottomRightRectangle
+
+# A function
+PI: 3.14
+
+# Another function
+Rect1
+    TopLeftSquare
+        top_left: Point(x: 10, y: 10)
+        size: 100
+
+# The main function
+Main
+    # create a square by specifying the top left and the size
+    # calling Shape.Center on it, which is defined in Rectangle
+    TopLeftSquare
+        top_left: Point(x: 10, y: 10)
+        size: 100
+    Center
