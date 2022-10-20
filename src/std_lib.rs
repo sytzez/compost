@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use crate::class::{Definition, Instance, RawType, RawValue, Struct, StructInstance, Trait, Type};
+use crate::expression::{Expression, DefCall};
 use crate::module::Module;
 use crate::scope::{create_reference_path, Scope};
 
@@ -44,7 +44,10 @@ pub fn std_int() -> Module {
     strukt.add_definition(
         create_reference_path("Op.Add"),
         Definition {
-            call: int_add,
+            expression: Expression::Def(DefCall {
+                path: create_reference_path("Op.Add"),
+                inputs: [("rhs".to_string(), Expression::Local("rhs".to_string()))].into(),
+            }),
         }
     );
 
@@ -53,39 +56,13 @@ pub fn std_int() -> Module {
     module
 }
 
-fn int_add(left: &Instance, inputs: &HashMap<String, Instance>, _scope: &Scope) -> Instance {
-    let left = match left {
-        Instance::Struct(instance) => instance,
-        _ => panic!(),
-    };
-
-    let right = match inputs.get("rhs").unwrap() {
-        Instance::Struct(instance) => instance,
-        _ => panic!(),
-    };
-
-    let left_value = match left.value("value") {
-        RawValue::Int(value) => value,
-        _ => panic!(),
-    };
-
-    let right_value = match right.value("value") {
-        RawValue::Int(value) => value,
-        _ => panic!(),
-    };
-
-    let result = left_value + right_value;
-
-    let mut result_struct = StructInstance::new(left.strukt());
-
-    result_struct.set_value("value".into(), RawValue::Int(result));
-
-    Instance::Struct(result_struct)
-}
-
 #[cfg(test)]
 mod test {
+    use std::borrow::Borrow;
+    use std::collections::HashMap;
+
     use crate::class::{Instance, RawValue};
+    use crate::expression::{Expression, LetCall, BinaryOp, BinaryCall};
     use crate::scope::create_reference_path;
     use crate::std_lib::std_scope;
 
@@ -93,26 +70,28 @@ mod test {
     fn test_int_add() {
         let scope = std_scope();
 
-        let int_constructor = scope.lett("Int");
+        // Int(1) + Int(2)
+        let expression = Expression::Binary(
+            BinaryCall {
+                op: BinaryOp::Add,
+                lhs: Box::new(Expression::Let(
+                    LetCall {
+                        path: create_reference_path("Int"),
+                        inputs: [("value".to_string(), Expression::Literal(RawValue::Int(1)))].into(),
+                    }
+                )),
+                rhs: Box::new(Expression::Let(
+                    LetCall {
+                        path: create_reference_path("Int"),
+                        inputs: [("value".to_string(), Expression::Literal(RawValue::Int(2)))].into(),
+                    }
+                )),
+            }
+        );
 
-        // Call int constructor with '1'
-        let raw_int_1 = Instance::Raw(RawValue::Int(1));
-        let int_1_inputs = [("value".to_string(), &raw_int_1)].into();
-        let int_1_outputs = (int_constructor.call)(int_1_inputs);
-        let int_1 = int_1_outputs.get("").unwrap();
+        let result = expression.resolve(&scope.local_scope(None, HashMap::new()));
 
-        // Call int constructor with '2'
-        let raw_int_2 = Instance::Raw(RawValue::Int(2));
-        let int_2_inputs = [("value".to_string(), &raw_int_2)].into();
-        let int_2_outputs = (int_constructor.call)(int_2_inputs);
-        let int_2 = int_2_outputs.get("").unwrap();
-
-        // Call Op.Add trait on int_1 and int_2
-        let int_3_inputs = [("rhs".to_string(), int_2)].into();
-        let int_3_outputs = int_1.call(&create_reference_path("Op.Add"), int_3_inputs);
-        let int_3 = int_3_outputs.get("").unwrap();
-
-        let instance = match int_3 {
+        let instance = match result.borrow() {
             Instance::Struct(strukt_instance) => strukt_instance,
             _ => panic!(),
         };

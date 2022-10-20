@@ -31,6 +31,10 @@ impl Struct {
         }
     }
 
+    pub fn instantiate(self: &Rc<Self>, values: HashMap<String, RawValue>) -> StructInstance {
+        StructInstance { strukt: Rc::clone(self) , values }
+    }
+
     pub fn add_field(&mut self, name: String, typ: RawType) {
         self.fields.insert(name, typ);
     }

@@ -107,10 +107,7 @@ impl Expression {
                     })
                     .collect::<HashMap<_, _>>();
                     
-                let struct_instance = StructInstance {
-                    strukt: Rc::clone(strukt),
-                    values,
-                };
+                let struct_instance = strukt.instantiate(values);
 
                 Rc::new(Instance::Struct(struct_instance))
             },
