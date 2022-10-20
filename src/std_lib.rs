@@ -6,8 +6,8 @@ use crate::scope::{create_reference_path, Scope};
 pub fn std_scope() -> Scope {
     let mut scope = Scope::new();
 
-    scope.add_module("Op", std_op());
-    scope.add_module("Int", std_int());
+    scope.add_module(&vec!["Op".to_string()], std_op());
+    scope.add_module(&vec!["Int".to_string()], std_int());
 
     scope
 }
@@ -43,7 +43,7 @@ pub fn std_int() -> Module {
 
     strukt.add_definition(
         create_reference_path("Op.Add"),
-         Definition {
+        Definition {
             call: int_add,
         }
     );
@@ -53,7 +53,7 @@ pub fn std_int() -> Module {
     module
 }
 
-fn int_add(left: &Instance, inputs: HashMap<String, &Instance>) -> HashMap<String, Instance> {
+fn int_add(left: &Instance, inputs: &HashMap<String, Instance>, _scope: &Scope) -> Instance {
     let left = match left {
         Instance::Struct(instance) => instance,
         _ => panic!(),
@@ -80,7 +80,7 @@ fn int_add(left: &Instance, inputs: HashMap<String, &Instance>) -> HashMap<Strin
 
     result_struct.set_value("value".into(), RawValue::Int(result));
 
-    [("".to_string(), Instance::Struct(result_struct))].into()
+    Instance::Struct(result_struct)
 }
 
 #[cfg(test)]

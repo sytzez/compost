@@ -1,5 +1,6 @@
+use std::collections::HashMap;
 use std::rc::Rc;
-use crate::class::{Class, Let, Struct, Trait};
+use crate::class::{Class, Let, Struct, Trait, Instance};
 use crate::module::Module;
 
 pub type ReferencePath = Vec<String>;
@@ -17,6 +18,12 @@ pub struct Scope {
     lets: References<Let>,
 }
 
+pub struct LocalScope<'a> {
+    locals: HashMap<String, Rc<Instance>>,
+    zelf: Option<Rc<Instance>>,
+    scope: &'a Scope,
+}
+
 impl Scope {
     pub fn new() -> Self {
         Self {
@@ -27,56 +34,77 @@ impl Scope {
         }
     }
 
-    pub fn trayt(&self, path: &str) -> Rc<Trait> {
+    pub fn trayt(&self, path: &ReferencePath) -> Rc<Trait> {
         self.traits.resolve(path)
     }
 
-    pub fn class(&self, path: &str) -> Rc<Class> {
+    pub fn class(&self, path: &ReferencePath) -> Rc<Class> {
         self.classes.resolve(path)
     }
 
-    pub fn lett(&self, path: &str) -> Rc<Let> {
+    pub fn lett(&self, path: &ReferencePath) -> Rc<Let> {
         self.lets.resolve(path)
     }
 
-    pub fn add_trait(&mut self, path: &str, trayt: Trait) {
+    
+    pub fn add_trait(&mut self, path: ReferencePath, trayt: Trait) {
         self.traits.add(path, trayt)
     }
 
-    pub fn add_module(&mut self, path: &str, module: Module) {
+    pub fn add_module(&mut self, path: &ReferencePath, module: Module) {
         for (name, trayt) in module.traits {
-            self.add_trait(&Self::join_path(path, &name), trayt);
+            self.add_trait(Self::join_path(path, name), trayt);
         }
 
         for (name, class) in module.classes {
-            self.add_class(&Self::join_path(path, &name), class)
+            self.add_class(Self::join_path(path, name), class)
         }
 
         for (name, strukt) in module.structs {
-            self.add_struct(&Self::join_path(path, &name), strukt)
+            self.add_struct(Self::join_path(path, name), strukt)
         }
+
+        // TODO: add lets
     }
 
-    pub fn add_class(&mut self, _path: &str, _class: Class) {
+    pub fn add_class(&mut self, _path: ReferencePath, _class: Class) {
         // TODO: add class
         // TODO: add class constructor fn
     }
 
-    pub fn add_struct(&mut self, path: &str, strukt: Struct) {
-        self.structs.add(path, strukt);
-        self.lets.add(path, self.structs.resolve(path).constructor());
+    pub fn add_struct(&mut self, path: ReferencePath, strukt: Struct) {
+        self.structs.add(path.clone(), strukt);
+        self.lets.add(path.clone(), self.structs.resolve(&path).constructor());
     }
 
-    fn join_path<'a>(root: &str, relative: &str) -> String {
-        if relative.is_empty() {
-            root.to_owned()
+    fn join_path<'a>(root: &ReferencePath, end: String) -> ReferencePath {
+        if end.is_empty() {
+            root.clone()
         } else {
-            format!("{}.{}", root, relative)
+            root.iter().cloned().chain(std::iter::once(end)).collect()
         }
     }
 
-    pub fn create_sub_scope(&self) -> Self {
-        panic!()
+    pub fn local_scope(&self, zelf: Option<Rc<Instance>>, locals: HashMap<String, Rc<Instance>>) -> LocalScope {
+        LocalScope {
+            locals,
+            zelf,
+            scope: self,
+        }
+    }
+}
+
+impl LocalScope<'_> {
+    pub fn local(&self, name: &str) -> &Rc<Instance> {
+        self.locals.get(name).unwrap()
+    }
+
+    pub fn zelf(&self) -> &Option<Rc<Instance>> {
+        &self.zelf
+    }
+
+    pub fn scope<'a>(&'a self) -> &'a Scope {
+        self.scope
     }
 }
 
@@ -91,9 +119,7 @@ impl<T> References<T> {
         }
     }
 
-    pub fn resolve(&self, path: &str) -> Rc<T> {
-        let path = &create_reference_path(path);
-
+    pub fn resolve(&self, path: &ReferencePath) -> Rc<T> {
         let matched_references = self
             .references
             .iter()
@@ -107,8 +133,9 @@ impl<T> References<T> {
         }
     }
 
-    pub fn add(&mut self, path: &str, item: T) {
-        self.references.push((create_reference_path(path), Rc::new(item)))
+    pub fn add(&mut self, path: ReferencePath, item: T) {
+        // TODO: change into hashmap. Error on conflict.
+        self.references.push((path, Rc::new(item)))
     }
 }
 

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::string::String;
-use crate::scope::ReferencePath;
+use crate::{scope::{ReferencePath, Scope}, expression::Expression};
 
 pub struct Class {
     dependencies: HashMap<String, Type>,
@@ -14,13 +14,13 @@ pub struct ClassInstance {
 }
 
 pub struct Struct {
-    fields: HashMap<String, RawType>,
+    pub fields: HashMap<String, RawType>,
     definitions: HashMap<ReferencePath, Definition>,
 }
 
 pub struct Definition {
     // Inputs and outputs are declared by the trait
-    pub call: fn(&Instance, HashMap<String, &Instance>) -> HashMap<String, Instance>,
+    pub expression: Expression,
 }
 
 impl Struct {
@@ -40,30 +40,6 @@ impl Struct {
     }
 
     pub fn constructor(self: &Rc<Self>) -> Let {
-        let cloned_self = Rc::clone(self);
-
-        let closure = move |inputs: HashMap<String, &Instance>| {
-            let values = inputs
-                .into_iter()
-                .map(|(name, instance)| match instance {
-                    Instance::Raw(ref value) => (name, value.clone()),
-                    _ => panic!(),
-                })
-                .collect::<HashMap<_, _>>();
-
-            HashMap::from([
-                (
-                    String::new(),
-                    Instance::Struct(
-                        StructInstance {
-                            strukt: Rc::clone(&cloned_self),
-                            values,
-                        }
-                    ),
-                ),
-            ])
-        };
-
         let inputs = self.fields
             .iter()
             .map(|(name, typ)| {
@@ -74,7 +50,7 @@ impl Struct {
         Let {
             inputs,
             outputs: [(String::new(), self.interface())].into(),
-            call: Box::new(closure),
+            expression: Expression::ConstructStruct(Rc::clone(self)),
         }
     }
 
@@ -179,10 +155,12 @@ impl Instance {
         self.definitions().contains_key(trait_path)
     }
 
-    pub fn call(&self, trait_path: &ReferencePath, inputs: HashMap<String, &Instance>) -> HashMap<String, Instance> {
+    pub fn call(self: &Rc<Self>, trait_path: &ReferencePath, inputs: HashMap<String, Rc<Instance>>, scope: &Scope) -> Rc<Instance> {
         let definition = self.definitions().get(trait_path).expect("Trait not defined");
 
-        (definition.call)(self, inputs)
+        let local_scope = scope.local_scope(Some(Rc::clone(self)), inputs);
+
+        definition.expression.resolve(&local_scope)
     }
 
     pub fn definitions(&self) -> &HashMap<ReferencePath, Definition> {
@@ -241,6 +219,13 @@ pub struct Trait {
 pub struct Let {
     pub inputs: HashMap<String, Type>,
     pub outputs: HashMap<String, Type>,
-    pub call: Box<dyn Fn(HashMap<String, &Instance>) -> HashMap<String, Instance>>,
+    pub expression: Expression,
 }
 
+impl Let {
+    pub fn resolve(&self, inputs: HashMap<String, Rc<Instance>>, scope: &Scope) -> Rc<Instance> {
+        let local_scope = scope.local_scope(None, inputs);
+
+        self.expression.resolve(&local_scope)
+    }
+}
