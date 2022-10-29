@@ -2,7 +2,7 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;
 use crate::class::{Instance, RawValue, Class, Struct, StructInstance};
-use crate::scope::{create_reference_path, ReferencePath, Scope, LocalScope};
+use crate::scope::{path, ReferencePath, Scope, LocalScope};
 
 pub enum Expression {
     Binary(BinaryCall),
@@ -10,6 +10,7 @@ pub enum Expression {
     Def(DefCall),
     Literal(RawValue),
     Local(String),
+    FriendlyField(FriendlyField),
     Zelf,
     // only for internal use
     ConstructClass(Rc<Class>),
@@ -32,6 +33,12 @@ pub struct DefCall {
     pub inputs: HashMap<String, Expression>,
 }
 
+// A reference to the protected field of another instance of the self struct
+pub struct FriendlyField {
+    pub local_name: String,
+    pub field_name: String,
+}
+
 pub enum BinaryOp {
     Add,
     Sub,
@@ -43,13 +50,15 @@ impl Expression {
     pub fn resolve(&self, scope: &LocalScope) -> Rc<Instance> {
         match self {
             Expression::Binary(call) => {
+                println!("doing binary");
+
                 let trait_path = match call.op {
                     BinaryOp::Add => "Op.Add",
                     BinaryOp::Sub => "Op.Sub",
                     BinaryOp::Mul => "Op.Mul",
                     BinaryOp::Div => "Op.Div",
                 };
-                let trait_path = create_reference_path(trait_path);
+                let trait_path = path(trait_path);
 
                 let lhs = call.lhs.resolve(scope);
                 let rhs = call.rhs.resolve(scope);
@@ -57,7 +66,7 @@ impl Expression {
                 let inputs = [("rhs".to_string(), rhs)].into();
 
                 lhs.call(&trait_path, inputs, scope.scope())
-            },
+            }
             Expression::Let(call) => {
                 let inputs = call.inputs
                     .iter()
@@ -67,7 +76,7 @@ impl Expression {
                 let lett = scope.scope().lett(&call.path);
 
                 lett.resolve(inputs, scope.scope())
-            },
+            }
             Expression::Def(call) => {
                 let inputs = call.inputs
                     .iter()
@@ -80,19 +89,31 @@ impl Expression {
                 };
 
                 zelf.call(&call.path, inputs, scope.scope())
-            },
+            }
             Expression::Literal(value) => {
                 Rc::new(Instance::Raw(value.clone()))
-            },
+            }
             Expression::Local(name) => {
                 Rc::clone(scope.local(name))
-            },
+            }
+            Expression::FriendlyField(friendly_field) => {
+                let local = scope.local(&friendly_field.local_name);
+
+                let struct_instance = match local.borrow() {
+                    Instance::Struct(struct_instance) => struct_instance,
+                    _ => panic!(),
+                };
+
+                let value = struct_instance.value(&friendly_field.field_name);
+
+                Rc::new(Instance::Raw(value.clone()))
+            }
             Expression::Zelf => {
                 match scope.zelf() {
                     Some(z) => Rc::clone(z),
                     None => panic!("No self in local scope"),
                 }
-            },
+            }
             Expression::ConstructStruct(strukt) => {
                 let values = strukt.fields
                     .keys()
@@ -110,7 +131,7 @@ impl Expression {
                 let struct_instance = strukt.instantiate(values);
 
                 Rc::new(Instance::Struct(struct_instance))
-            },
+            }
             Expression::ConstructClass(class) => {
                 panic!("todo")
             }

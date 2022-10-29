@@ -1,6 +1,7 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, borrow::Borrow};
 use std::rc::Rc;
 use std::string::String;
+use crate::scope::path;
 use crate::{scope::{ReferencePath, Scope}, expression::Expression};
 
 pub struct Class {
@@ -148,6 +149,39 @@ pub enum RawValue {
     String(String),
 }
 
+impl RawValue {
+    pub fn call(&self, trait_path: &ReferencePath, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
+        if trait_path == &path("Op.Add") {
+            return self.add(inputs);
+        }
+
+        panic!()
+    }
+
+    pub fn add(&self, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
+        let rhs = Self::rhs(inputs);
+
+        match self {
+            RawValue::Int(value) => RawValue::Int(*value + rhs.int()),
+            _ => panic!("todo"),
+        }
+    }
+
+    fn int(&self) -> i64 {
+        match self {
+            RawValue::Int(value) => *value,
+            _ => panic!(),
+        }
+    }
+
+    fn rhs(inputs: HashMap<String, Rc<Instance>>) -> RawValue {
+        match inputs.get("rhs").unwrap().borrow() {
+            Instance::Raw(value) => value.clone(),
+            _ => panic!(),
+        }
+    }
+}
+
 pub enum Instance {
     Class(ClassInstance),
     Struct(StructInstance),
@@ -160,17 +194,38 @@ impl Instance {
     }
 
     pub fn call(self: &Rc<Self>, trait_path: &ReferencePath, inputs: HashMap<String, Rc<Instance>>, scope: &Scope) -> Rc<Instance> {
+        match self.borrow() {
+            Instance::Raw(value) => return Rc::new(Instance::Raw(value.call(trait_path, inputs))),
+            _ => (),
+        };
+
         let definition = self.definitions().get(trait_path).expect("Trait not defined");
 
-        let local_scope = scope.local_scope(Some(Rc::clone(self)), inputs);
+        let locals = inputs
+            .into_iter()
+            .chain(self.values())
+            .collect();
+
+        let local_scope = scope.local_scope(Some(Rc::clone(self)), locals);
 
         definition.expression.resolve(&local_scope)
     }
 
-    pub fn definitions(&self) -> &HashMap<ReferencePath, Definition> {
+    fn definitions(&self) -> &HashMap<ReferencePath, Definition> {
         match self {
             Instance::Class(instance) => &instance.class.definitions,
             Instance::Struct(instance) => &instance.strukt.definitions,
+            _ => panic!(),
+        }
+    }
+
+    fn values(&self) -> HashMap<String, Rc<Instance>> {
+        match self {
+            Instance::Struct(instance) => instance
+                .values
+                .iter()
+                .map(|(name, value)| (name.clone(), Rc::new(Instance::Raw(value.clone()))))
+                .collect(),
             _ => panic!(),
         }
     }

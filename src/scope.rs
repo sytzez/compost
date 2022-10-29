@@ -5,7 +5,7 @@ use crate::module::Module;
 
 pub type ReferencePath = Vec<String>;
 
-pub fn create_reference_path(string: &str) -> ReferencePath {
+pub fn path(string: &str) -> ReferencePath {
     string.split(".")
         .map(|segment| segment.to_string())
         .collect()
