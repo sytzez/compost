@@ -57,28 +57,47 @@ pub fn std_int() -> Module {
 
     strukt.add_definition(
         path("Op.Add"),
-        Definition {
-            expression: Expression::Let(LetCall {
-                path: path("Int"),
-                inputs: [(
-                    "value".to_string(),
-                    Expression::Binary(BinaryCall {
-                        op: BinaryOp::Add,
-                        lhs: Box::new(Expression::Local("value".to_string())),
-                        rhs: Box::new(Expression::FriendlyField(FriendlyField {
-                            local_name: "rhs".to_string(),
-                            field_name: "value".to_string(),
-                        })),
-                    }),
-                )]
-                .into(),
-            }),
-        },
+        construct_binary_def(BinaryOp::Add, "Int"),
+    );
+
+    strukt.add_definition(
+        path("Op.Sub"),
+        construct_binary_def(BinaryOp::Sub, "Int"),
+    );
+
+    strukt.add_definition(
+        path("Op.Mul"),
+        construct_binary_def(BinaryOp::Mul, "Int"),
+    );
+
+    strukt.add_definition(
+        path("Op.Div"),
+        construct_binary_def(BinaryOp::Div, "Int"),
     );
 
     module.structs.push(("".into(), strukt));
 
     module
+}
+
+fn construct_binary_def(op: BinaryOp, constructor: &str) -> Definition {
+    Definition {
+        expression: Expression::Let(LetCall {
+            path: path(constructor),
+            inputs: [(
+                "value".to_string(),
+                Expression::Binary(BinaryCall {
+                    op,
+                    lhs: Box::new(Expression::Local("value".to_string())), // value
+                    rhs: Box::new(Expression::FriendlyField(FriendlyField { // rhs.value
+                        local_name: "rhs".to_string(),
+                        field_name: "value".to_string(),
+                    })),
+                }),
+            )]
+                .into(),
+        }),
+    }
 }
 
 #[cfg(test)]
@@ -121,5 +140,37 @@ mod test {
         };
 
         assert_eq!(*value, 3);
+    }
+
+    #[test]
+    fn test_int_sub() {
+        let scope = std_scope();
+
+        // Int(value: 3) - Int(value: 2)
+        let expression = Expression::Binary(BinaryCall {
+            op: BinaryOp::Sub,
+            lhs: Box::new(Expression::Let(LetCall {
+                path: path("Int"),
+                inputs: [("value".to_string(), Expression::Literal(RawValue::Int(3)))].into(),
+            })),
+            rhs: Box::new(Expression::Let(LetCall {
+                path: path("Int"),
+                inputs: [("value".to_string(), Expression::Literal(RawValue::Int(2)))].into(),
+            })),
+        });
+
+        let result = expression.resolve(&scope.local_scope(None, HashMap::new()));
+
+        let instance = match result.borrow() {
+            Instance::Struct(strukt_instance) => strukt_instance,
+            _ => panic!(),
+        };
+
+        let value = match instance.value("value") {
+            RawValue::Int(value) => value,
+            _ => panic!(),
+        };
+
+        assert_eq!(*value, 1);
     }
 }

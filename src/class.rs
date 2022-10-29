@@ -155,6 +155,10 @@ impl RawValue {
             return self.add(inputs);
         }
 
+        if trait_path == &path("Op.Sub") {
+            return self.sub(inputs);
+        }
+
         panic!()
     }
 
@@ -163,6 +167,15 @@ impl RawValue {
 
         match self {
             RawValue::Int(value) => RawValue::Int(*value + rhs.int()),
+            _ => panic!("todo"),
+        }
+    }
+
+    pub fn sub(&self, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
+        let rhs = Self::rhs(inputs);
+
+        match self {
+            RawValue::Int(value) => RawValue::Int(*value - rhs.int()),
             _ => panic!("todo"),
         }
     }

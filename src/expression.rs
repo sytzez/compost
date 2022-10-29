@@ -50,8 +50,6 @@ impl Expression {
     pub fn resolve(&self, scope: &LocalScope) -> Rc<Instance> {
         match self {
             Expression::Binary(call) => {
-                println!("doing binary");
-
                 let trait_path = match call.op {
                     BinaryOp::Add => "Op.Add",
                     BinaryOp::Sub => "Op.Sub",
