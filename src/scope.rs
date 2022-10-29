@@ -1,7 +1,11 @@
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::class::{Class, Let, Struct, Trait, Instance};
+use crate::class::Class;
+use crate::instance::Instance;
+use crate::lett::Let;
 use crate::module::Module;
+use crate::strukt::Struct;
+use crate::trayt::Trait;
 
 pub type ReferencePath = Vec<String>;
 
@@ -103,7 +107,7 @@ impl LocalScope<'_> {
         &self.zelf
     }
 
-    pub fn scope<'a>(&'a self) -> &'a Scope {
+    pub fn scope(&self) -> &Scope {
         self.scope
     }
 }

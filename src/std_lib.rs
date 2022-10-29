@@ -1,7 +1,10 @@
-use crate::class::{Definition, Instance, RawType, RawValue, Struct, StructInstance, Trait, Type};
-use crate::expression::{BinaryCall, BinaryOp, DefCall, Expression, FriendlyField, LetCall};
+use crate::definition::Definition;
+use crate::expression::{BinaryCall, BinaryOp, Expression, FriendlyField, LetCall};
 use crate::module::Module;
 use crate::scope::{path, Scope};
+use crate::strukt::Struct;
+use crate::trayt::Trait;
+use crate::typ::{RawType, Type};
 
 pub fn std_scope() -> Scope {
     let mut scope = Scope::new();
@@ -22,7 +25,7 @@ pub fn std_op() -> Module {
             Trait {
                 reference_path: path("Op.Then"),
                 inputs: vec![Type::Zelf],
-                outputs: vec![Type::Zelf],
+                output: Type::Zelf,
             },
         ),
     );
@@ -32,7 +35,7 @@ pub fn std_op() -> Module {
         Trait {
             reference_path: path("Op.Add"),
             inputs: vec![Type::Zelf],
-            outputs: vec![Type::Zelf],
+            output: Type::Zelf,
         },
     ));
 
@@ -41,7 +44,7 @@ pub fn std_op() -> Module {
         Trait {
             reference_path: path("Op.Add"),
             inputs: vec![Type::Zelf],
-            outputs: vec![Type::Zelf],
+            output: Type::Zelf,
         },
     ));
 
@@ -105,8 +108,9 @@ mod test {
     use std::borrow::Borrow;
     use std::collections::HashMap;
 
-    use crate::class::{Instance, RawValue};
     use crate::expression::{BinaryCall, BinaryOp, Expression, LetCall};
+    use crate::instance::Instance;
+    use crate::raw_value::RawValue;
     use crate::scope::path;
     use crate::std_lib::std_scope;
 

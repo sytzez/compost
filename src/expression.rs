@@ -1,8 +1,11 @@
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::class::{Instance, RawValue, Class, Struct, StructInstance};
+use crate::class::Class;
+use crate::instance::Instance;
+use crate::raw_value::RawValue;
 use crate::scope::{path, ReferencePath, Scope, LocalScope};
+use crate::strukt::Struct;
 
 pub enum Expression {
     Binary(BinaryCall),
