@@ -4,8 +4,6 @@ use std::string::String;
 use crate::scope::ReferencePath;
 use crate::definition::Definition;
 use crate::instance::Instance;
-use crate::raw_value::RawValue;
-use crate::strukt::StructInstance;
 use crate::typ::Type;
 
 // A class has a set of dependencies of certain types, and a set of trait definitions.
