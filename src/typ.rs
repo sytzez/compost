@@ -9,7 +9,7 @@ pub enum Type {
     // Self, the class or struct the trait is defined on
     Zelf,
     // No traits, no interaction possible
-    Closed,
+    Void,
 }
 
 pub fn combine_types(types: Vec<Type>) -> Type {
@@ -29,7 +29,7 @@ pub fn combine_types(types: Vec<Type>) -> Type {
 
     match combined {
         Some(typ) => typ,
-        None => Type::Closed,
+        None => Type::Void,
     }
 }
 

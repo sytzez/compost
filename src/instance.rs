@@ -89,7 +89,7 @@ impl Instance {
             Type::Trait(path) => self.has_trait(path),
             Type::Raw(raw_type) => self.is_of_raw_type(raw_type),
             Type::Zelf => is_self,
-            Type::Closed => true,
+            Type::Void => true,
         }
     }
 }

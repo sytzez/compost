@@ -87,8 +87,8 @@ pub fn next_token(code: &str) -> SizedToken {
         '>' => (Some(Token::Op(Op::Gt)), 1),
         '=' => (Some(Token::Op(Op::Eq)), 1),
         '.' => (Some(Token::Op(Op::Dot)), 1),
-        'a'..='z' => next_loc_token(code),
-        'A'..='Z' => next_glob_token(code),
+        'a'..='z' => next_local_token(code),
+        'A'..='Z' => next_global_token(code),
         '0'..='9' => next_number_token(code),
         '\'' => next_string_token(code),
         _ => panic!("Unexpected character"),
@@ -102,7 +102,7 @@ fn comment_size(code: &str) -> usize {
     }
 }
 
-fn next_loc_token(code: &str) -> SizedToken {
+fn next_local_token(code: &str) -> SizedToken {
     let mut size = 0;
 
     for char in code.chars() {
@@ -127,7 +127,7 @@ fn next_loc_token(code: &str) -> SizedToken {
     (Some(token), size)
 }
 
-fn next_glob_token(code: &str) -> SizedToken {
+fn next_global_token(code: &str) -> SizedToken {
     let mut size = 0;
 
     for char in code.chars() {

@@ -23,7 +23,6 @@ pub fn std_op() -> Module {
         (
             "Then".into(),
             Trait {
-                reference_path: path("Op.Then"),
                 inputs: vec![Type::Zelf],
                 output: Type::Zelf,
             },
@@ -33,7 +32,6 @@ pub fn std_op() -> Module {
     module.traits.push((
         "Add".into(),
         Trait {
-            reference_path: path("Op.Add"),
             inputs: vec![Type::Zelf],
             output: Type::Zelf,
         },
@@ -42,7 +40,6 @@ pub fn std_op() -> Module {
     module.traits.push((
         "Add".into(),
         Trait {
-            reference_path: path("Op.Add"),
             inputs: vec![Type::Zelf],
             output: Type::Zelf,
         },
