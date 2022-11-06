@@ -3,7 +3,7 @@ use crate::token::{Level, Next, next_token, Token};
 pub type LeveledToken = (Token, usize);
 
 // Turns a string of raw code into a vector of tokens with levels.
-fn tokenize(code: &str) -> Vec<LeveledToken> {
+pub fn tokenize(code: &str) -> Vec<LeveledToken> {
     let mut position: usize = 0;
     let mut level_stack = LevelStack::new();
     let mut leveled_tokens: Vec<LeveledToken> = vec![];
