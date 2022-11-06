@@ -37,6 +37,5 @@ pub fn combine_types(types: Vec<Type>) -> Type {
 pub enum RawType {
     Int,
     UInt,
-    Float,
     String,
 }

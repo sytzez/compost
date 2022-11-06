@@ -9,6 +9,7 @@ pub enum Token {
     Global(String),
     Op(Op),
     Lit(Lit),
+    Space,
 }
 
 // Keyword
@@ -50,17 +51,16 @@ pub enum RawType {
     UInt,
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, Clone, PartialEq, Debug)]
 pub enum Level {
     Colon,
-    Indentation,
     Paren,
 }
 
 #[derive(Eq, PartialEq, Debug)]
 pub enum Next {
     Comma,
-    NewLine,
+    Line,
 }
 
 type SizedToken = (Option<Token>, usize);
@@ -68,16 +68,16 @@ type SizedToken = (Option<Token>, usize);
 pub fn next_token(code: &str) -> SizedToken {
     let char = match code.chars().next() {
         Some(c) => c,
-        None => return (Some(Token::Eof), 0),
+        None => return (Some(Token::Eof), 1),
     };
 
     match char {
-        ' ' => (None, 1),
+        ' ' => (Some(Token::Space), 1),
         '#' => (None, comment_size(code)),
         '(' => (Some(Token::Down(Level::Paren)), 1),
         ')' => (Some(Token::Up(Level::Paren)), 1),
         ':' => (Some(Token::Down(Level::Colon)), 1),
-        '\n' => (Some(Token::Next(Next::NewLine)), 1),
+        '\n' => (Some(Token::Next(Next::Line)), 1),
         ',' => (Some(Token::Next(Next::Comma)), 1),
         '+' => (Some(Token::Op(Op::Add)), 1),
         '-' => (Some(Token::Op(Op::Sub)), 1),
@@ -201,13 +201,13 @@ mod test {
 
     #[test]
     fn test_whitespace() {
-        assert_eq!(next_token(" 1 + 1"), (None, 1));
-        assert_eq!(next_token(""), (Some(Token::Eof), 0));
+        assert_eq!(next_token(" 1 + 1"), (Some(Token::Space), 1));
+        assert_eq!(next_token(""), (Some(Token::Eof), 1));
     }
 
     #[test]
     fn test_levels() {
-        assert_eq!(next_token("\n1 + 1"), (Some(Token::Next(Next::NewLine)), 1));
+        assert_eq!(next_token("\n1 + 1"), (Some(Token::Next(Next::Line)), 1));
         assert_eq!(next_token(",1 + 1"), (Some(Token::Next(Next::Comma)), 1));
         assert_eq!(next_token(": 1 + 1"), (Some(Token::Down(Level::Colon)), 1));
         assert_eq!(next_token("(1 + 1)"), (Some(Token::Down(Level::Paren)), 1));

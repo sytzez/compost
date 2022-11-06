@@ -4,11 +4,10 @@ use std::rc::Rc;
 use crate::instance::Instance;
 use crate::scope::{path, ReferencePath};
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum RawValue {
     Int(i64),
     UInt(u64),
-    Float(f64),
     String(String),
 }
 

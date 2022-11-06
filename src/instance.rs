@@ -68,10 +68,6 @@ impl Instance {
                         RawValue::UInt(_) => true,
                         _ => false,
                     }
-                    RawType::Float => match value {
-                        RawValue::Float(_) => true,
-                        _ => false,
-                    }
                     RawType::String => match value {
                         RawValue::String(_) => true,
                         _ => false,

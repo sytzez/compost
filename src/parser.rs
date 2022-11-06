@@ -1,6 +1,7 @@
 use std::borrow::Borrow;
 use crate::class::Class;
 use crate::definition::Definition;
+use crate::expression::Expression;
 use crate::lett::Let;
 use crate::module::Module;
 use crate::scope::{path, Scope};
@@ -27,25 +28,8 @@ pub fn parse_tokens(tokens: &[LeveledToken]) -> Scope {
             // TODO: refactor this into 'Parsers', which all return a name, a position, a T.
             Token::Kw(Kw::Mod) => {
                 let result = parse_mod(&tokens[position..]);
-                scope.add_module(&path(result.0), result.1);
+                scope.add_module(&path(&result.0), result.1);
                 position += result.2;
-            }
-            Token::Kw(Kw::Class) => {
-                let result = parse_class(&tokens[position..]);
-                scope.add_class(path(&result.0), result.1);
-                position += result.2;
-            }
-            Token::Kw(Kw::Struct) => {
-                let result = parse_struct(&tokens[position..]);
-                scope.add_struct(path(&result.0), result.1);
-                position += result.2;
-            }
-            Token::Kw(Kw::Traits) => {
-                let result = parse_traits(&tokens[position..]);
-                for (name, trayt) in result.0 {
-                    scope.add_trait(path(&name), trayt);
-                }
-                position += result.1;
             }
             _ => panic!("Unexpected token {:?}", leveled_token.0)
         }
@@ -71,6 +55,8 @@ fn parse_local(token: &LeveledToken, base_level: usize) -> String {
 }
 
 fn parse_mod(tokens: &[LeveledToken]) -> (String, Module, usize) {
+    println!("mod");
+
     let mut module = Module::new();
     let base_level = tokens[0].1;
     let name = parse_global(&tokens[1], base_level);
@@ -88,13 +74,13 @@ fn parse_mod(tokens: &[LeveledToken]) -> (String, Module, usize) {
         match leveled_token.0 {
             Token::Kw(Kw::Class) => {
                 let result = parse_class(&tokens[position..]);
-                module.classes.push((result.0, result.1));
-                position += result.2;
+                module.classes.push(("".to_string(), result.0));
+                position += result.1;
             }
             Token::Kw(Kw::Struct) => {
                 let result = parse_struct(&tokens[position..]);
-                module.structs.push((result.0, result.1));
-                position += result.2;
+                module.structs.push(("".to_string(), result.0));
+                position += result.1;
             }
             Token::Kw(Kw::Traits) => {
                 let result = parse_traits(&tokens[position..]);
@@ -111,17 +97,18 @@ fn parse_mod(tokens: &[LeveledToken]) -> (String, Module, usize) {
     (name, module, position)
 }
 
-fn parse_class(tokens: &[LeveledToken]) -> (String, Class, usize) {
+fn parse_class(tokens: &[LeveledToken]) -> (Class, usize) {
     todo!()
 }
 
-fn parse_struct(tokens: &[LeveledToken]) -> (String, Struct, usize) {
+fn parse_struct(tokens: &[LeveledToken]) -> (Struct, usize) {
+    println!("struct");
+
     let mut strukt = Struct::new();
     let base_level = tokens[0].1;
-    let name = parse_global(&tokens[1], base_level);
 
-    // Skip the 'struct' keyword and the struct name.
-    let mut position = 2;
+    // Skip the 'struct' keyword.
+    let mut position = 1;
 
     while position < tokens.len() {
         let leveled_token = &tokens[position];
@@ -135,16 +122,17 @@ fn parse_struct(tokens: &[LeveledToken]) -> (String, Struct, usize) {
         position += result.2;
     }
 
-    (name, strukt, position)
+    (strukt, position)
 }
 
 fn parse_struct_field(tokens: &[LeveledToken]) -> (String, RawType, usize) {
+    println!("struct field");
+
     let base_level = tokens[0].1;
-    let name = parse_global(&tokens[0], base_level);
+    let name = parse_local(&tokens[0], base_level);
     let typ_name = parse_global(&tokens[1], base_level + 1);
     let typ = match typ_name.borrow() {
         "Int" => RawType::Int,
-        "Float" => RawType::Float,
         "UInt" => RawType::UInt,
         "String" => RawType::String,
         _ => panic!("Unknown raw type {}", typ_name)
@@ -247,4 +235,75 @@ fn parse_lets(tokens: &[LeveledToken]) -> (Vec<Let>, usize) {
     todo!()
 }
 
+fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
+    todo!()
+}
+
 // TODO: test everything
+
+#[cfg(test)]
+mod test {
+    use std::borrow::Borrow;
+    use std::rc::Rc;
+    use crate::instance::Instance;
+    use crate::parser::parse_tokens;
+    use crate::raw_value::RawValue;
+    use crate::scope::path;
+    use crate::token::{Kw, Token};
+
+    #[test]
+    fn test_struct() {
+        let tokens = [
+            // mod StructName
+            (Token::Kw(Kw::Mod), 0),
+            (Token::Global("StructName".into()), 0),
+            // struct
+            (Token::Kw(Kw::Struct), 1),
+            // x: Int
+            (Token::Local("x".into()), 2),
+            (Token::Global("Int".into()), 3),
+            // y: Int
+            (Token::Local("y".into()), 2),
+            (Token::Global("Int".into()), 3),
+            // traits
+            (Token::Kw(Kw::Traits), 1),
+            // X: Int
+            (Token::Global("X".into()), 2),
+            (Token::Global("Int".into()), 3),
+            // Y: Int
+            (Token::Global("Y".into()), 2),
+            (Token::Global("Int".into()), 3),
+            // defs
+            // (Token::Kw(Kw::Defs), 1),
+            // // X: x
+            // (Token::Global("X".into()), 2),
+            // (Token::Local("x".into()), 3),
+            // // Y: y
+            // (Token::Global("Y".into()), 2),
+            // (Token::Local("y".into()), 3),
+        ];
+
+        let scope = parse_tokens(&tokens);
+
+        let module = scope.lett(&path("StructName"));
+
+        let local_scope = scope.local_scope(None, [
+            ("x".to_string(), Rc::new(Instance::Raw(RawValue::Int(1)))),
+            ("y".to_string(), Rc::new(Instance::Raw(RawValue::Int(2)))),
+        ].into());
+
+        let strukt = module.expression.resolve(&local_scope);
+
+        if let Instance::Struct(strukt_instance) = strukt.borrow() {
+            assert_eq!(
+                strukt_instance.values,
+                [
+                    ("x".to_string(), RawValue::Int(1)),
+                    ("y".to_string(), RawValue::Int(2)),
+                ].into()
+            );
+        } else {
+            panic!("Instance is not a struct")
+        }
+    }
+}
