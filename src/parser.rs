@@ -1,4 +1,5 @@
 use std::borrow::Borrow;
+use std::collections::HashMap;
 use crate::class::Class;
 use crate::definition::Definition;
 use crate::expression::Expression;
@@ -31,6 +32,15 @@ pub fn parse_tokens(tokens: &[LeveledToken]) -> Scope {
                 scope.add_module(&path(&result.0), result.1);
                 position += result.2;
             }
+            Token::Kw(Kw::Lets) => {
+                let result = parse_lets(&tokens[position..]);
+
+                for (name, lett) in result.0 {
+                    scope.add_let(path(&name), lett)
+                }
+
+                position += result.1;
+            }
             _ => panic!("Unexpected token {:?}", leveled_token.0)
         }
     }
@@ -38,19 +48,21 @@ pub fn parse_tokens(tokens: &[LeveledToken]) -> Scope {
     scope
 }
 
-fn parse_global(token: &LeveledToken, base_level: usize) -> String {
-    if let (Token::Global(name), base_level) = token {
+fn parse_global(token: &LeveledToken, expected_level: usize) -> String {
+    if let (Token::Global(name), actual_level) = token {
+        assert_eq!(*actual_level, expected_level);
         name.clone()
     } else {
-        panic!("Expected global name")
+        panic!("Expected global name, got {:?} ", token)
     }
 }
 
-fn parse_local(token: &LeveledToken, base_level: usize) -> String {
-    if let (Token::Local(name), base_level) = token {
+fn parse_local(token: &LeveledToken, expected_level: usize) -> String {
+    if let (Token::Local(name), actual_level) = token {
+        assert_eq!(*actual_level, expected_level);
         name.clone()
     } else {
-        panic!("Expected local name")
+        panic!("Expected local name, got {:?} ", token)
     }
 }
 
@@ -231,8 +243,81 @@ fn parse_defs(tokens: &[LeveledToken]) -> (Vec<Definition>, usize) {
     todo!()
 }
 
-fn parse_lets(tokens: &[LeveledToken]) -> (Vec<Let>, usize) {
-    todo!()
+fn parse_lets(tokens: &[LeveledToken]) -> (Vec<(String, Let)>, usize) {
+    let base_level = tokens[0].1;
+    let mut lets = vec![];
+
+    // Skip the 'lets' keyword.
+    let mut position = 1;
+
+    while position < tokens.len() {
+        let leveled_token = &tokens[position];
+
+        if leveled_token.1 <= base_level {
+            break;
+        }
+
+        let result = parse_let(&tokens[position..]);
+        lets.push((result.0, result.1));
+        position += result.2;
+    }
+
+    (lets, position)
+}
+
+fn parse_let(tokens: &[LeveledToken]) -> (String, Let, usize) {
+    let base_level = tokens[0].1;
+    let name = parse_global(&tokens[0], base_level);
+    let mut inputs = HashMap::new();
+    let mut output = None;
+
+    // Skip the name of the let.
+    let mut position = 1;
+
+    while position < tokens.len() {
+        let leveled_token = &tokens[position];
+
+        if leveled_token.1 <= base_level {
+            break;
+        }
+
+        match leveled_token.0 {
+            Token::Global(_) => {
+                let result = parse_type(&tokens[position..]);
+                output = Some(result.0);
+                position += result.1;
+
+                break;
+            }
+            Token::Local(_) => {
+                let result = parse_parameter(&tokens[position..]);
+                inputs.insert(result.0, result.1);
+                position += result.2;
+            }
+            Token::Op(Op::Sub) => {
+                assert_eq!(&tokens[position + 1].0, &Token::Op(Op::Gt), "Expected > after -");
+
+                let result = parse_type(&tokens[position+2..]);
+                output = Some(result.0);
+                position += 2 + result.1;
+
+                break;
+            }
+            _ => panic!("Unexpected token {:?}", leveled_token.0)
+        }
+    }
+
+    let result = parse_expression(&tokens[position..]);
+    let expression = result.0;
+    position += result.1;
+
+    let lett = Let {
+        inputs,
+        outputs: [("".into(), output.unwrap())].into(),
+        expression,
+    };
+
+    (name, lett, position)
 }
 
 fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {

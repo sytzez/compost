@@ -49,10 +49,13 @@ impl Scope {
     pub fn lett(&self, path: &ReferencePath) -> Rc<Let> {
         self.lets.resolve(path)
     }
-
     
     pub fn add_trait(&mut self, path: ReferencePath, trayt: Trait) {
         self.traits.add(path, trayt)
+    }
+
+    pub fn add_let(&mut self, path: ReferencePath, lett: Let) {
+        self.lets.add(path, lett)
     }
 
     pub fn add_module(&mut self, path: &ReferencePath, module: Module) {

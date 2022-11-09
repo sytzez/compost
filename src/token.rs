@@ -77,7 +77,7 @@ pub fn next_token(code: &str) -> SizedToken {
         '(' => (Some(Token::Down(Level::Paren)), 1),
         ')' => (Some(Token::Up(Level::Paren)), 1),
         ':' => (Some(Token::Down(Level::Colon)), 1),
-        '\n' => (Some(Token::Next(Next::Line)), 1),
+        '\n' | '\r' => (Some(Token::Next(Next::Line)), 1),
         ',' => (Some(Token::Next(Next::Comma)), 1),
         '+' => (Some(Token::Op(Op::Add)), 1),
         '-' => (Some(Token::Op(Op::Sub)), 1),
@@ -91,7 +91,7 @@ pub fn next_token(code: &str) -> SizedToken {
         'A'..='Z' => next_global_token(code),
         '0'..='9' => next_number_token(code),
         '\'' => next_string_token(code),
-        _ => panic!("Unexpected character"),
+        _ => panic!("Unexpected character: {}", char),
     }
 }
 

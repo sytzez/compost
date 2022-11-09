@@ -25,7 +25,7 @@ mod Int
             Sub: .Int(value - rhs.value)
             Mul: .Int(value * rhs.value)
             Div: .Int(value / rhs.value)
-        String: .String(value.to_string)
+        String: .String(value.toString)
 
 mod Point
     class

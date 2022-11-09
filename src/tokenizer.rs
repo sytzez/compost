@@ -56,12 +56,10 @@ impl LevelStack {
     }
 
     fn push(&mut self, level: Level) {
-        println!("Push");
         self.levels.push(level)
     }
 
     fn pop(&mut self, level: &Level) {
-        println!("Pop");
         if let Some(popped_level) = self.levels.pop() {
             match level {
                 Level::Paren => {

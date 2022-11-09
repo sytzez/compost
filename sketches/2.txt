@@ -1,0 +1,7 @@
+mod Int
+    struct
+        value: Int
+
+lets
+    main: Int
+        Int(1) + Int(1)
