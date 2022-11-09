@@ -3,5 +3,5 @@ mod Int
         value: Int
 
 lets
-    main: Int
+    Main: Int
         Int(1) + Int(1)

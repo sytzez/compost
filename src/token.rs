@@ -88,7 +88,7 @@ pub fn next_token(code: &str) -> SizedToken {
         '=' => (Some(Token::Op(Op::Eq)), 1),
         '.' => (Some(Token::Op(Op::Dot)), 1),
         'a'..='z' => next_local_token(code),
-        'A'..='Z' => next_global_token(code),
+        'A'..='Z' | '\\' => next_global_token(code),
         '0'..='9' => next_number_token(code),
         '\'' => next_string_token(code),
         _ => panic!("Unexpected character: {}", char),
@@ -131,7 +131,7 @@ fn next_global_token(code: &str) -> SizedToken {
     let mut size = 0;
 
     for char in code.chars() {
-        if !char.is_alphanumeric() {
+        if !(char.is_alphanumeric() || char == '\\') {
             break;
         }
         size += 1;
@@ -255,6 +255,14 @@ mod test {
         assert_eq!(
             next_token("AGlobalField "),
             (Some(Token::Global("AGlobalField".into())), 12)
+        );
+        assert_eq!(
+            next_token("\\Global "),
+            (Some(Token::Global("\\Global".into())), 6)
+        );
+        assert_eq!(
+            next_token("Module\\Global.Trait"),
+            (Some(Token::Global("Module\\Global".into())), 6)
         );
     }
 }

@@ -2,7 +2,7 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 use crate::class::Class;
 use crate::definition::Definition;
-use crate::expression::Expression;
+use crate::expression::{Expression, LetCall};
 use crate::lett::Let;
 use crate::module::Module;
 use crate::scope::{path, Scope};
@@ -321,7 +321,55 @@ fn parse_let(tokens: &[LeveledToken]) -> (String, Let, usize) {
 }
 
 fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
-    todo!()
+    let base_level = tokens[0].1;
+    let mut expression = None;
+    let mut position = 0;
+
+    while position < tokens.len() {
+        let leveled_token = &tokens[position];
+
+        if leveled_token.1 < base_level {
+            break;
+        }
+
+        match &leveled_token.0 {
+            Token::Kw(kw) => {
+                match kw {
+                    Kw::Zelf => {
+                        expression = Some(Expression::Zelf)
+                    }
+                    _ => panic!("Unexpected keyword {:?}", kw)
+                }
+            }
+            Token::Global(_) => {
+                // TODO: differentiate let calls and def calls
+                let result = parse_let_call(&tokens[position..]);
+
+                expression = Some(Expression::Let(result.0));
+                position += result.1;
+            }
+            Token::Local(name) => {
+                todo!()
+            }
+            Token::Op(op) => {
+                todo!()
+            }
+            _ => panic!("Unexpected token {:?}", leveled_token.0)
+        }
+    }
+
+    if let Some(expression) = expression {
+        (expression, position)
+    } else {
+        panic!("No expression found")
+    }
+}
+
+// e.g.: Module\Function(Arg1, Arg2)
+// e.g.: Module\Constant
+fn parse_let_call(tokens: &[LeveledToken]) -> (LetCall, usize) {
+    let base_level = tokens[0].1;
+    
 }
 
 // TODO: test everything
