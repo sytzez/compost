@@ -1,0 +1,4 @@
+- Implement classes
+- Implement let calls
+- Use errors instead of panic!
+- Add context to tokens to provide better errors

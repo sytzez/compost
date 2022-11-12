@@ -1,3 +1,4 @@
 lets
     Main: Int
-        Int(value: 1) + Int(value: 1)
+        Int(value: 2)
+        .Op\Square

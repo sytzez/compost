@@ -38,26 +38,14 @@ fn main() {
 
         println!("{}", result);
     } else {
-        println!("No file path given")
+        println!("Specify a source file to run")
     }
 }
 
 pub fn run_code(code: &str) -> String {
     let scope = parse_tokens(&tokenize(code));
 
-    let main = scope.lett(&path("Main"));
-
-    let resolved_instance = main.resolve([].into(), &scope);
-
-    let raw_value = match resolved_instance.borrow() {
-        Instance::Raw(raw_value) => raw_value,
-        Instance::Struct(strukt) => strukt.value("value"),
-        _ => return "Resolved value of main can not be represented as a string".into(),
-    };
-
-    match raw_value {
-        RawValue::String(value) => value.clone(),
-        RawValue::Int(value) => value.to_string(),
-        RawValue::UInt(value) => value.to_string(),
-    }
+    scope.lett(&path("Main"))
+        .resolve([].into(), &scope)
+        .to_string(&scope)
 }

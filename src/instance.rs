@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use crate::class::ClassInstance;
 use crate::definition::Definition;
+use crate::path;
 use crate::raw_value::RawValue;
 use crate::scope::{ReferencePath, Scope};
 use crate::strukt::StructInstance;
@@ -86,6 +87,19 @@ impl Instance {
             Type::Raw(raw_type) => self.is_of_raw_type(raw_type),
             Type::Zelf => is_self,
             Type::Void => true,
+        }
+    }
+
+    pub fn to_string(self: &Rc<Self>, scope: &Scope) -> String {
+        if let Instance::Raw(raw_value) = self.borrow() {
+            match raw_value {
+                RawValue::String(value) => value.clone(),
+                RawValue::Int(value) => value.to_string(),
+                RawValue::UInt(value) => value.to_string(),
+            }
+        } else {
+            self.call(&path("String"), [].into(), scope)
+                .to_string(scope)
         }
     }
 }
