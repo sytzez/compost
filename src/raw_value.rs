@@ -13,11 +13,11 @@ pub enum RawValue {
 
 impl RawValue {
     pub fn call(&self, trait_path: &ReferencePath, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
-        if trait_path == &path("Op.Add") {
+        if trait_path == &path("Op\\Add") {
             return self.add(inputs);
         }
 
-        if trait_path == &path("Op.Sub") {
+        if trait_path == &path("Op\\Sub") {
             return self.sub(inputs);
         }
 
@@ -29,6 +29,7 @@ impl RawValue {
 
         match self {
             RawValue::Int(value) => RawValue::Int(*value + rhs.int()),
+            RawValue::UInt(value) => RawValue::UInt(*value + rhs.uint()),
             _ => panic!("todo"),
         }
     }
@@ -38,16 +39,27 @@ impl RawValue {
 
         match self {
             RawValue::Int(value) => RawValue::Int(*value - rhs.int()),
+            RawValue::UInt(value) => RawValue::UInt(*value - rhs.uint()),
             _ => panic!("todo"),
         }
     }
 
     fn int(&self) -> i64 {
-        match self {
-            RawValue::Int(value) => *value,
-            _ => panic!(),
+        if let RawValue::Int(value) = self {
+            *value
+        } else {
+            panic!("{:?} is not an Int", self);
         }
     }
+
+    fn uint(&self) -> u64 {
+        if let RawValue::UInt(value) = self {
+            *value
+        } else {
+            panic!("{:?} is not an UInt", self);
+        }
+    }
+
 
     fn rhs(inputs: HashMap<String, Rc<Instance>>) -> RawValue {
         let rhs = inputs.get("rhs").expect("No rhs given");

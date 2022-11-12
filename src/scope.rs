@@ -10,7 +10,7 @@ use crate::trayt::Trait;
 pub type ReferencePath = Vec<String>;
 
 pub fn path(string: &str) -> ReferencePath {
-    string.split(".")
+    string.split("\\")
         .map(|segment| segment.to_string())
         .collect()
 }

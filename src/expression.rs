@@ -4,9 +4,10 @@ use std::rc::Rc;
 use crate::class::Class;
 use crate::instance::Instance;
 use crate::raw_value::RawValue;
-use crate::scope::{path, ReferencePath, Scope, LocalScope};
+use crate::scope::{path, ReferencePath, LocalScope};
 use crate::strukt::Struct;
 
+#[derive(Clone)]
 pub enum Expression {
     Binary(BinaryCall),
     Let(LetCall),
@@ -20,28 +21,33 @@ pub enum Expression {
     ConstructStruct(Rc<Struct>),
 }
 
+#[derive(Clone)]
 pub struct BinaryCall {
     pub op: BinaryOp,
     pub lhs: Box<Expression>,
     pub rhs: Box<Expression>,
 }
 
+#[derive(Clone)]
 pub struct LetCall {
     pub path: ReferencePath,
     pub inputs: HashMap<String, Expression>,
 }
 
+#[derive(Clone)]
 pub struct DefCall {
     pub path: ReferencePath,
     pub inputs: HashMap<String, Expression>,
 }
 
 // A reference to the protected field of another instance of the self struct
+#[derive(Clone)]
 pub struct FriendlyField {
     pub local_name: String,
     pub field_name: String,
 }
 
+#[derive(Clone)]
 pub enum BinaryOp {
     Add,
     Sub,
@@ -54,10 +60,10 @@ impl Expression {
         match self {
             Expression::Binary(call) => {
                 let trait_path = match call.op {
-                    BinaryOp::Add => "Op.Add",
-                    BinaryOp::Sub => "Op.Sub",
-                    BinaryOp::Mul => "Op.Mul",
-                    BinaryOp::Div => "Op.Div",
+                    BinaryOp::Add => "Op\\Add",
+                    BinaryOp::Sub => "Op\\Sub",
+                    BinaryOp::Mul => "Op\\Mul",
+                    BinaryOp::Div => "Op\\Div",
                 };
                 let trait_path = path(trait_path);
 

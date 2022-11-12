@@ -2,7 +2,7 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 use crate::class::Class;
 use crate::definition::Definition;
-use crate::expression::{BinaryCall, BinaryOp, Expression, LetCall};
+use crate::expression::{BinaryCall, BinaryOp, Expression, FriendlyField, LetCall};
 use crate::lett::Let;
 use crate::module::Module;
 use crate::RawValue;
@@ -69,8 +69,6 @@ fn parse_local(token: &LeveledToken, expected_level: usize) -> String {
 }
 
 fn parse_mod(tokens: &[LeveledToken]) -> (String, Module, usize) {
-    println!("mod");
-
     let mut module = Module::new();
     let base_level = tokens[0].1;
     let name = parse_global(&tokens[1], base_level);
@@ -103,6 +101,18 @@ fn parse_mod(tokens: &[LeveledToken]) -> (String, Module, usize) {
                 }
                 position += result.1;
             }
+            Token::Kw(Kw::Defs) => {
+                let result = parse_defs(&tokens[position..]);
+                for (name, def) in result.0 {
+                    for (_, class) in module.classes.iter_mut() {
+                        todo!()
+                    }
+                    for (_, strukt) in module.structs.iter_mut() {
+                        strukt.add_definition(path(&name), def.clone());
+                    }
+                }
+                position += result.1;
+            }
             // TODO: when getting a def, add the def to all classes an strukts
             _ => panic!("Unexpected token {:?}", leveled_token.0)
         }
@@ -116,8 +126,6 @@ fn parse_class(tokens: &[LeveledToken]) -> (Class, usize) {
 }
 
 fn parse_struct(tokens: &[LeveledToken]) -> (Struct, usize) {
-    println!("struct");
-
     let mut strukt = Struct::new();
     let base_level = tokens[0].1;
 
@@ -140,8 +148,6 @@ fn parse_struct(tokens: &[LeveledToken]) -> (Struct, usize) {
 }
 
 fn parse_struct_field(tokens: &[LeveledToken]) -> (String, RawType, usize) {
-    println!("struct field");
-
     let base_level = tokens[0].1;
     let name = parse_local(&tokens[0], base_level);
     let typ_name = parse_global(&tokens[1], base_level + 1);
@@ -241,8 +247,34 @@ fn parse_parameter(tokens: &[LeveledToken]) -> (String, Type, usize) {
     (name, type_result.0, type_result.1 + 1)
 }
 
-fn parse_defs(tokens: &[LeveledToken]) -> (Vec<Definition>, usize) {
-    todo!()
+fn parse_defs(tokens: &[LeveledToken]) -> (Vec<(String, Definition)>, usize) {
+    let base_level = tokens[0].1;
+    let mut defs = vec![];
+
+    // Skip the 'defs' keyword.
+    let mut position = 1;
+
+    while position < tokens.len() {
+        let leveled_token = &tokens[position];
+
+        if leveled_token.1 <= base_level {
+            break;
+        }
+
+        match &leveled_token.0 {
+            Token::Global(name) => {
+                position += 1;
+
+                let result = parse_expression(&tokens[position..]);
+                defs.push((name.clone(), Definition { expression: result.0 }));
+                position += result.1;
+            }
+            // TODO: nesting
+            _ => panic!("Unexpected token {:?}", leveled_token.0)
+        }
+    }
+
+    (defs, position)
 }
 
 fn parse_lets(tokens: &[LeveledToken]) -> (Vec<(String, Let)>, usize) {
@@ -361,9 +393,7 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
 
     // Operations
     while position < tokens.len() {
-        let leveled_token = &tokens[position];
-
-        if leveled_token.1 < base_level {
+        if tokens[position].1 < base_level {
             break;
         }
 
@@ -388,7 +418,21 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
                         })
                     }
                     Op::Dot => {
-                        todo!("Let call")
+                        if let Expression::Local(local_name) = expression {
+                            position += 1;
+
+                            let field_name = parse_local(&tokens[position], tokens[position].1);
+                            position += 1;
+
+                            Expression::FriendlyField(
+                                FriendlyField {
+                                    local_name,
+                                    field_name,
+                                }
+                            )
+                        } else {
+                            todo!("Let call")
+                        }
                     }
                     _ => panic!("Unexpected operator {:?}", op)
                 }

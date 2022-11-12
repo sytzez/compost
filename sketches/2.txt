@@ -1,6 +1,10 @@
 mod Int
     struct
         value: Int
+    traits
+        Add: (rhs: Int) -> Int
+    defs
+        Op\Add: value + rhs.value
 
 lets
     Main: Int
