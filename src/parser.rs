@@ -103,12 +103,17 @@ fn parse_mod(tokens: &[LeveledToken]) -> (String, Module, usize) {
             }
             Token::Kw(Kw::Defs) => {
                 let result = parse_defs(&tokens[position..]);
-                for (name, def) in result.0 {
+                for (def_name, def) in result.0 {
                     for (_, class) in module.classes.iter_mut() {
                         todo!()
                     }
                     for (_, strukt) in module.structs.iter_mut() {
-                        strukt.add_definition(path(&name), def.clone());
+                        strukt.add_definition(path(&def_name), def.clone());
+                    }
+
+                    // If this definition defines a trait declared in this module, add it to the globally available defs.
+                    if module.traits.iter().any(|(trait_name, _)| (name.clone() + "\\" + trait_name) == def_name) {
+                        module.defs.push((def_name, def))
                     }
                 }
                 position += result.1;

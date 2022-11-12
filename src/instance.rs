@@ -26,8 +26,6 @@ impl Instance {
             _ => (),
         };
 
-        let definition = self.definitions().get(trait_path).expect("Trait not defined");
-
         let locals = inputs
             .into_iter()
             .chain(self.values())
@@ -35,7 +33,13 @@ impl Instance {
 
         let local_scope = scope.local_scope(Some(Rc::clone(self)), locals);
 
-        definition.expression.resolve(&local_scope)
+        if let Some(definition) = self.definitions().get(trait_path) {
+            // Use definition defined for class or struct.
+            definition.expression.resolve(&local_scope)
+        } else {
+            // Use definition defined on original module of trait.
+            scope.def(trait_path).expression.resolve(&local_scope)
+        }
     }
 
     fn definitions(&self) -> &HashMap<ReferencePath, Definition> {

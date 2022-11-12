@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 use crate::class::Class;
+use crate::definition::Definition;
 use crate::instance::Instance;
 use crate::lett::Let;
 use crate::module::Module;
@@ -20,6 +21,7 @@ pub struct Scope {
     classes: References<Class>,
     structs: References<Struct>,
     lets: References<Let>,
+    defs: References<Definition>,
 }
 
 pub struct LocalScope<'a> {
@@ -35,6 +37,7 @@ impl Scope {
             classes: References::new(),
             structs: References::new(),
             lets: References::new(),
+            defs: References::new(),
         }
     }
 
@@ -49,6 +52,10 @@ impl Scope {
     pub fn lett(&self, path: &ReferencePath) -> Rc<Let> {
         self.lets.resolve(path)
     }
+
+    pub fn def(&self, path: &ReferencePath) -> Rc<Definition> {
+        self.defs.resolve(path)
+    }
     
     pub fn add_trait(&mut self, path: ReferencePath, trayt: Trait) {
         self.traits.add(path, trayt)
@@ -58,30 +65,37 @@ impl Scope {
         self.lets.add(path, lett)
     }
 
-    pub fn add_module(&mut self, path: &ReferencePath, module: Module) {
+    pub fn add_module(&mut self, root_path: &ReferencePath, module: Module) {
         for (name, trayt) in module.traits {
-            self.add_trait(Self::join_path(path, name), trayt);
+            self.add_trait(Self::join_path(root_path, name), trayt);
         }
 
         for (name, class) in module.classes {
-            self.add_class(Self::join_path(path, name), class)
+            self.add_class(Self::join_path(root_path, name), class)
         }
 
         for (name, strukt) in module.structs {
-            self.add_struct(Self::join_path(path, name), strukt)
+            self.add_struct(Self::join_path(root_path, name), strukt)
+        }
+
+        for (name, def) in module.defs {
+            self.add_def(path(&name), def)
         }
 
         // TODO: add lets
     }
 
     pub fn add_class(&mut self, _path: ReferencePath, _class: Class) {
-        // TODO: add class
-        // TODO: add class constructor fn
+        todo!("Add class and class constructor fn")
     }
 
     pub fn add_struct(&mut self, path: ReferencePath, strukt: Struct) {
         self.structs.add(path.clone(), strukt);
         self.lets.add(path.clone(), self.structs.resolve(&path).constructor());
+    }
+
+    pub fn add_def(&mut self, path: ReferencePath, def: Definition) {
+        self.defs.add(path, def)
     }
 
     fn join_path<'a>(root: &ReferencePath, end: String) -> ReferencePath {
