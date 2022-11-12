@@ -98,7 +98,7 @@ impl Scope {
         self.defs.add(path, def)
     }
 
-    fn join_path<'a>(root: &ReferencePath, end: String) -> ReferencePath {
+    fn join_path(root: &ReferencePath, end: String) -> ReferencePath {
         if end.is_empty() {
             root.clone()
         } else {

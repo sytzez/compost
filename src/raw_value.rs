@@ -2,7 +2,7 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;
 use crate::instance::Instance;
-use crate::scope::{path, ReferencePath};
+use crate::scope::ReferencePath;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum RawValue {
@@ -84,7 +84,7 @@ impl RawValue {
 
         match rhs.borrow() {
             Instance::Raw(value) => value.clone(),
-            _ => panic!(),
+            _ => panic!("Right hand side of operation is not a raw type"),
         }
     }
 }

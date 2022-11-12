@@ -35,9 +35,11 @@ impl Instance {
 
         if let Some(definition) = self.definitions().get(trait_path) {
             // Use definition defined for class or struct.
+            println!("Use class/struct definition");
             definition.expression.resolve(&local_scope)
         } else {
             // Use definition defined on original module of trait.
+            println!("Use original module definition");
             scope.def(trait_path).expression.resolve(&local_scope)
         }
     }
@@ -95,15 +97,25 @@ impl Instance {
     }
 
     pub fn to_string(self: &Rc<Self>, scope: &Scope) -> String {
+        println!("To string");
+
         if let Instance::Raw(raw_value) = self.borrow() {
-            match raw_value {
+            return match raw_value {
                 RawValue::String(value) => value.clone(),
                 RawValue::Int(value) => value.to_string(),
                 RawValue::UInt(value) => value.to_string(),
             }
-        } else {
-            self.call(&path("String"), [].into(), scope)
-                .to_string(scope)
+        } else if let Instance::Struct(strukt) = self.borrow() {
+            if strukt.strukt.fields.get("value") == Some(&RawType::String) {
+                if let RawValue::String(string) = strukt.value("value") {
+                    return string.clone()
+                } else {
+                    unreachable!()
+                }
+            }
         }
+
+        self.call(&path("String"), [].into(), scope)
+            .to_string(scope)
     }
 }

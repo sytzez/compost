@@ -76,6 +76,8 @@ impl Expression {
                 lhs.call(&trait_path, inputs, scope.scope())
             }
             Expression::Let(call) => {
+                println!("Call let {} ", call.path.join("\\"));
+
                 let inputs = call.inputs
                     .iter()
                     .map(|(name, expression)| (name.clone(), expression.resolve(scope)))
@@ -86,6 +88,8 @@ impl Expression {
                 lett.resolve(inputs, scope.scope())
             }
             Expression::Def(call) => {
+                println!("Call def {} ", call.path.join("\\"));
+
                 let subject = call.subject.resolve(scope);
 
                 let inputs = call.inputs
