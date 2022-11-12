@@ -37,6 +37,7 @@ pub struct LetCall {
 #[derive(Clone)]
 pub struct DefCall {
     pub path: ReferencePath,
+    pub subject: Box<Expression>,
     pub inputs: HashMap<String, Expression>,
 }
 
@@ -85,17 +86,14 @@ impl Expression {
                 lett.resolve(inputs, scope.scope())
             }
             Expression::Def(call) => {
+                let subject = call.subject.resolve(scope);
+
                 let inputs = call.inputs
                     .iter()
                     .map(|(name, expression)| (name.clone(), expression.resolve(scope)))
                     .collect::<HashMap<_, _>>();
 
-                let zelf = match scope.zelf() {
-                    Some(z) => z,
-                    None => panic!("No self in local scope"),
-                };
-
-                zelf.call(&call.path, inputs, scope.scope())
+                subject.call(&call.path, inputs, scope.scope())
             }
             Expression::Literal(value) => {
                 Rc::new(Instance::Raw(value.clone()))

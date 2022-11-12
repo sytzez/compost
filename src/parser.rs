@@ -2,7 +2,7 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 use crate::class::Class;
 use crate::definition::Definition;
-use crate::expression::{BinaryCall, BinaryOp, Expression, FriendlyField, LetCall};
+use crate::expression::{BinaryCall, BinaryOp, DefCall, Expression, FriendlyField, LetCall};
 use crate::lett::Let;
 use crate::module::Module;
 use crate::RawValue;
@@ -394,7 +394,7 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
                 }
             )
         }
-        // TODO: literals
+        // TODO: .Def (meaning use Self as subject)
         _ => panic!("Unexpected token {:?}", tokens[0].0)
     };
 
@@ -426,9 +426,9 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
                         })
                     }
                     Op::Dot => {
-                        if let Expression::Local(local_name) = expression {
-                            position += 1;
+                        position += 1;
 
+                        if let Expression::Local(local_name) = expression {
                             let field_name = parse_local(&tokens[position], tokens[position].1);
                             position += 1;
 
@@ -439,7 +439,16 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
                                 }
                             )
                         } else {
-                            todo!("Let call")
+                            let result = parse_let_call(&tokens[position..]);
+                            position += result.1;
+
+                            Expression::Def(
+                                DefCall {
+                                    path: result.0.path,
+                                    subject: Box::new(expression),
+                                    inputs: result.0.inputs,
+                                }
+                            )
                         }
                     }
                     _ => panic!("Unexpected operator {:?}", op)
