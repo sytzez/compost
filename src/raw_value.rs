@@ -13,15 +13,13 @@ pub enum RawValue {
 
 impl RawValue {
     pub fn call(&self, trait_path: &ReferencePath, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
-        if trait_path == &path("Op\\Add") {
-            return self.add(inputs);
+        match trait_path.join("\\").borrow() {
+            "Op\\Add" => self.add(inputs),
+            "Op\\Sub" => self.sub(inputs),
+            "Op\\Mul" => self.mul(inputs),
+            "toString" => self.to_string(),
+            _ => panic!("Unknown raw trait {} ", trait_path.join("\\"))
         }
-
-        if trait_path == &path("Op\\Sub") {
-            return self.sub(inputs);
-        }
-
-        panic!()
     }
 
     pub fn add(&self, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
@@ -42,6 +40,26 @@ impl RawValue {
             RawValue::UInt(value) => RawValue::UInt(*value - rhs.uint()),
             _ => panic!("todo"),
         }
+    }
+
+    pub fn mul(&self, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
+        let rhs = Self::rhs(inputs);
+
+        match self {
+            RawValue::Int(value) => RawValue::Int(*value * rhs.int()),
+            RawValue::UInt(value) => RawValue::UInt(*value * rhs.uint()),
+            _ => panic!("todo"),
+        }
+    }
+
+    pub fn to_string(&self) -> RawValue {
+        let string = match self {
+            RawValue::Int(value) => value.to_string(),
+            RawValue::UInt(value) => value.to_string(),
+            RawValue::String(value) => value.clone(),
+        };
+
+        RawValue::String(string)
     }
 
     fn int(&self) -> i64 {

@@ -104,14 +104,19 @@ impl Expression {
             Expression::FriendlyField(friendly_field) => {
                 let local = scope.local(&friendly_field.local_name);
 
-                let struct_instance = match local.borrow() {
-                    Instance::Struct(struct_instance) => struct_instance,
-                    _ => panic!(),
-                };
+                match local.borrow() {
+                    Instance::Struct(struct_instance) => {
+                        let value = struct_instance.value(&friendly_field.field_name);
 
-                let value = struct_instance.value(&friendly_field.field_name);
+                        Rc::new(Instance::Raw(value.clone()))
+                    },
+                    Instance::Raw(raw_value) => {
+                        let value = raw_value.call(&path(&friendly_field.field_name), [].into());
 
-                Rc::new(Instance::Raw(value.clone()))
+                        Rc::new(Instance::Raw(value))
+                    }
+                    _ => panic!("{0} in {0}.{1} is not a struct or raw value", friendly_field.local_name, friendly_field.field_name),
+                }
             }
             Expression::Zelf => {
                 match scope.zelf() {
