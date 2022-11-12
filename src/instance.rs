@@ -46,20 +46,17 @@ impl Instance {
 
     fn definitions(&self) -> &HashMap<ReferencePath, Definition> {
         match self {
-            Instance::Class(instance) => &instance.class.definitions,
-            Instance::Struct(instance) => &instance.strukt.definitions,
+            Instance::Class(instance) => &instance.class().definitions,
+            Instance::Struct(instance) => &instance.strukt().definitions,
             _ => panic!(),
         }
     }
 
     fn values(&self) -> HashMap<String, Rc<Instance>> {
         match self {
-            Instance::Struct(instance) => instance
-                .values
-                .iter()
-                .map(|(name, value)| (name.clone(), Rc::new(Instance::Raw(value.clone()))))
-                .collect(),
-            _ => panic!(),
+            Instance::Struct(instance) => instance.values(),
+            Instance::Class(instance) => instance.dependencies(),
+            _ => unreachable!(),
         }
     }
 
@@ -106,7 +103,7 @@ impl Instance {
                 RawValue::UInt(value) => value.to_string(),
             }
         } else if let Instance::Struct(strukt) = self.borrow() {
-            if strukt.strukt.fields.get("value") == Some(&RawType::String) {
+            if strukt.strukt().fields.get("value") == Some(&RawType::String) {
                 if let RawValue::String(string) = strukt.value("value") {
                     return string.clone()
                 } else {

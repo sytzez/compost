@@ -3,6 +3,7 @@ use crate::expression::Expression;
 use crate::scope::ReferencePath;
 use std::collections::HashMap;
 use std::rc::Rc;
+use crate::Instance;
 use crate::lett::Let;
 use crate::raw_value::RawValue;
 use crate::typ::{combine_types, RawType, Type};
@@ -63,29 +64,25 @@ impl Struct {
 }
 
 pub struct StructInstance {
-    pub strukt: Rc<Struct>,
-    pub values: HashMap<String, RawValue>,
+    strukt: Rc<Struct>,
+    values: HashMap<String, RawValue>,
 }
 
 impl StructInstance {
-    pub fn new(strukt: &Rc<Struct>) -> Self {
-        Self {
-            strukt: Rc::clone(strukt),
-            values: HashMap::new(),
-        }
-    }
-
     pub fn strukt(&self) -> &Rc<Struct> {
         &self.strukt
-    }
-
-    pub fn set_value(&mut self, name: String, value: RawValue) {
-        self.values.insert(name, value);
     }
 
     pub fn value(&self, name: &str) -> &RawValue {
         self.values
             .get(name)
             .expect(&format!("Field {} does not exist", name))
+    }
+
+    pub fn values(&self) -> HashMap<String, Rc<Instance>> {
+        self.values
+            .iter()
+            .map(|(name, value)| (name.clone(), Rc::new(Instance::Raw(value.clone()))))
+            .collect()
     }
 }

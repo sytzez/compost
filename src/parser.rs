@@ -105,7 +105,7 @@ fn parse_mod(tokens: &[LeveledToken]) -> (String, Module, usize) {
                 let result = parse_defs(&tokens[position..]);
                 for (def_name, def) in result.0 {
                     for (_, class) in module.classes.iter_mut() {
-                        todo!()
+                        class.add_definition(path(&def_name), def.clone());
                     }
                     for (_, strukt) in module.structs.iter_mut() {
                         strukt.add_definition(path(&def_name), def.clone());
@@ -127,7 +127,30 @@ fn parse_mod(tokens: &[LeveledToken]) -> (String, Module, usize) {
 }
 
 fn parse_class(tokens: &[LeveledToken]) -> (Class, usize) {
-    todo!()
+    let mut class = Class::new();
+    let base_level = tokens[0].1;
+
+    // Skip the 'class' keyword.
+    let mut position = 1;
+
+    while position < tokens.len() {
+        if tokens[position].1 <= base_level {
+            break;
+        }
+
+        let result = parse_class_dependency(&tokens[position..]);
+        class.add_dependency(result.0, result.1);
+        position += result.2;
+    }
+
+    (class, position)
+}
+
+fn parse_class_dependency(tokens: &[LeveledToken]) -> (String, Type, usize) {
+    let base_level = tokens[0].1;
+    let name = parse_local(&tokens[0], base_level);
+    let type_result = parse_type(&tokens[1..]);
+    (name, type_result.0, 1 + type_result.1)
 }
 
 fn parse_struct(tokens: &[LeveledToken]) -> (Struct, usize) {
@@ -138,9 +161,7 @@ fn parse_struct(tokens: &[LeveledToken]) -> (Struct, usize) {
     let mut position = 1;
 
     while position < tokens.len() {
-        let leveled_token = &tokens[position];
-
-        if leveled_token.1 <= base_level {
+        if tokens[position].1 <= base_level {
             break;
         }
 
@@ -155,11 +176,11 @@ fn parse_struct(tokens: &[LeveledToken]) -> (Struct, usize) {
 fn parse_struct_field(tokens: &[LeveledToken]) -> (String, RawType, usize) {
     let base_level = tokens[0].1;
     let name = parse_local(&tokens[0], base_level);
-    let typ_name = parse_global(&tokens[1], base_level + 1);
+    let typ_name = parse_local(&tokens[1], base_level + 1);
     let typ = match typ_name.borrow() {
-        "Int" => RawType::Int,
-        "UInt" => RawType::UInt,
-        "String" => RawType::String,
+        "int" => RawType::Int,
+        "uint" => RawType::UInt,
+        "string" => RawType::String,
         _ => panic!("Unknown raw type {}", typ_name)
     };
     (name, typ, 2)

@@ -85,8 +85,9 @@ impl Scope {
         // TODO: add lets
     }
 
-    pub fn add_class(&mut self, _path: ReferencePath, _class: Class) {
-        todo!("Add class and class constructor fn")
+    pub fn add_class(&mut self, path: ReferencePath, class: Class) {
+        self.classes.add(path.clone(), class);
+        self.lets.add(path.clone(), self.classes.resolve(&path).constructor());
     }
 
     pub fn add_struct(&mut self, path: ReferencePath, strukt: Struct) {

@@ -1,22 +1,26 @@
-# TODO: implement classes
-# mod Point
-#     class
-#         x: Int
-#         y: Int
-#     traits
-#         X: Int
-#         Y: Int
-#     defs
-#         Point\X: x
-#         Point\Y: y
-#         Op\Add: Point(x: X + rhs.X, y: Y + rhs.Y)
+mod Point
+    class
+        x: Int
+        y: Int
+    traits
+        X: Int
+        Y: Int
+    defs
+        Point\X: x
+        Point\Y: y
+#        Op\Add: Point
+#            x: Self.Point\X + rhs.Point\X
+#            y: Self.Point\Y + rhs.Point\Y
 
 lets
     Constant: Int
         Int(value: 2)
+
     ConstantSquared: Int
         Constant.Math\Squared
+
     ConstantCubed: Int
         Constant.Math\Cubed
+
     Main: Int
         ConstantSquared + ConstantCubed

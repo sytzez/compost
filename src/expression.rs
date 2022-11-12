@@ -132,6 +132,8 @@ impl Expression {
                 let values = strukt.fields
                     .keys()
                     .map(|key| {
+                        // TODO: check types
+
                         let instance = scope.local(key);
                         let raw = match instance.borrow() {
                             Instance::Raw(value) => value.clone(),
@@ -147,7 +149,14 @@ impl Expression {
                 Rc::new(Instance::Struct(struct_instance))
             }
             Expression::ConstructClass(class) => {
-                panic!("todo")
+                let dependencies = class.dependencies
+                    .keys()
+                    .map(|key| (key.clone(), Rc::clone(scope.local(key))))
+                    .collect::<HashMap<_, _>>();
+
+                let class_instance = class.instantiate(dependencies);
+
+                Rc::new(Instance::Class(class_instance))
             }
         }
     }

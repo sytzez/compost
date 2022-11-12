@@ -1,6 +1,6 @@
 use crate::scope::ReferencePath;
 
-#[derive(Eq, PartialEq, Hash)]
+#[derive(Eq, PartialEq, Hash, Clone)]
 pub enum Type {
     Trait(ReferencePath),
     Raw(RawType),

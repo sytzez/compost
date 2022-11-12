@@ -15,13 +15,13 @@ mod Math
 
 mod String
     struct
-        value: String
+        value: string
     defs
         Op\Add: String(value: value + rhs.value)
 
 mod Int
     struct
-        value: Int
+        value: int
     defs
         Op\Add: Int(value: value + rhs.value)
         Op\Sub: Int(value: value - rhs.value)
