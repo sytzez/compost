@@ -26,10 +26,15 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if let Some(file_path) = args.get(1) {
+        let std = fs::read_to_string("lib/std.compost")
+            .expect("Unable to read lib/std.compost");
+
         let code = fs::read_to_string(file_path)
             .expect("Unable to read file");
 
-        let result = run_code(&code);
+        let all_code = std + &code;
+
+        let result = run_code(&all_code);
 
         println!("{}", result);
     } else {

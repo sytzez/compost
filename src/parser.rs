@@ -206,6 +206,12 @@ fn parse_trait(tokens: &[LeveledToken]) -> (String, Trait, usize) {
 
                 break;
             }
+            Token::Kw(Kw::Zelf) => {
+                output = Some(Type::Zelf);
+                position += 1;
+
+                break;
+            }
             Token::Local(_) => {
                 let result = parse_parameter(&tokens[position..]);
                 inputs.push(result.1); // TODO: add names to Trait inputs.
@@ -359,6 +365,7 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
     let mut position = 0;
 
     // First token
+    println!("Expression start: {:?}", &tokens[0].0);
     let mut expression = match &tokens[0].0 {
         Token::Kw(kw) => {
             match kw {
@@ -391,12 +398,13 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
         _ => panic!("Unexpected token {:?}", tokens[0].0)
     };
 
-    // Operations
+    // Further operations
     while position < tokens.len() {
         if tokens[position].1 < base_level {
             break;
         }
 
+        println!("Expression next: {:?}", &tokens[position].0);
         expression = match &tokens[position].0 {
             Token::Op(op) => {
                 match op {

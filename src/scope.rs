@@ -134,9 +134,9 @@ impl<T> References<T> {
             .collect::<Vec<_>>();
 
         match matched_references.len() {
-            0 => panic!(),
+            0 => panic!("No resolution for {}", path.join("\\")),
             1 => Rc::clone(&matched_references.first().unwrap().1),
-            _ => panic!(),
+            _ => panic!("Multiple resolutions for {}", path.join("\\")),
         }
     }
 
