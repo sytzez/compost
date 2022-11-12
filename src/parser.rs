@@ -370,7 +370,6 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
     let mut position = 0;
 
     // First token
-    println!("Expression start: {:?}", &tokens[0].0);
     let mut expression = match &tokens[0].0 {
         Token::Kw(kw) => {
             match kw {
@@ -409,7 +408,6 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
             break;
         }
 
-        println!("Expression next: {:?}", &tokens[position].0);
         expression = match &tokens[position].0 {
             Token::Op(op) => {
                 match op {

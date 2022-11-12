@@ -28,7 +28,7 @@ impl RawValue {
         match self {
             RawValue::Int(value) => RawValue::Int(*value + rhs.int()),
             RawValue::UInt(value) => RawValue::UInt(*value + rhs.uint()),
-            _ => panic!("todo"),
+            RawValue::String(value) => RawValue::String(value.clone() + rhs.string()),
         }
     }
 
@@ -38,7 +38,7 @@ impl RawValue {
         match self {
             RawValue::Int(value) => RawValue::Int(*value - rhs.int()),
             RawValue::UInt(value) => RawValue::UInt(*value - rhs.uint()),
-            _ => panic!("todo"),
+            RawValue::String(_) => panic!("Can't subtract strings"),
         }
     }
 
@@ -48,7 +48,7 @@ impl RawValue {
         match self {
             RawValue::Int(value) => RawValue::Int(*value * rhs.int()),
             RawValue::UInt(value) => RawValue::UInt(*value * rhs.uint()),
-            _ => panic!("todo"),
+            RawValue::String(_) => panic!("Can't multiply strings"),
         }
     }
 
@@ -66,7 +66,7 @@ impl RawValue {
         if let RawValue::Int(value) = self {
             *value
         } else {
-            panic!("{:?} is not an Int", self);
+            panic!("{:?} is not an Int", self)
         }
     }
 
@@ -74,10 +74,17 @@ impl RawValue {
         if let RawValue::UInt(value) = self {
             *value
         } else {
-            panic!("{:?} is not an UInt", self);
+            panic!("{:?} is not an UInt", self)
         }
     }
 
+    fn string(&self) -> &str {
+        if let RawValue::String(value) = self {
+            value
+        } else {
+            panic!("{:?} is not a String", self)
+        }
+    }
 
     fn rhs(inputs: HashMap<String, Rc<Instance>>) -> RawValue {
         let rhs = inputs.get("rhs").expect("No rhs given");

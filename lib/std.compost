@@ -4,9 +4,14 @@ mod Op
         Sub: (rhs: Self) -> Self
         Mul: (rhs: Self) -> Self
         Div: (rhs: Self) -> Self
-        Square: Self
+
+mod Math
+    traits
+        Squared: Self
+        Cubed: Self
     defs
-        Op\Square: Self * Self
+        Math\Squared: Self * Self
+        Math\Cubed: Self * Self * Self
 
 mod String
     struct
@@ -23,16 +28,3 @@ mod Int
         Op\Mul: Int(value: value * rhs.value)
         Op\Div: Int(value: value / rhs.value)
         String: String(value: value.toString)
-
-# TODO: implement classes
-# mod Point
-#     class
-#         x: Int
-#         y: Int
-#     traits
-#         X: Int
-#         Y: Int
-#     defs
-#         Point\X: x
-#         Point\Y: y
-#         Op\Add: Point(x: X + rhs.X, y: Y + rhs.Y)
