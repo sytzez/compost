@@ -4,4 +4,4 @@ mod Int
 
 lets
     Main: Int
-        Int(1) + Int(1)
+        Int(value: 1) + Int(value: 1)

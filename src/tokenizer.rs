@@ -33,6 +33,7 @@ pub fn tokenize(code: &str) -> Vec<LeveledToken> {
                         is_beginning_of_line = true;
                     }
                 },
+                Token::Eof => leveled_tokens.push((Token::Eof, 0)),
                 _ => leveled_tokens.push((token, level_stack.level())),
             }
         }

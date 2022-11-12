@@ -2,12 +2,13 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 use crate::class::Class;
 use crate::definition::Definition;
-use crate::expression::{Expression, LetCall};
+use crate::expression::{BinaryCall, BinaryOp, Expression, LetCall};
 use crate::lett::Let;
 use crate::module::Module;
+use crate::RawValue;
 use crate::scope::{path, Scope};
 use crate::strukt::Struct;
-use crate::token::{Kw, Op, Token};
+use crate::token::{Kw, Lit, Op, Token};
 use crate::tokenizer::LeveledToken;
 use crate::trayt::Trait;
 use crate::typ::{RawType, Type};
@@ -41,6 +42,7 @@ pub fn parse_tokens(tokens: &[LeveledToken]) -> Scope {
 
                 position += result.1;
             }
+            Token::Eof => break,
             _ => panic!("Unexpected token {:?}", leveled_token.0)
         }
     }
@@ -322,9 +324,42 @@ fn parse_let(tokens: &[LeveledToken]) -> (String, Let, usize) {
 
 fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
     let base_level = tokens[0].1;
-    let mut expression = None;
     let mut position = 0;
 
+    // First token
+    let mut expression = match &tokens[0].0 {
+        Token::Kw(kw) => {
+            match kw {
+                Kw::Zelf => {
+                    position += 1;
+                    Expression::Zelf
+                },
+                _ => panic!("Unexpected keyword {:?}", kw)
+            }
+        }
+        Token::Global(_) => {
+            let result = parse_let_call(&tokens[position..]);
+            position += result.1;
+            Expression::Let(result.0)
+        }
+        Token::Local(name) => {
+            position += 1;
+            Expression::Local(name.clone())
+        }
+        Token::Lit(lit) => {
+            position += 1;
+            Expression::Literal(
+                match lit {
+                    Lit::String(value) => RawValue::String(value.clone()),
+                    Lit::Number(value) => RawValue::UInt(value.clone() as u64),
+                }
+            )
+        }
+        // TODO: literals
+        _ => panic!("Unexpected token {:?}", tokens[0].0)
+    };
+
+    // Operations
     while position < tokens.len() {
         let leveled_token = &tokens[position];
 
@@ -332,44 +367,74 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
             break;
         }
 
-        match &leveled_token.0 {
-            Token::Kw(kw) => {
-                match kw {
-                    Kw::Zelf => {
-                        expression = Some(Expression::Zelf)
+        expression = match &tokens[position].0 {
+            Token::Op(op) => {
+                match op {
+                    Op::Add | Op::Sub | Op::Mul | Op::Div => {
+                        position += 1;
+
+                        let result = parse_expression(&tokens[position..]);
+                        position += result.1;
+                        Expression::Binary(BinaryCall {
+                            op: match op {
+                                Op::Add => BinaryOp::Add,
+                                Op::Sub => BinaryOp::Sub,
+                                Op::Mul => BinaryOp::Mul,
+                                Op::Div => BinaryOp::Div,
+                                _ => unreachable!(),
+                            },
+                            lhs: Box::new(expression),
+                            rhs: Box::new(result.0),
+                        })
                     }
-                    _ => panic!("Unexpected keyword {:?}", kw)
+                    Op::Dot => {
+                        todo!("Let call")
+                    }
+                    _ => panic!("Unexpected operator {:?}", op)
                 }
             }
-            Token::Global(_) => {
-                // TODO: differentiate let calls and def calls
-                let result = parse_let_call(&tokens[position..]);
-
-                expression = Some(Expression::Let(result.0));
-                position += result.1;
-            }
-            Token::Local(name) => {
-                todo!()
-            }
-            Token::Op(op) => {
-                todo!()
-            }
-            _ => panic!("Unexpected token {:?}", leveled_token.0)
-        }
+            _ => panic!("Unexpected token {:?}", tokens[position].0)
+        };
     }
 
-    if let Some(expression) = expression {
-        (expression, position)
-    } else {
-        panic!("No expression found")
-    }
+    (expression, position)
 }
 
-// e.g.: Module\Function(Arg1, Arg2)
+// e.g.: Module\Function(param1: ..., param2: ...)
 // e.g.: Module\Constant
 fn parse_let_call(tokens: &[LeveledToken]) -> (LetCall, usize) {
     let base_level = tokens[0].1;
-    
+    let name = parse_global(&tokens[0], base_level);
+    let mut inputs = HashMap::new();
+
+    // Skip the name of the let call.
+    let mut position = 1;
+
+    while position < tokens.len() {
+        let leveled_token = &tokens[position];
+
+        if leveled_token.1 <= base_level {
+            break;
+        }
+
+        match &leveled_token.0 {
+            Token::Local(param_name) => {
+                position += 1;
+
+                let result = parse_expression(&tokens[position..]);
+                inputs.insert(param_name.clone(), result.0);
+                position += result.1;
+            }
+            _ => panic!("Unexpected token {:?}, expected parameter name", leveled_token.0)
+        }
+    }
+
+    let let_call = LetCall {
+        path: path(&name),
+        inputs,
+    };
+
+    (let_call, position)
 }
 
 // TODO: test everything
