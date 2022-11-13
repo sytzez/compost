@@ -1,4 +1,4 @@
-use crate::token::{Level, Next, next_token, Token};
+use crate::token::{next_token, Level, Next, Token};
 
 pub type LeveledToken = (Token, usize);
 
@@ -12,7 +12,10 @@ pub fn tokenize(code: &str) -> Vec<LeveledToken> {
     while position <= code.len() {
         let sized_token = next_token(&code[position..]);
 
-        assert!(sized_token.1 > 0, "Size must be larger than 0 to prevent an infinite loop");
+        assert!(
+            sized_token.1 > 0,
+            "Size must be larger than 0 to prevent an infinite loop"
+        );
         position += sized_token.1;
 
         if let Some(token) = sized_token.0 {
@@ -23,7 +26,7 @@ pub fn tokenize(code: &str) -> Vec<LeveledToken> {
                     if is_beginning_of_line {
                         level_stack.indent()
                     }
-                },
+                }
                 Token::Down(level) => level_stack.push(level),
                 Token::Up(level) => level_stack.pop(&level),
                 Token::Next(next) => {
@@ -32,7 +35,7 @@ pub fn tokenize(code: &str) -> Vec<LeveledToken> {
                     if next == Next::Line {
                         is_beginning_of_line = true;
                     }
-                },
+                }
                 Token::Eof => leveled_tokens.push((Token::Eof, 0)),
                 _ => leveled_tokens.push((token, level_stack.level())),
             }
@@ -74,7 +77,7 @@ impl LevelStack {
                     if popped_level != Level::Colon {
                         self.push(popped_level)
                     }
-                },
+                }
             }
         }
     }
@@ -86,7 +89,8 @@ impl LevelStack {
     fn next(&mut self, next: &Next) {
         match next {
             Next::Line => {
-                self.levels = self.levels
+                self.levels = self
+                    .levels
                     .iter()
                     .filter(|level| level != &&Level::Colon)
                     .cloned()
@@ -102,7 +106,6 @@ impl LevelStack {
         self.levels.len() + self.indentation
     }
 }
-
 
 #[cfg(test)]
 mod test {
@@ -130,7 +133,7 @@ mod test {
             (Token::Kw(Kw::Traits), 16),
             (Token::Global("Value".into()), 20),
             (Token::Global("Int".into()), 21),
-            (Token::Eof, 8)
+            (Token::Eof, 0),
         ];
 
         assert_eq!(leveled_tokens, expected)

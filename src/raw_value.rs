@@ -1,8 +1,8 @@
+use crate::instance::Instance;
+use crate::scope::ReferencePath;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::instance::Instance;
-use crate::scope::ReferencePath;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum RawValue {
@@ -12,13 +12,17 @@ pub enum RawValue {
 }
 
 impl RawValue {
-    pub fn call(&self, trait_path: &ReferencePath, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
+    pub fn call(
+        &self,
+        trait_path: &ReferencePath,
+        inputs: HashMap<String, Rc<Instance>>,
+    ) -> RawValue {
         match trait_path.join("\\").borrow() {
             "Op\\Add" => self.add(inputs),
             "Op\\Sub" => self.sub(inputs),
             "Op\\Mul" => self.mul(inputs),
             "toString" => self.to_string(),
-            _ => panic!("Unknown raw trait {} ", trait_path.join("\\"))
+            _ => panic!("Unknown raw trait {} ", trait_path.join("\\")),
         }
     }
 

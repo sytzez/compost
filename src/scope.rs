@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-use std::rc::Rc;
 use crate::class::Class;
 use crate::definition::Definition;
 use crate::instance::Instance;
@@ -7,11 +5,14 @@ use crate::lett::Let;
 use crate::module::Module;
 use crate::strukt::Struct;
 use crate::trayt::Trait;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 pub type ReferencePath = Vec<String>;
 
 pub fn path(string: &str) -> ReferencePath {
-    string.split("\\")
+    string
+        .split("\\")
         .map(|segment| segment.to_string())
         .collect()
 }
@@ -56,7 +57,7 @@ impl Scope {
     pub fn def(&self, path: &ReferencePath) -> Rc<Definition> {
         self.defs.resolve(path)
     }
-    
+
     pub fn add_trait(&mut self, path: ReferencePath, trayt: Trait) {
         self.traits.add(path, trayt)
     }
@@ -87,12 +88,14 @@ impl Scope {
 
     pub fn add_class(&mut self, path: ReferencePath, class: Class) {
         self.classes.add(path.clone(), class);
-        self.lets.add(path.clone(), self.classes.resolve(&path).constructor());
+        self.lets
+            .add(path.clone(), self.classes.resolve(&path).constructor());
     }
 
     pub fn add_struct(&mut self, path: ReferencePath, strukt: Struct) {
         self.structs.add(path.clone(), strukt);
-        self.lets.add(path.clone(), self.structs.resolve(&path).constructor());
+        self.lets
+            .add(path.clone(), self.structs.resolve(&path).constructor());
     }
 
     pub fn add_def(&mut self, path: ReferencePath, def: Definition) {
@@ -107,7 +110,11 @@ impl Scope {
         }
     }
 
-    pub fn local_scope(&self, zelf: Option<Rc<Instance>>, locals: HashMap<String, Rc<Instance>>) -> LocalScope {
+    pub fn local_scope(
+        &self,
+        zelf: Option<Rc<Instance>>,
+        locals: HashMap<String, Rc<Instance>>,
+    ) -> LocalScope {
         LocalScope {
             locals,
             zelf,

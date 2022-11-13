@@ -1,6 +1,3 @@
-use std::borrow::Borrow;
-use std::collections::HashMap;
-use std::rc::Rc;
 use crate::class::ClassInstance;
 use crate::definition::Definition;
 use crate::path;
@@ -8,6 +5,9 @@ use crate::raw_value::RawValue;
 use crate::scope::{ReferencePath, Scope};
 use crate::strukt::StructInstance;
 use crate::typ::{RawType, Type};
+use std::borrow::Borrow;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 pub enum Instance {
     Class(ClassInstance),
@@ -20,16 +20,18 @@ impl Instance {
         self.definitions().contains_key(trait_path)
     }
 
-    pub fn call(self: &Rc<Self>, trait_path: &ReferencePath, inputs: HashMap<String, Rc<Instance>>, scope: &Scope) -> Rc<Instance> {
+    pub fn call(
+        self: &Rc<Self>,
+        trait_path: &ReferencePath,
+        inputs: HashMap<String, Rc<Instance>>,
+        scope: &Scope,
+    ) -> Rc<Instance> {
         match self.borrow() {
             Instance::Raw(value) => return Rc::new(Instance::Raw(value.call(trait_path, inputs))),
             _ => (),
         };
 
-        let locals = inputs
-            .into_iter()
-            .chain(self.values())
-            .collect();
+        let locals = inputs.into_iter().chain(self.values()).collect();
 
         let local_scope = scope.local_scope(Some(Rc::clone(self)), locals);
 
@@ -62,30 +64,32 @@ impl Instance {
 
     pub fn is_of_raw_type(&self, typ: &RawType) -> bool {
         match self {
-            Instance::Raw(value) => {
-                match typ {
-                    RawType::Int => match value {
-                        RawValue::Int(_) => true,
-                        _ => false,
-                    }
-                    RawType::UInt => match value {
-                        RawValue::UInt(_) => true,
-                        _ => false,
-                    }
-                    RawType::String => match value {
-                        RawValue::String(_) => true,
-                        _ => false,
-                    }
-                }
-            }
+            Instance::Raw(value) => match typ {
+                RawType::Int => match value {
+                    RawValue::Int(_) => true,
+                    _ => false,
+                },
+                RawType::UInt => match value {
+                    RawValue::UInt(_) => true,
+                    _ => false,
+                },
+                RawType::String => match value {
+                    RawValue::String(_) => true,
+                    _ => false,
+                },
+            },
             _ => false,
         }
     }
 
     pub fn is_of_type(&self, typ: &Type, is_self: bool) -> bool {
         match typ {
-            Type::Or(left, right) => self.is_of_type(left, is_self) || self.is_of_type(right, is_self),
-            Type::And(left, right) => self.is_of_type(left, is_self) && self.is_of_type(right, is_self),
+            Type::Or(left, right) => {
+                self.is_of_type(left, is_self) || self.is_of_type(right, is_self)
+            }
+            Type::And(left, right) => {
+                self.is_of_type(left, is_self) && self.is_of_type(right, is_self)
+            }
             Type::Trait(path) => self.has_trait(path),
             Type::Raw(raw_type) => self.is_of_raw_type(raw_type),
             Type::Zelf => is_self,
@@ -101,11 +105,11 @@ impl Instance {
                 RawValue::String(value) => value.clone(),
                 RawValue::Int(value) => value.to_string(),
                 RawValue::UInt(value) => value.to_string(),
-            }
+            };
         } else if let Instance::Struct(strukt) = self.borrow() {
             if strukt.strukt().fields.get("value") == Some(&RawType::String) {
                 if let RawValue::String(string) = strukt.value("value") {
-                    return string.clone()
+                    return string.clone();
                 } else {
                     unreachable!()
                 }

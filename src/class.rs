@@ -1,17 +1,17 @@
-use std::collections::HashMap;
-use std::rc::Rc;
-use std::string::String;
-use crate::scope::ReferencePath;
 use crate::definition::Definition;
 use crate::expression::Expression;
 use crate::instance::Instance;
 use crate::lett::Let;
+use crate::scope::ReferencePath;
 use crate::typ::{combine_types, Type};
+use std::collections::HashMap;
+use std::rc::Rc;
+use std::string::String;
 
 // A class has a set of dependencies of certain types, and a set of trait definitions.
 pub struct Class {
     pub dependencies: HashMap<String, Type>,
-    pub definitions: HashMap<ReferencePath, Definition>
+    pub definitions: HashMap<ReferencePath, Definition>,
 }
 
 impl Class {
@@ -22,7 +22,10 @@ impl Class {
         }
     }
 
-    pub fn instantiate(self: &Rc<Self>, dependencies: HashMap<String, Rc<Instance>>) -> ClassInstance {
+    pub fn instantiate(
+        self: &Rc<Self>,
+        dependencies: HashMap<String, Rc<Instance>>,
+    ) -> ClassInstance {
         ClassInstance {
             class: Rc::clone(self),
             dependencies,

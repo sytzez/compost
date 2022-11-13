@@ -1,17 +1,17 @@
-use std::borrow::Borrow;
-use std::collections::HashMap;
 use crate::class::Class;
 use crate::definition::Definition;
 use crate::expression::{BinaryCall, BinaryOp, DefCall, Expression, FriendlyField, LetCall};
 use crate::lett::Let;
 use crate::module::Module;
-use crate::RawValue;
 use crate::scope::{path, Scope};
 use crate::strukt::Struct;
 use crate::token::{Kw, Lit, Op, Token};
 use crate::tokenizer::LeveledToken;
 use crate::trayt::Trait;
 use crate::typ::{RawType, Type};
+use crate::RawValue;
+use std::borrow::Borrow;
+use std::collections::HashMap;
 
 // Parse a series of leveled tokens into a scope.
 pub fn parse_tokens(tokens: &[LeveledToken]) -> Scope {
@@ -43,7 +43,7 @@ pub fn parse_tokens(tokens: &[LeveledToken]) -> Scope {
                 position += result.1;
             }
             Token::Eof => break,
-            _ => panic!("Unexpected token {:?}", leveled_token.0)
+            _ => panic!("Unexpected token {:?}", leveled_token.0),
         }
     }
 
@@ -112,14 +112,18 @@ fn parse_mod(tokens: &[LeveledToken]) -> (String, Module, usize) {
                     }
 
                     // If this definition defines a trait declared in this module, add it to the globally available defs.
-                    if module.traits.iter().any(|(trait_name, _)| (name.clone() + "\\" + trait_name) == def_name) {
+                    if module
+                        .traits
+                        .iter()
+                        .any(|(trait_name, _)| (name.clone() + "\\" + trait_name) == def_name)
+                    {
                         module.defs.push((def_name, def))
                     }
                 }
                 position += result.1;
             }
             // TODO: when getting a def, add the def to all classes an strukts
-            _ => panic!("Unexpected token {:?}", leveled_token.0)
+            _ => panic!("Unexpected token {:?}", leveled_token.0),
         }
     }
 
@@ -181,7 +185,7 @@ fn parse_struct_field(tokens: &[LeveledToken]) -> (String, RawType, usize) {
         "int" => RawType::Int,
         "uint" => RawType::UInt,
         "string" => RawType::String,
-        _ => panic!("Unknown raw type {}", typ_name)
+        _ => panic!("Unknown raw type {}", typ_name),
     };
     (name, typ, 2)
 }
@@ -244,15 +248,19 @@ fn parse_trait(tokens: &[LeveledToken]) -> (String, Trait, usize) {
                 position += result.2;
             }
             Token::Op(Op::Sub) => {
-                assert_eq!(&tokens[position + 1].0, &Token::Op(Op::Gt), "Expected > after -");
+                assert_eq!(
+                    &tokens[position + 1].0,
+                    &Token::Op(Op::Gt),
+                    "Expected > after -"
+                );
 
-                let result = parse_type(&tokens[position+2..]);
+                let result = parse_type(&tokens[position + 2..]);
                 output = Some(result.0);
                 position += 2 + result.1;
 
                 break;
             }
-            _ => panic!("Unexpected token {:?}", leveled_token.0)
+            _ => panic!("Unexpected token {:?}", leveled_token.0),
         }
     }
 
@@ -273,7 +281,10 @@ fn parse_parameter(tokens: &[LeveledToken]) -> (String, Type, usize) {
     let base_level = tokens[0].1;
     let name = parse_local(&tokens[0], base_level);
 
-    assert!(tokens[1].1 > base_level, "Expected type after parameter name");
+    assert!(
+        tokens[1].1 > base_level,
+        "Expected type after parameter name"
+    );
     let type_result = parse_type(&tokens[1..]);
 
     (name, type_result.0, type_result.1 + 1)
@@ -298,11 +309,16 @@ fn parse_defs(tokens: &[LeveledToken]) -> (Vec<(String, Definition)>, usize) {
                 position += 1;
 
                 let result = parse_expression(&tokens[position..]);
-                defs.push((name.clone(), Definition { expression: result.0 }));
+                defs.push((
+                    name.clone(),
+                    Definition {
+                        expression: result.0,
+                    },
+                ));
                 position += result.1;
             }
             // TODO: nesting
-            _ => panic!("Unexpected token {:?}", leveled_token.0)
+            _ => panic!("Unexpected token {:?}", leveled_token.0),
         }
     }
 
@@ -361,15 +377,19 @@ fn parse_let(tokens: &[LeveledToken]) -> (String, Let, usize) {
                 position += result.2;
             }
             Token::Op(Op::Sub) => {
-                assert_eq!(&tokens[position + 1].0, &Token::Op(Op::Gt), "Expected > after -");
+                assert_eq!(
+                    &tokens[position + 1].0,
+                    &Token::Op(Op::Gt),
+                    "Expected > after -"
+                );
 
-                let result = parse_type(&tokens[position+2..]);
+                let result = parse_type(&tokens[position + 2..]);
                 output = Some(result.0);
                 position += 2 + result.1;
 
                 break;
             }
-            _ => panic!("Unexpected token {:?}", leveled_token.0)
+            _ => panic!("Unexpected token {:?}", leveled_token.0),
         }
     }
 
@@ -392,15 +412,13 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
 
     // First token
     let mut expression = match &tokens[0].0 {
-        Token::Kw(kw) => {
-            match kw {
-                Kw::Zelf => {
-                    position += 1;
-                    Expression::Zelf
-                },
-                _ => panic!("Unexpected keyword {:?}", kw)
+        Token::Kw(kw) => match kw {
+            Kw::Zelf => {
+                position += 1;
+                Expression::Zelf
             }
-        }
+            _ => panic!("Unexpected keyword {:?}", kw),
+        },
         Token::Global(_) => {
             let result = parse_let_call(&tokens[position..]);
             position += result.1;
@@ -412,19 +430,17 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
         }
         Token::Lit(lit) => {
             position += 1;
-            Expression::Literal(
-                match lit {
-                    Lit::String(value) => RawValue::String(value.clone()),
-                    Lit::Number(value) => RawValue::UInt(value.clone() as u64),
-                }
-            )
+            Expression::Literal(match lit {
+                Lit::String(value) => RawValue::String(value.clone()),
+                Lit::Number(value) => RawValue::UInt(value.clone() as u64),
+            })
         }
         Token::Op(Op::Dot) => {
             // We don't increase the position to reevaluate the dot in the next step
             Expression::Zelf
         }
         // TODO: .Def (meaning use Self as subject)
-        _ => panic!("Unexpected token {:?}", tokens[0].0)
+        _ => panic!("Unexpected token {:?}", tokens[0].0),
     };
 
     // Further operations
@@ -434,59 +450,55 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
         }
 
         expression = match &tokens[position].0 {
-            Token::Op(op) => {
-                match op {
-                    Op::Add | Op::Sub | Op::Mul | Op::Div => {
-                        position += 1;
+            Token::Op(op) => match op {
+                Op::Add | Op::Sub | Op::Mul | Op::Div => {
+                    position += 1;
 
-                        let result = parse_expression(&tokens[position..]);
-                        position += result.1;
+                    let result = parse_expression(&tokens[position..]);
+                    position += result.1;
 
-                        Expression::Binary(BinaryCall {
-                            op: match op {
-                                Op::Add => BinaryOp::Add,
-                                Op::Sub => BinaryOp::Sub,
-                                Op::Mul => BinaryOp::Mul,
-                                Op::Div => BinaryOp::Div,
-                                _ => unreachable!(),
-                            },
-                            lhs: Box::new(expression),
-                            rhs: Box::new(result.0),
-                        })
-                    }
-                    Op::Dot => {
-                        position += 1;
-
-                        match (expression, &tokens[position].0) {
-                            (Expression::Local(local_name), Token::Local(field_name)) => {
-                                position += 1;
-
-                                Expression::FriendlyField(
-                                    FriendlyField {
-                                        local_name,
-                                        field_name: field_name.clone(),
-                                    }
-                                )
-                            }
-                            (expression, Token::Global(_)) => {
-                                let result = parse_let_call(&tokens[position..]);
-                                position += result.1;
-
-                                Expression::Def(
-                                    DefCall {
-                                        path: result.0.path,
-                                        subject: Box::new(expression),
-                                        inputs: result.0.inputs,
-                                    }
-                                )
-                            }
-                            _ => panic!("Dot operator must be followed by a trait or friendly field name")
-                        }
-                    }
-                    _ => panic!("Unexpected operator {:?}", op)
+                    Expression::Binary(BinaryCall {
+                        op: match op {
+                            Op::Add => BinaryOp::Add,
+                            Op::Sub => BinaryOp::Sub,
+                            Op::Mul => BinaryOp::Mul,
+                            Op::Div => BinaryOp::Div,
+                            _ => unreachable!(),
+                        },
+                        lhs: Box::new(expression),
+                        rhs: Box::new(result.0),
+                    })
                 }
-            }
-            _ => panic!("Unexpected token {:?}", tokens[position].0)
+                Op::Dot => {
+                    position += 1;
+
+                    match (expression, &tokens[position].0) {
+                        (Expression::Local(local_name), Token::Local(field_name)) => {
+                            position += 1;
+
+                            Expression::FriendlyField(FriendlyField {
+                                local_name,
+                                field_name: field_name.clone(),
+                            })
+                        }
+                        (expression, Token::Global(_)) => {
+                            let result = parse_let_call(&tokens[position..]);
+                            position += result.1;
+
+                            Expression::Def(DefCall {
+                                path: result.0.path,
+                                subject: Box::new(expression),
+                                inputs: result.0.inputs,
+                            })
+                        }
+                        _ => panic!(
+                            "Dot operator must be followed by a trait or friendly field name"
+                        ),
+                    }
+                }
+                _ => panic!("Unexpected operator {:?}", op),
+            },
+            _ => panic!("Unexpected token {:?}", tokens[position].0),
         };
     }
 
@@ -518,7 +530,7 @@ fn parse_let_call(tokens: &[LeveledToken]) -> (LetCall, usize) {
                 inputs.insert(param_name.clone(), result.0);
                 position += result.1;
             }
-            _ => break
+            _ => break,
         }
     }
 
@@ -531,70 +543,3 @@ fn parse_let_call(tokens: &[LeveledToken]) -> (LetCall, usize) {
 }
 
 // TODO: test everything
-
-#[cfg(test)]
-mod test {
-    use std::borrow::Borrow;
-    use std::rc::Rc;
-    use crate::instance::Instance;
-    use crate::parser::parse_tokens;
-    use crate::raw_value::RawValue;
-    use crate::scope::path;
-    use crate::token::{Kw, Token};
-
-    #[test]
-    fn test_struct() {
-        let tokens = [
-            // mod StructName
-            (Token::Kw(Kw::Mod), 0),
-            (Token::Global("StructName".into()), 0),
-            // struct
-            (Token::Kw(Kw::Struct), 1),
-            // x: Int
-            (Token::Local("x".into()), 2),
-            (Token::Global("Int".into()), 3),
-            // y: Int
-            (Token::Local("y".into()), 2),
-            (Token::Global("Int".into()), 3),
-            // traits
-            (Token::Kw(Kw::Traits), 1),
-            // X: Int
-            (Token::Global("X".into()), 2),
-            (Token::Global("Int".into()), 3),
-            // Y: Int
-            (Token::Global("Y".into()), 2),
-            (Token::Global("Int".into()), 3),
-            // defs
-            // (Token::Kw(Kw::Defs), 1),
-            // // X: x
-            // (Token::Global("X".into()), 2),
-            // (Token::Local("x".into()), 3),
-            // // Y: y
-            // (Token::Global("Y".into()), 2),
-            // (Token::Local("y".into()), 3),
-        ];
-
-        let scope = parse_tokens(&tokens);
-
-        let module = scope.lett(&path("StructName"));
-
-        let local_scope = scope.local_scope(None, [
-            ("x".to_string(), Rc::new(Instance::Raw(RawValue::Int(1)))),
-            ("y".to_string(), Rc::new(Instance::Raw(RawValue::Int(2)))),
-        ].into());
-
-        let strukt = module.expression.resolve(&local_scope);
-
-        if let Instance::Struct(strukt_instance) = strukt.borrow() {
-            assert_eq!(
-                strukt_instance.values,
-                [
-                    ("x".to_string(), RawValue::Int(1)),
-                    ("y".to_string(), RawValue::Int(2)),
-                ].into()
-            );
-        } else {
-            panic!("Instance is not a struct")
-        }
-    }
-}

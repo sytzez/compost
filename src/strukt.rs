@@ -1,12 +1,12 @@
 use crate::definition::Definition;
 use crate::expression::Expression;
-use crate::scope::ReferencePath;
-use std::collections::HashMap;
-use std::rc::Rc;
-use crate::Instance;
 use crate::lett::Let;
 use crate::raw_value::RawValue;
+use crate::scope::ReferencePath;
 use crate::typ::{combine_types, RawType, Type};
+use crate::Instance;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 // A struct has a set of fields which are of raw types, and a set of trait definitions.
 pub struct Struct {

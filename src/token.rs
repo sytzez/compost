@@ -258,11 +258,11 @@ mod test {
         );
         assert_eq!(
             next_token("\\Global "),
-            (Some(Token::Global("\\Global".into())), 6)
+            (Some(Token::Global("\\Global".into())), 7)
         );
         assert_eq!(
             next_token("Module\\Global.Trait"),
-            (Some(Token::Global("Module\\Global".into())), 6)
+            (Some(Token::Global("Module\\Global".into())), 13)
         );
     }
 }

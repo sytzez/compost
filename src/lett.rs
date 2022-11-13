@@ -1,9 +1,9 @@
-use std::collections::HashMap;
-use std::rc::Rc;
 use crate::expression::Expression;
 use crate::instance::Instance;
 use crate::scope::Scope;
 use crate::typ::Type;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 // A 'let' defines a constant instance or a function.
 pub struct Let {

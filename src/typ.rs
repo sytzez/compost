@@ -18,12 +18,7 @@ pub fn combine_types(types: Vec<Type>) -> Type {
     for typ in types {
         combined = match combined {
             None => Some(typ),
-            Some(prev_type) => Some(
-                Type::And(
-                    Box::new(prev_type),
-                    Box::new(typ)
-                )
-            ),
+            Some(prev_type) => Some(Type::And(Box::new(prev_type), Box::new(typ))),
         }
     }
 
