@@ -1,2 +1,6 @@
 - Use errors instead of panic!
 - Add context to tokens to provide better errors
+- Compile time type checking
+- Parsing complex types
+- Lets in scopes
+- Nested definitions

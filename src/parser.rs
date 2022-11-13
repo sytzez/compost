@@ -452,27 +452,30 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
                     Op::Dot => {
                         position += 1;
 
-                        if let Expression::Local(local_name) = expression {
-                            let field_name = parse_local(&tokens[position], tokens[position].1);
-                            position += 1;
+                        match (expression, &tokens[position].0) {
+                            (Expression::Local(local_name), Token::Local(field_name)) => {
+                                position += 1;
 
-                            Expression::FriendlyField(
-                                FriendlyField {
-                                    local_name,
-                                    field_name,
-                                }
-                            )
-                        } else {
-                            let result = parse_let_call(&tokens[position..]);
-                            position += result.1;
+                                Expression::FriendlyField(
+                                    FriendlyField {
+                                        local_name,
+                                        field_name: field_name.clone(),
+                                    }
+                                )
+                            }
+                            (expression, Token::Global(_)) => {
+                                let result = parse_let_call(&tokens[position..]);
+                                position += result.1;
 
-                            Expression::Def(
-                                DefCall {
-                                    path: result.0.path,
-                                    subject: Box::new(expression),
-                                    inputs: result.0.inputs,
-                                }
-                            )
+                                Expression::Def(
+                                    DefCall {
+                                        path: result.0.path,
+                                        subject: Box::new(expression),
+                                        inputs: result.0.inputs,
+                                    }
+                                )
+                            }
+                            _ => panic!("Dot operator must be followed by a trait or friendly field name")
                         }
                     }
                     _ => panic!("Unexpected operator {:?}", op)

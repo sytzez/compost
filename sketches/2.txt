@@ -8,9 +8,9 @@ mod Point
     defs
         Point\X: x
         Point\Y: y
-#        Op\Add: Point
-#            x: Self.Point\X + rhs.Point\X
-#            y: Self.Point\Y + rhs.Point\Y
+        Op\Add: Point
+            x: Self.Point\X + rhs.Point\X
+            y: Self.Point\Y + rhs.Point\Y
 
 lets
     Constant: Int
