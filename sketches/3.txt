@@ -1,0 +1,29 @@
+mod Point
+    class
+        x: Int
+        y: Int
+    traits
+        X: Int
+        Y: Int
+    defs
+        Point\X: x
+        Point\Y: y
+        Op\Add: Point
+            x: .Point\X + rhs.Point\X
+            y: .Point\Y + rhs.Point\Y
+        # TODO: String: .X.String + ', ' + .Y.String
+        String: .Point\X.String
+            + String(value: ', ')
+            + .Point\Y.String
+
+lets
+    A: Point
+        Point
+            x: Int(value: 2)
+            y: Int(value: 5)
+    B: Point
+        Point
+            x: Int(value: 3)
+            y: Int(value: 1)
+    Main: Point
+        A + B

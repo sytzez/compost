@@ -419,6 +419,10 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
                 }
             )
         }
+        Token::Op(Op::Dot) => {
+            // We don't increase the position to reevaluate the dot in the next step
+            Expression::Zelf
+        }
         // TODO: .Def (meaning use Self as subject)
         _ => panic!("Unexpected token {:?}", tokens[0].0)
     };
@@ -437,6 +441,7 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
 
                         let result = parse_expression(&tokens[position..]);
                         position += result.1;
+
                         Expression::Binary(BinaryCall {
                             op: match op {
                                 Op::Add => BinaryOp::Add,
@@ -513,7 +518,7 @@ fn parse_let_call(tokens: &[LeveledToken]) -> (LetCall, usize) {
                 inputs.insert(param_name.clone(), result.0);
                 position += result.1;
             }
-            _ => panic!("Unexpected token {:?}, expected parameter name", leveled_token.0)
+            _ => break
         }
     }
 
