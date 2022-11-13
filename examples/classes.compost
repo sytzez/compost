@@ -1,0 +1,20 @@
+mod Point
+    class
+        x: Int # This is a dependency of the Point class.
+        y: Int
+
+lets
+    # This constant is of the Point type. It be anything that implements the classes traits.
+    MyPoint: Point
+        Point # This is a call to the Point constructor function.
+            x: Int(value: 1)
+            y: Int(value: 2)
+
+    # Since the Point type currently doesn't implement any traits, *anything* can be a Point.
+    OtherPoint: Point
+        Int(value: 10)
+
+    Main: String
+        String(value: 'There is no way to output this point')
+
+#> There is no way to output this point

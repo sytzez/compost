@@ -4,6 +4,7 @@ mod Op
         Sub: (rhs: Self) -> Self
         Mul: (rhs: Self) -> Self
         Div: (rhs: Self) -> Self
+        Neg: Self
 
 mod Math
     traits
@@ -27,4 +28,5 @@ mod Int
         Op\Sub: Int(value: value - rhs.value)
         Op\Mul: Int(value: value * rhs.value)
         Op\Div: Int(value: value / rhs.value)
+        Op\Neg: Int(value: -value)
         String: String(value: value.toString)

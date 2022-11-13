@@ -1,0 +1,32 @@
+mod Rectangle
+    class(x: Int, y: Int, width: Int, height: Int)
+    traits(X: Int, Y: Int, Width: Int, Height: Int, Area: Int)
+    defs
+        Rectangle\X: x
+        Rectangle\Y: y
+        Rectangle\Width: width
+        Rectangle\Height: height
+        Rectangle\Area: .Rectangle\Width * .Rectangle\Height
+
+# Square 'inherits' from Rectangle by defining some of its traits.
+# The remaining traits are 'inherited' from the Rectangle class.
+# The Square implements the Rectangle type because if defines all of its traits.
+mod Square
+    class(x: Int, y: Int, size: Int)
+    defs
+        Rectangle\X: x
+        Rectangle\Y: y
+        # Overrides the rectangle Width and Height
+        Rectangle\Width: size
+        Rectangle\Height: size
+        # Rectangle\Area is automatically implemented
+
+lets
+    Main: Int
+        Square
+            x: 1
+            y: 1
+            size: 10
+        .Rectangle\Area
+
+#> 100

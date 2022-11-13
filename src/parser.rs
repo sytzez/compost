@@ -432,12 +432,26 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
             position += 1;
             Expression::Literal(match lit {
                 Lit::String(value) => RawValue::String(value.clone()),
-                Lit::Number(value) => RawValue::UInt(*value as u64),
+                Lit::Number(value) => RawValue::Int(*value as i64),
             })
         }
         Token::Op(Op::Dot) => {
             // We don't increase the position to reevaluate the dot in the next step
             Expression::Zelf
+        }
+        Token::Op(Op::Sub) => {
+            position += 1;
+
+            let result = parse_expression(&tokens[position..]);
+            position += result.1;
+
+            Expression::Def(
+                DefCall {
+                    path: path("Op\\Neg"),
+                    subject: Box::new(result.0),
+                    inputs: [].into(),
+                }
+            )
         }
         // TODO: .Def (meaning use Self as subject)
         _ => panic!("Unexpected token {:?}", tokens[0].0),

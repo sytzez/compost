@@ -1,0 +1,94 @@
+mod Point
+    class
+        x: Int
+        y: Int
+    traits
+        X: Int
+        Y: Int
+    defs
+        Point\X: x
+        Point\Y: y
+        String: .Point\X.String + String(value: ', ') + .Point\Y.String
+
+mod Rectangle
+    traits
+        # A 'Rectangle' must have definitions for these traits.
+        TopLeft: Point
+        BottomRight: Point
+        Width: Int
+        Height: Int
+    defs
+        # Some automatic definitions based on other traits we have.
+        Rectangle\TopLeft
+            Point
+                x: .Rectangle\BottomRight.Point\X - .Rectangle\Width
+                y: .Rectangle\BottomRight.Point\Y - .Rectangle\Height
+        Rectangle\BottomRight
+            Point
+                x: .Rectangle\TopLeft.Point\X + .Rectangle\Width
+                y: .Rectangle\TopLeft.Point\Y + .Rectangle\Height
+        Rectangle\Width: .Rectangle\BottomRight.Point\X - .Rectangle\TopLeft.Point\X
+        Rectangle\Height: .Rectangle\BottomRight.Point\Y - .Rectangle\TopLeft.Point\Y
+
+# A class that implements 'Rectangle', constructed using a point an size.
+mod RectangleBySize
+    class
+        topLeft: Point
+        width: Int
+        height: Int
+    defs
+        Rectangle\TopLeft: topLeft
+        Rectangle\Width: width
+        Rectangle\Height: height
+        # BottomRight is automatically defined for this class using the definition on the Rectangle module.
+
+# A class that implements 'Rectangle', constructed using two points.
+mod RectangleByPoints
+    class
+        topLeft: Point
+        bottomRight: Point
+    defs
+        Rectangle\TopLeft: topLeft
+        Rectangle\BottomRight: bottomRight
+        # Width and Height are automatically defined for this class using the definitions on the Rectangle module.
+
+lets
+    # Rectangle is the type of this constant.
+    # RectangleBySize implements the Rectangle type because it defines all traits of Rectangle.
+    A: Rectangle
+        RectangleBySize
+            topLeft
+                Point
+                    x: Int(value: 10)
+                    y: Int(value: 5)
+            width: Int(value: 20)
+            height: Int(value: 10)
+
+    # RectangleByPoints implements the Rectangle type because it defines all traits of Rectangle.
+    B: Rectangle
+        RectangleByPoints
+            topLeft
+                Point
+                    x: Int(value: 10)
+                    y: Int(value: 5)
+            bottomRight
+                Point
+                    x: Int(value: 15)
+                    y: Int(value: 15)
+
+    # The following Constants are calculated using the automatic definitions from the Rectangle module.
+    BottomRightOfA: Point
+        A.Rectangle\BottomRight
+
+    WidthOfB: Int
+        B.Rectangle\Width
+
+    HeightOfB: Int
+        B.Rectangle\Height
+
+    Main: String
+        String(value: 'BottomRight of A: ') + BottomRightOfA.String
+        + String(value: '. Width and Height of B: ') + WidthOfB.String
+        + String(value: ', ') + HeightOfB.String
+
+#> BottomRight of A: 30, 15. Width and Height of B: 5, 10

@@ -21,12 +21,13 @@ impl RawValue {
             "Op\\Add" => self.add(inputs),
             "Op\\Sub" => self.sub(inputs),
             "Op\\Mul" => self.mul(inputs),
+            "Op\\Neg" => self.neg(),
             "toString" => self.to_string(),
             _ => panic!("Unknown raw trait {} ", trait_path.join("\\")),
         }
     }
 
-    pub fn add(&self, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
+    fn add(&self, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
         let rhs = Self::rhs(inputs);
 
         match self {
@@ -36,7 +37,7 @@ impl RawValue {
         }
     }
 
-    pub fn sub(&self, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
+    fn sub(&self, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
         let rhs = Self::rhs(inputs);
 
         match self {
@@ -46,7 +47,7 @@ impl RawValue {
         }
     }
 
-    pub fn mul(&self, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
+    fn mul(&self, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
         let rhs = Self::rhs(inputs);
 
         match self {
@@ -56,7 +57,15 @@ impl RawValue {
         }
     }
 
-    pub fn to_string(&self) -> RawValue {
+    fn neg(&self) -> RawValue {
+        match self {
+            RawValue::Int(value) => RawValue::Int(-*value),
+            RawValue::UInt(_) => panic!("Can't negate unsigned integers"),
+            RawValue::String(_) => panic!("Can't negate strings"),
+        }
+    }
+
+    fn to_string(&self) -> RawValue {
         let string = match self {
             RawValue::Int(value) => value.to_string(),
             RawValue::UInt(value) => value.to_string(),
