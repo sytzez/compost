@@ -1,15 +1,15 @@
 # The Compost Programming Language
 
-This is the compiler for my experimental programming language Compost.
+This is the compiler for my experimental programming language 'Compost'.
 The compiler itself is written in Rust.
 
 It currently doesn't actually compile a Compost program to a binary, but it **does** execute Compost code and show its output.
 
 ## Usage
 
-You need the Rust compiler installed to run the Compost compiler or to build it into a binary.
+You need to have the Rust compiler installed to run the Compost compiler or to build it into a binary.
 
-There are some code examples in the `/examples` folder.
+There are some code examples inside the `/examples` folder.
 
 To run a Compost source code file named `examples/functions_and_constants.compost`, run:
 
@@ -19,9 +19,9 @@ cargo run --release examples/functions_and_constants.compost
 
 ## About the Programming Language
 
-Compost is an experimental programming language designed for maximum composability and reusability of code.
+Compost is an experimental programming language designed to maximize the composability and reusability of code.
 
-It is a functional, statically typed language. Types are based on which traits the value implements.
+It is a functional, statically typed language. Types are purely based on the traits a value is expected to implement, allowing polymorphism.
 
 The language attempts to solve the problems associated with object oriented inheritance.
 
@@ -31,11 +31,11 @@ and
 [Sketch for a new programming language: Part 2](https://sytzez.com/blog/sketch-for-a-new-programming-language-2/)
 .
 
-See below an overview of its **currently implemented** featured. The example code all works with the current version of the compiler.
+See below an overview of its **currently implemented** featured. All of the code example work with the current compiler.
 
 ### Functions and Constants
 
-Functions and constants are defined using the `lets` keyword. A constant is a functions without any parameters.
+Functions and constants are defined using the `lets` keyword. A constant is just a function without any parameters.
 
 ```
 lets
@@ -58,6 +58,8 @@ The `Main` function specifies the output of your program.
 A class is defined inside a module using the `class` keyword. The class will have the same name as the module.
 Defining a class will automatically define an eponymous constructor function.
 It will also define an eponymous type, which is equal to all the traits that are defined on the class (more about this in the next chapter).
+
+To understand why a class needs to be inside a module, see the section on "Class 'Inheritance'" below.
 
 After the `class` keyword, you should define the dependencies of that class which will be accessible inside the classes trait definitions.
 The dependencies will be the parameters of the classes constructor function.
@@ -133,7 +135,8 @@ The output of the `Main` function *must* define the `String` trait or be instanc
 
 ### Automatic Definitions
 
-Traits can be declared on a module with no class. If a class defines some of those traits, other traits may be automatically defined for that class.
+Traits can be declared on a module with no class. 
+If a class defines some of those traits, other traits of the module may be automatically defined for that class.
 
 ```
 mod Point
@@ -234,9 +237,11 @@ lets
 
 ### Class 'Inheritance'
 
-Instead of classical OOP inheritance with its own problems,
-you can inherit traits and automatic trait definitions from another class module
-as you would from a classless module such as in the example above.
+Instead of having classical OOP inheritance, Compost mimics inheritance by letting you define the traits on one class on other classes.
+This works the exact same way as classes define traits from classless modules as shown in the section above.
+
+This allows a lot of flexibility. It allows full polymorphism since any class instance can be substituted by the instance of another class
+as long as it defines all of its traits. It also allows 'inheriting' from multiple classes, since a class can define an unlimited amount of traits.
 
 ```
 mod Rectangle
@@ -257,10 +262,10 @@ mod Square
     defs
         Rectangle\X: x
         Rectangle\Y: y
-        # Overrides the rectangle Width and Height
+        # We 'override' the Width and Height from Rectangle.
         Rectangle\Width: size
         Rectangle\Height: size
-        # Rectangle\Area is automatically implemented
+        # Rectangle\Area is automatically defined by the Rectangle module.
 
 lets
     Main: Int
