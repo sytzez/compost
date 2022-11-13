@@ -12,7 +12,7 @@ pub type ReferencePath = Vec<String>;
 
 pub fn path(string: &str) -> ReferencePath {
     string
-        .split("\\")
+        .split('\\')
         .map(|segment| segment.to_string())
         .collect()
 }

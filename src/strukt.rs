@@ -56,7 +56,7 @@ impl Struct {
             .definitions
             .keys()
             .cloned()
-            .map(|path| Type::Trait(path))
+            .map(Type::Trait)
             .collect::<Vec<_>>();
 
         combine_types(types)
@@ -76,7 +76,7 @@ impl StructInstance {
     pub fn value(&self, name: &str) -> &RawValue {
         self.values
             .get(name)
-            .expect(&format!("Field {} does not exist", name))
+            .unwrap_or_else(|| panic!("Field {} does not exist", name))
     }
 
     pub fn values(&self) -> HashMap<String, Rc<Instance>> {

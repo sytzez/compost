@@ -432,7 +432,7 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
             position += 1;
             Expression::Literal(match lit {
                 Lit::String(value) => RawValue::String(value.clone()),
-                Lit::Number(value) => RawValue::UInt(value.clone() as u64),
+                Lit::Number(value) => RawValue::UInt(*value as u64),
             })
         }
         Token::Op(Op::Dot) => {

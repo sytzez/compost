@@ -26,10 +26,9 @@ impl Instance {
         inputs: HashMap<String, Rc<Instance>>,
         scope: &Scope,
     ) -> Rc<Instance> {
-        match self.borrow() {
-            Instance::Raw(value) => return Rc::new(Instance::Raw(value.call(trait_path, inputs))),
-            _ => (),
-        };
+        if let Instance::Raw(value) = self.borrow() {
+            return Rc::new(Instance::Raw(value.call(trait_path, inputs)))
+        }
 
         let locals = inputs.into_iter().chain(self.values()).collect();
 
@@ -65,18 +64,9 @@ impl Instance {
     pub fn is_of_raw_type(&self, typ: &RawType) -> bool {
         match self {
             Instance::Raw(value) => match typ {
-                RawType::Int => match value {
-                    RawValue::Int(_) => true,
-                    _ => false,
-                },
-                RawType::UInt => match value {
-                    RawValue::UInt(_) => true,
-                    _ => false,
-                },
-                RawType::String => match value {
-                    RawValue::String(_) => true,
-                    _ => false,
-                },
+                RawType::Int => matches!(value, RawValue::Int(_)),
+                RawType::UInt => matches!(value, RawValue::UInt(_)),
+                RawType::String => matches!(value, RawValue::String(_)),
             },
             _ => false,
         }

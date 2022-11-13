@@ -89,12 +89,7 @@ impl LevelStack {
     fn next(&mut self, next: &Next) {
         match next {
             Next::Line => {
-                self.levels = self
-                    .levels
-                    .iter()
-                    .filter(|level| level != &&Level::Colon)
-                    .cloned()
-                    .collect();
+                self.levels.retain(|level| level != &Level::Colon);
 
                 self.indentation = 0;
             }

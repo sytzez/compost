@@ -53,7 +53,7 @@ impl Class {
             .definitions
             .keys()
             .cloned()
-            .map(|path| Type::Trait(path))
+            .map(Type::Trait)
             .collect::<Vec<_>>();
 
         combine_types(types)
@@ -73,7 +73,7 @@ impl ClassInstance {
     pub fn dependency(&self, name: &str) -> &Rc<Instance> {
         self.dependencies
             .get(name)
-            .expect(&format!("Dependency {} does not exist", name))
+            .unwrap_or_else(|| panic!("Dependency {} does not exist", name))
     }
 
     pub fn dependencies(&self) -> HashMap<String, Rc<Instance>> {

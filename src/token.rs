@@ -44,13 +44,6 @@ pub enum Lit {
     Number(usize),
 }
 
-#[derive(Eq, PartialEq, Debug)]
-pub enum RawType {
-    String,
-    Int,
-    UInt,
-}
-
 #[derive(Eq, Clone, PartialEq, Debug)]
 pub enum Level {
     Colon,
@@ -96,7 +89,7 @@ pub fn next_token(code: &str) -> SizedToken {
 }
 
 fn comment_size(code: &str) -> usize {
-    match code.find("\n") {
+    match code.find('\n') {
         Some(position) => position,
         None => code.len(),
     }
@@ -151,13 +144,13 @@ fn next_number_token(code: &str) -> SizedToken {
     let mut size = 0;
 
     for char in code.chars() {
-        if !char.is_digit(10) {
+        if !char.is_ascii_digit() {
             break;
         }
         size += 1;
     }
 
-    let number = (&code[..size]).to_string().parse().unwrap();
+    let number = code[..size].to_string().parse().unwrap();
 
     (Some(Token::Lit(Lit::Number(number))), size)
 }
@@ -172,7 +165,7 @@ fn next_string_token(code: &str) -> SizedToken {
         size += 1;
     }
 
-    let string = (&code[1..(size - 1)]).to_string();
+    let string = code[1..(size - 1)].to_string();
 
     (Some(Token::Lit(Lit::String(string))), size)
 }
