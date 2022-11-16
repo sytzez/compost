@@ -1,9 +1,9 @@
 use crate::ast::raw_value::RawValue;
 use crate::ast::typ::{RawType, Type};
-use crate::sem::class::ClassInstance;
+use crate::runtime::class_instance::ClassInstance;
+use crate::runtime::struct_instance::StructInstance;
 use crate::sem::definition::Definition;
 use crate::sem::scope::{path, ReferencePath, Scope};
-use crate::sem::strukt::StructInstance;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;

@@ -22,16 +22,6 @@ impl Class {
         }
     }
 
-    pub fn instantiate(
-        self: &Rc<Self>,
-        dependencies: HashMap<String, Rc<Instance>>,
-    ) -> ClassInstance {
-        ClassInstance {
-            class: Rc::clone(self),
-            dependencies,
-        }
-    }
-
     pub fn add_dependency(&mut self, name: String, typ: Type) {
         self.dependencies.insert(name, typ);
     }
@@ -57,26 +47,5 @@ impl Class {
             .collect::<Vec<_>>();
 
         combine_types(types)
-    }
-}
-
-pub struct ClassInstance {
-    class: Rc<Class>,
-    dependencies: HashMap<String, Rc<Instance>>,
-}
-
-impl ClassInstance {
-    pub fn class(&self) -> &Rc<Class> {
-        &self.class
-    }
-
-    pub fn dependency(&self, name: &str) -> &Rc<Instance> {
-        self.dependencies
-            .get(name)
-            .unwrap_or_else(|| panic!("Dependency {} does not exist", name))
-    }
-
-    pub fn dependencies(&self) -> HashMap<String, Rc<Instance>> {
-        self.dependencies.clone()
     }
 }

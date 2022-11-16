@@ -1,5 +1,7 @@
 use crate::ast::raw_value::RawValue;
+use crate::runtime::class_instance::ClassInstance;
 use crate::runtime::instance::Instance;
+use crate::runtime::struct_instance::StructInstance;
 use crate::sem::class::Class;
 use crate::sem::scope::{path, LocalScope, ReferencePath};
 use crate::sem::strukt::Struct;
@@ -144,7 +146,7 @@ impl Expression {
                     })
                     .collect::<HashMap<_, _>>();
 
-                let struct_instance = strukt.instantiate(values);
+                let struct_instance = StructInstance::new(&strukt, values);
 
                 Rc::new(Instance::Struct(struct_instance))
             }
@@ -155,7 +157,7 @@ impl Expression {
                     .map(|key| (key.clone(), Rc::clone(scope.local(key))))
                     .collect::<HashMap<_, _>>();
 
-                let class_instance = class.instantiate(dependencies);
+                let class_instance = ClassInstance::new(&class, dependencies);
 
                 Rc::new(Instance::Class(class_instance))
             }

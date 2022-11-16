@@ -22,13 +22,6 @@ impl Struct {
         }
     }
 
-    pub fn instantiate(self: &Rc<Self>, values: HashMap<String, RawValue>) -> StructInstance {
-        StructInstance {
-            strukt: Rc::clone(self),
-            values,
-        }
-    }
-
     pub fn add_field(&mut self, name: String, typ: RawType) {
         self.fields.insert(name, typ);
     }
@@ -60,29 +53,5 @@ impl Struct {
             .collect::<Vec<_>>();
 
         combine_types(types)
-    }
-}
-
-pub struct StructInstance {
-    strukt: Rc<Struct>,
-    values: HashMap<String, RawValue>,
-}
-
-impl StructInstance {
-    pub fn strukt(&self) -> &Rc<Struct> {
-        &self.strukt
-    }
-
-    pub fn value(&self, name: &str) -> &RawValue {
-        self.values
-            .get(name)
-            .unwrap_or_else(|| panic!("Field {} does not exist", name))
-    }
-
-    pub fn values(&self) -> HashMap<String, Rc<Instance>> {
-        self.values
-            .iter()
-            .map(|(name, value)| (name.clone(), Rc::new(Instance::Raw(value.clone()))))
-            .collect()
     }
 }
