@@ -4,7 +4,7 @@ use crate::lett::Let;
 use crate::raw_value::RawValue;
 use crate::scope::ReferencePath;
 use crate::typ::{combine_types, RawType, Type};
-use crate::Instance;
+use crate::instance::Instance;
 use std::collections::HashMap;
 use std::rc::Rc;
 

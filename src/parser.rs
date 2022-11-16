@@ -9,7 +9,7 @@ use crate::token::{Kw, Lit, Op, Token};
 use crate::tokenizer::LeveledToken;
 use crate::trayt::Trait;
 use crate::typ::{RawType, Type};
-use crate::RawValue;
+use crate::raw_value::RawValue;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 

@@ -1,8 +1,7 @@
 use crate::class::ClassInstance;
 use crate::definition::Definition;
-use crate::path;
 use crate::raw_value::RawValue;
-use crate::scope::{ReferencePath, Scope};
+use crate::scope::{path, ReferencePath, Scope};
 use crate::strukt::StructInstance;
 use crate::typ::{RawType, Type};
 use std::borrow::Borrow;
