@@ -1,7 +1,7 @@
-use crate::expression::Expression;
-use crate::instance::Instance;
-use crate::scope::Scope;
-use crate::typ::Type;
+use crate::ast::expression::Expression;
+use crate::ast::typ::Type;
+use crate::runtime::instance::Instance;
+use crate::sem::scope::Scope;
 use std::collections::HashMap;
 use std::rc::Rc;
 

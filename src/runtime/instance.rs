@@ -1,9 +1,9 @@
-use crate::class::ClassInstance;
-use crate::definition::Definition;
-use crate::raw_value::RawValue;
-use crate::scope::{path, ReferencePath, Scope};
-use crate::strukt::StructInstance;
-use crate::typ::{RawType, Type};
+use crate::ast::raw_value::RawValue;
+use crate::ast::typ::{RawType, Type};
+use crate::sem::class::ClassInstance;
+use crate::sem::definition::Definition;
+use crate::sem::scope::{path, ReferencePath, Scope};
+use crate::sem::strukt::StructInstance;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -26,7 +26,7 @@ impl Instance {
         scope: &Scope,
     ) -> Rc<Instance> {
         if let Instance::Raw(value) = self.borrow() {
-            return Rc::new(Instance::Raw(value.call(trait_path, inputs)))
+            return Rc::new(Instance::Raw(value.call(trait_path, inputs)));
         }
 
         let locals = inputs.into_iter().chain(self.values()).collect();
@@ -64,7 +64,6 @@ impl Instance {
         match self {
             Instance::Raw(value) => match typ {
                 RawType::Int => matches!(value, RawValue::Int(_)),
-                RawType::UInt => matches!(value, RawValue::UInt(_)),
                 RawType::String => matches!(value, RawValue::String(_)),
             },
             _ => false,
@@ -93,7 +92,6 @@ impl Instance {
             return match raw_value {
                 RawValue::String(value) => value.clone(),
                 RawValue::Int(value) => value.to_string(),
-                RawValue::UInt(value) => value.to_string(),
             };
         } else if let Instance::Struct(strukt) = self.borrow() {
             if strukt.strukt().fields.get("value") == Some(&RawType::String) {

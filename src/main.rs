@@ -1,21 +1,5 @@
-use std::env;
 use compost::run::run_file;
-
-mod class;
-mod definition;
-mod expression;
-mod instance;
-mod lett;
-mod module;
-mod parser;
-mod raw_value;
-mod scope;
-mod strukt;
-mod token;
-mod tokenizer;
-mod trayt;
-mod typ;
-mod run;
+use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

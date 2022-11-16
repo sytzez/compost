@@ -1,4 +1,4 @@
-use crate::expression::Expression;
+use crate::ast::expression::Expression;
 
 #[derive(Clone)]
 pub struct Definition {

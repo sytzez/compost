@@ -1,8 +1,8 @@
-use crate::class::Class;
-use crate::definition::Definition;
-use crate::lett::Let;
-use crate::strukt::Struct;
-use crate::trayt::Trait;
+use crate::sem::class::Class;
+use crate::sem::definition::Definition;
+use crate::sem::lett::Let;
+use crate::sem::strukt::Struct;
+use crate::sem::trayt::Trait;
 
 // A module can contain classes, structs, traits, lets and other modules.
 pub struct Module {

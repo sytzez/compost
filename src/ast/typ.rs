@@ -1,4 +1,4 @@
-use crate::scope::ReferencePath;
+use crate::sem::scope::ReferencePath;
 
 #[derive(Eq, PartialEq, Hash, Clone)]
 pub enum Type {
@@ -31,6 +31,5 @@ pub fn combine_types(types: Vec<Type>) -> Type {
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
 pub enum RawType {
     Int,
-    UInt,
     String,
 }

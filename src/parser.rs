@@ -1,15 +1,15 @@
-use crate::class::Class;
-use crate::definition::Definition;
-use crate::expression::{BinaryCall, BinaryOp, DefCall, Expression, FriendlyField, LetCall};
-use crate::lett::Let;
-use crate::module::Module;
-use crate::scope::{path, Scope};
-use crate::strukt::Struct;
-use crate::token::{Kw, Lit, Op, Token};
-use crate::tokenizer::LeveledToken;
-use crate::trayt::Trait;
-use crate::typ::{RawType, Type};
-use crate::raw_value::RawValue;
+use crate::ast::expression::{BinaryCall, BinaryOp, DefCall, Expression, FriendlyField, LetCall};
+use crate::ast::raw_value::RawValue;
+use crate::ast::typ::{RawType, Type};
+use crate::lex::token::{Kw, Lit, Op, Token};
+use crate::lex::tokenizer::LeveledToken;
+use crate::sem::class::Class;
+use crate::sem::definition::Definition;
+use crate::sem::lett::Let;
+use crate::sem::module::Module;
+use crate::sem::scope::{path, Scope};
+use crate::sem::strukt::Struct;
+use crate::sem::trayt::Trait;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 
@@ -183,7 +183,6 @@ fn parse_struct_field(tokens: &[LeveledToken]) -> (String, RawType, usize) {
     let typ_name = parse_local(&tokens[1], base_level + 1);
     let typ = match typ_name.borrow() {
         "int" => RawType::Int,
-        "uint" => RawType::UInt,
         "string" => RawType::String,
         _ => panic!("Unknown raw type {}", typ_name),
     };
@@ -445,13 +444,11 @@ fn parse_expression(tokens: &[LeveledToken]) -> (Expression, usize) {
             let result = parse_expression(&tokens[position..]);
             position += result.1;
 
-            Expression::Def(
-                DefCall {
-                    path: path("Op\\Neg"),
-                    subject: Box::new(result.0),
-                    inputs: [].into(),
-                }
-            )
+            Expression::Def(DefCall {
+                path: path("Op\\Neg"),
+                subject: Box::new(result.0),
+                inputs: [].into(),
+            })
         }
         // TODO: .Def (meaning use Self as subject)
         _ => panic!("Unexpected token {:?}", tokens[0].0),

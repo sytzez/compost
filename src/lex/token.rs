@@ -172,7 +172,7 @@ fn next_string_token(code: &str) -> SizedToken {
 
 #[cfg(test)]
 mod test {
-    use crate::token::{next_token, Kw, Level, Lit, Next, Op, Token};
+    use crate::lex::token::{next_token, Kw, Level, Lit, Next, Op, Token};
 
     #[test]
     fn test_operators() {

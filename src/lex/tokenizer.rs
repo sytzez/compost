@@ -1,4 +1,4 @@
-use crate::token::{next_token, Level, Next, Token};
+use crate::lex::token::{next_token, Level, Next, Token};
 
 pub type LeveledToken = (Token, usize);
 
@@ -104,8 +104,8 @@ impl LevelStack {
 
 #[cfg(test)]
 mod test {
-    use crate::token::{Kw, Token};
-    use crate::tokenizer::tokenize;
+    use crate::lex::token::{Kw, Token};
+    use crate::lex::tokenizer::tokenize;
 
     #[test]
     fn test_levels() {

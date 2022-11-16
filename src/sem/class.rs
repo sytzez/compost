@@ -1,9 +1,9 @@
-use crate::definition::Definition;
-use crate::expression::Expression;
-use crate::instance::Instance;
-use crate::lett::Let;
-use crate::scope::ReferencePath;
-use crate::typ::{combine_types, Type};
+use crate::ast::expression::Expression;
+use crate::ast::typ::{combine_types, Type};
+use crate::runtime::instance::Instance;
+use crate::sem::definition::Definition;
+use crate::sem::lett::Let;
+use crate::sem::scope::ReferencePath;
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::string::String;

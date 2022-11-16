@@ -1,5 +1,5 @@
-use crate::instance::Instance;
-use crate::scope::ReferencePath;
+use crate::runtime::instance::Instance;
+use crate::sem::scope::ReferencePath;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -7,7 +7,6 @@ use std::rc::Rc;
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum RawValue {
     Int(i64),
-    UInt(u64),
     String(String),
 }
 
@@ -32,7 +31,6 @@ impl RawValue {
 
         match self {
             RawValue::Int(value) => RawValue::Int(*value + rhs.int()),
-            RawValue::UInt(value) => RawValue::UInt(*value + rhs.uint()),
             RawValue::String(value) => RawValue::String(value.clone() + rhs.string()),
         }
     }
@@ -42,7 +40,6 @@ impl RawValue {
 
         match self {
             RawValue::Int(value) => RawValue::Int(*value - rhs.int()),
-            RawValue::UInt(value) => RawValue::UInt(*value - rhs.uint()),
             RawValue::String(_) => panic!("Can't subtract strings"),
         }
     }
@@ -52,7 +49,6 @@ impl RawValue {
 
         match self {
             RawValue::Int(value) => RawValue::Int(*value * rhs.int()),
-            RawValue::UInt(value) => RawValue::UInt(*value * rhs.uint()),
             RawValue::String(_) => panic!("Can't multiply strings"),
         }
     }
@@ -60,7 +56,6 @@ impl RawValue {
     fn neg(&self) -> RawValue {
         match self {
             RawValue::Int(value) => RawValue::Int(-*value),
-            RawValue::UInt(_) => panic!("Can't negate unsigned integers"),
             RawValue::String(_) => panic!("Can't negate strings"),
         }
     }
@@ -68,7 +63,6 @@ impl RawValue {
     fn to_string(&self) -> RawValue {
         let string = match self {
             RawValue::Int(value) => value.to_string(),
-            RawValue::UInt(value) => value.to_string(),
             RawValue::String(value) => value.clone(),
         };
 
@@ -80,14 +74,6 @@ impl RawValue {
             *value
         } else {
             panic!("{:?} is not an Int", self)
-        }
-    }
-
-    fn uint(&self) -> u64 {
-        if let RawValue::UInt(value) = self {
-            *value
-        } else {
-            panic!("{:?} is not an UInt", self)
         }
     }
 

@@ -1,8 +1,8 @@
-use crate::class::Class;
-use crate::instance::Instance;
-use crate::raw_value::RawValue;
-use crate::scope::{path, LocalScope, ReferencePath};
-use crate::strukt::Struct;
+use crate::ast::raw_value::RawValue;
+use crate::runtime::instance::Instance;
+use crate::sem::class::Class;
+use crate::sem::scope::{path, LocalScope, ReferencePath};
+use crate::sem::strukt::Struct;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;

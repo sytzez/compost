@@ -1,7 +1,7 @@
-use std::fs;
+use crate::lex::tokenizer::tokenize;
 use crate::parser::parse_tokens;
-use crate::scope::path;
-use crate::tokenizer::tokenize;
+use crate::sem::scope::path;
+use std::fs;
 
 pub fn run_file(file_path: &str) -> String {
     let std = fs::read_to_string("lib/std.compost").expect("Unable to read lib/std.compost");

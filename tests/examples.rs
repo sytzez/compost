@@ -3,7 +3,10 @@ use compost::run::run_file;
 #[test]
 fn test_automatic_definitions() {
     let result = run_file("examples/automatic_definitions.compost");
-    assert_eq!(result, "BottomRight of A: 30, 15. Width and Height of B: 5, 10")
+    assert_eq!(
+        result,
+        "BottomRight of A: 30, 15. Width and Height of B: 5, 10"
+    )
 }
 
 #[test]

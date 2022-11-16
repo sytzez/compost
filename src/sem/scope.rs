@@ -1,10 +1,10 @@
-use crate::class::Class;
-use crate::definition::Definition;
-use crate::instance::Instance;
-use crate::lett::Let;
-use crate::module::Module;
-use crate::strukt::Struct;
-use crate::trayt::Trait;
+use crate::runtime::instance::Instance;
+use crate::sem::class::Class;
+use crate::sem::definition::Definition;
+use crate::sem::lett::Let;
+use crate::sem::module::Module;
+use crate::sem::strukt::Struct;
+use crate::sem::trayt::Trait;
 use std::collections::HashMap;
 use std::rc::Rc;
 

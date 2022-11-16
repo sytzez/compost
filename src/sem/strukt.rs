@@ -1,10 +1,10 @@
-use crate::definition::Definition;
-use crate::expression::Expression;
-use crate::lett::Let;
-use crate::raw_value::RawValue;
-use crate::scope::ReferencePath;
-use crate::typ::{combine_types, RawType, Type};
-use crate::instance::Instance;
+use crate::ast::expression::Expression;
+use crate::ast::raw_value::RawValue;
+use crate::ast::typ::{combine_types, RawType, Type};
+use crate::runtime::instance::Instance;
+use crate::sem::definition::Definition;
+use crate::sem::lett::Let;
+use crate::sem::scope::ReferencePath;
 use std::collections::HashMap;
 use std::rc::Rc;
 
