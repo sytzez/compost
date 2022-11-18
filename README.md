@@ -304,6 +304,17 @@ mod Int
         String: String(value: value.toString)
 ```
 
+## Architecture
+
+The compiler currently uses pure Rust without any dependencies other than the standard library.
+The compilation process is split up in a few modules:
+- Lexical analysis (`lex`) - Reads raw code into tokens.
+- Abstract syntax analysis (`ast`) - Reads tokens into an abstract syntax tree.
+- Semantic analysis (`sem`) - Resolves abstract syntax tree into semantic objects such as modules, traits and classes.
+- Runtime (`runtime`) - Instantiates classes and calculates actual results.
+
+Ideally there will be modules to replace the runtime module which compile the code down into a binary file.
+
 ## The Future of Compost
 
 There are many features of Compost that I have designed but haven't had the time to implement yet, such as:
