@@ -59,6 +59,7 @@ pub enum BinaryOp {
 }
 
 impl Expression {
+    // TODO: this logic needs to go into the runtime
     pub fn resolve(&self, scope: &LocalScope) -> Rc<Instance> {
         match self {
             Expression::Binary(call) => {

@@ -1,3 +1,7 @@
+use std::ops::AddAssign;
+use crate::ast::parser::Parser;
+use crate::error::CResult;
+use crate::lex::tokenizer::LeveledToken;
 use crate::sem::scope::ReferencePath;
 
 #[derive(Eq, PartialEq, Hash, Clone)]
@@ -32,4 +36,17 @@ pub fn combine_types(types: Vec<Type>) -> Type {
 pub enum RawType {
     Int,
     String,
+}
+
+impl Parser for Type {
+    fn matches(tokens: &[LeveledToken]) -> bool {
+        true
+    }
+
+    fn parse(tokens: &[LeveledToken], position: &mut usize) -> CResult<Self> {
+        // TODO: actually implement
+        position.add_assign(1);
+
+        Ok(Type::Void)
+    }
 }

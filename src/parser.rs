@@ -51,7 +51,7 @@ pub fn parse_tokens(tokens: &[LeveledToken]) -> CResult<Scope> {
     Ok(scope)
 }
 
-fn parse_global(token: &LeveledToken, expected_level: usize) -> CResult<String> {
+pub fn parse_global(token: &LeveledToken, expected_level: usize) -> CResult<String> {
     if let (Token::Global(name), actual_level) = token {
         if *actual_level != expected_level {
             error("Unexpected code level for global name".to_string())
@@ -63,7 +63,7 @@ fn parse_global(token: &LeveledToken, expected_level: usize) -> CResult<String> 
     }
 }
 
-fn parse_local(token: &LeveledToken, expected_level: usize) -> CResult<String> {
+pub fn parse_local(token: &LeveledToken, expected_level: usize) -> CResult<String> {
     if let (Token::Local(name), actual_level) = token {
         if *actual_level != expected_level {
             error("Unexpected code level for local name".to_string())
