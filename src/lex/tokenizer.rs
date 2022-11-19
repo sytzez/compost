@@ -1,16 +1,17 @@
+use crate::error::CompilationError;
 use crate::lex::token::{next_token, Level, Next, Token};
 
 pub type LeveledToken = (Token, usize);
 
 // Turns a string of raw code into a vector of tokens with levels.
-pub fn tokenize(code: &str) -> Vec<LeveledToken> {
+pub fn tokenize(code: &str) -> Result<Vec<LeveledToken>, CompilationError> {
     let mut position: usize = 0;
     let mut level_stack = LevelStack::new();
     let mut leveled_tokens: Vec<LeveledToken> = vec![];
     let mut is_beginning_of_line = true;
 
     while position <= code.len() {
-        let sized_token = next_token(&code[position..]);
+        let sized_token = next_token(&code[position..])?;
 
         assert!(
             sized_token.1 > 0,
@@ -42,7 +43,7 @@ pub fn tokenize(code: &str) -> Vec<LeveledToken> {
         }
     }
 
-    leveled_tokens
+    Ok(leveled_tokens)
 }
 
 // Utility to keep track of the depth level of our code.
@@ -117,7 +118,7 @@ mod test {
                     Value: Int
         "#;
 
-        let leveled_tokens = tokenize(code);
+        let leveled_tokens = tokenize(code).unwrap();
 
         let expected = vec![
             (Token::Kw(Kw::Mod), 12),

@@ -1,6 +1,5 @@
 use crate::ast::expression::Expression;
 use crate::ast::typ::{combine_types, Type};
-use crate::runtime::instance::Instance;
 use crate::sem::definition::Definition;
 use crate::sem::lett::Let;
 use crate::sem::scope::ReferencePath;

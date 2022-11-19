@@ -7,7 +7,10 @@ fn main() {
     if let Some(file_path) = args.get(1) {
         let result = run_file(file_path);
 
-        println!("{}", result);
+        match result {
+            Ok(result) => println!("{}", result),
+            Err(error) => println!("{}", error.message),
+        }
     } else {
         println!("Specify a source file to run")
     }

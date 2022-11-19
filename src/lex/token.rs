@@ -1,3 +1,5 @@
+use crate::error::{error, CompilationError};
+
 #[derive(Eq, PartialEq, Debug)]
 pub enum Token {
     Down(Level),
@@ -58,13 +60,13 @@ pub enum Next {
 
 type SizedToken = (Option<Token>, usize);
 
-pub fn next_token(code: &str) -> SizedToken {
+pub fn next_token(code: &str) -> Result<SizedToken, CompilationError> {
     let char = match code.chars().next() {
         Some(c) => c,
-        None => return (Some(Token::Eof), 1),
+        None => return Ok((Some(Token::Eof), 1)),
     };
 
-    match char {
+    let token = match char {
         ' ' => (Some(Token::Space), 1),
         '#' => (None, comment_size(code)),
         '(' => (Some(Token::Down(Level::Paren)), 1),
@@ -84,8 +86,10 @@ pub fn next_token(code: &str) -> SizedToken {
         'A'..='Z' | '\\' => next_global_token(code),
         '0'..='9' => next_number_token(code),
         '\'' => next_string_token(code),
-        _ => panic!("Unexpected character: {}", char),
-    }
+        _ => return error(format!("Unexpected character: {}", char)),
+    };
+
+    Ok(token)
 }
 
 fn comment_size(code: &str) -> usize {
@@ -172,70 +176,89 @@ fn next_string_token(code: &str) -> SizedToken {
 
 #[cfg(test)]
 mod test {
+    use crate::error::CompilationError;
     use crate::lex::token::{next_token, Kw, Level, Lit, Next, Op, Token};
 
     #[test]
     fn test_operators() {
-        assert_eq!(next_token("+ 1"), (Some(Token::Op(Op::Add)), 1));
-        assert_eq!(next_token("- 1"), (Some(Token::Op(Op::Sub)), 1));
-        assert_eq!(next_token("/ 1"), (Some(Token::Op(Op::Div)), 1));
-        assert_eq!(next_token("* 1"), (Some(Token::Op(Op::Mul)), 1));
-        assert_eq!(next_token(".Add"), (Some(Token::Op(Op::Dot)), 1));
-        assert_eq!(next_token("< 1"), (Some(Token::Op(Op::Lt)), 1));
-        assert_eq!(next_token("> 1"), (Some(Token::Op(Op::Gt)), 1));
-        assert_eq!(next_token("= 1"), (Some(Token::Op(Op::Eq)), 1));
+        assert_eq!(next_token("+ 1"), Ok((Some(Token::Op(Op::Add)), 1)));
+        assert_eq!(next_token("- 1"), Ok((Some(Token::Op(Op::Sub)), 1)));
+        assert_eq!(next_token("/ 1"), Ok((Some(Token::Op(Op::Div)), 1)));
+        assert_eq!(next_token("* 1"), Ok((Some(Token::Op(Op::Mul)), 1)));
+        assert_eq!(next_token(".Add"), Ok((Some(Token::Op(Op::Dot)), 1)));
+        assert_eq!(next_token("< 1"), Ok((Some(Token::Op(Op::Lt)), 1)));
+        assert_eq!(next_token("> 1"), Ok((Some(Token::Op(Op::Gt)), 1)));
+        assert_eq!(next_token("= 1"), Ok((Some(Token::Op(Op::Eq)), 1)));
     }
 
     #[test]
     fn test_comments() {
-        assert_eq!(next_token("# A comment\n1 + 1"), (None, 11));
-        assert_eq!(next_token("# A comment\n# Next comment\n1 + 1"), (None, 11));
+        assert_eq!(next_token("# A comment\n1 + 1"), Ok((None, 11)));
+        assert_eq!(
+            next_token("# A comment\n# Next comment\n1 + 1"),
+            Ok((None, 11))
+        );
     }
 
     #[test]
     fn test_whitespace() {
-        assert_eq!(next_token(" 1 + 1"), (Some(Token::Space), 1));
-        assert_eq!(next_token(""), (Some(Token::Eof), 1));
+        assert_eq!(next_token(" 1 + 1"), Ok((Some(Token::Space), 1)));
+        assert_eq!(next_token(""), Ok((Some(Token::Eof), 1)));
     }
 
     #[test]
     fn test_levels() {
-        assert_eq!(next_token("\n1 + 1"), (Some(Token::Next(Next::Line)), 1));
-        assert_eq!(next_token(",1 + 1"), (Some(Token::Next(Next::Comma)), 1));
-        assert_eq!(next_token(": 1 + 1"), (Some(Token::Down(Level::Colon)), 1));
-        assert_eq!(next_token("(1 + 1)"), (Some(Token::Down(Level::Paren)), 1));
-        assert_eq!(next_token(")1 + 1"), (Some(Token::Up(Level::Paren)), 1));
+        assert_eq!(
+            next_token("\n1 + 1"),
+            Ok((Some(Token::Next(Next::Line)), 1))
+        );
+        assert_eq!(
+            next_token(",1 + 1"),
+            Ok((Some(Token::Next(Next::Comma)), 1))
+        );
+        assert_eq!(
+            next_token(": 1 + 1"),
+            Ok((Some(Token::Down(Level::Colon)), 1))
+        );
+        assert_eq!(
+            next_token("(1 + 1)"),
+            Ok((Some(Token::Down(Level::Paren)), 1))
+        );
+        assert_eq!(next_token(")1 + 1"), Ok((Some(Token::Up(Level::Paren)), 1)));
     }
 
     #[test]
     fn test_literals() {
-        assert_eq!(next_token("123 "), (Some(Token::Lit(Lit::Number(123))), 3));
+        assert_eq!(
+            next_token("123 "),
+            Ok((Some(Token::Lit(Lit::Number(123))), 3))
+        );
         assert_eq!(
             next_token("'Bla' "),
-            (Some(Token::Lit(Lit::String("Bla".into()))), 5)
+            Ok((Some(Token::Lit(Lit::String("Bla".into()))), 5))
         );
     }
 
     #[test]
     fn test_keywords() {
-        assert_eq!(next_token("mod "), (Some(Token::Kw(Kw::Mod)), 3));
-        assert_eq!(next_token("class "), (Some(Token::Kw(Kw::Class)), 5));
-        assert_eq!(next_token("struct "), (Some(Token::Kw(Kw::Struct)), 6));
-        assert_eq!(next_token("traits "), (Some(Token::Kw(Kw::Traits)), 6));
-        assert_eq!(next_token("defs "), (Some(Token::Kw(Kw::Defs)), 4));
-        assert_eq!(next_token("lets "), (Some(Token::Kw(Kw::Lets)), 4));
-        assert_eq!(next_token("Self "), (Some(Token::Kw(Kw::Zelf)), 4));
+        assert_eq!(next_token("mod "), Ok((Some(Token::Kw(Kw::Mod)), 3)));
+        assert_eq!(next_token("class "), Ok((Some(Token::Kw(Kw::Class)), 5)));
+        assert_eq!(next_token("struct "), Ok((Some(Token::Kw(Kw::Struct)), 6)));
+        assert_eq!(next_token("traits "), Ok((Some(Token::Kw(Kw::Traits)), 6)));
+        assert_eq!(next_token("defs "), Ok((Some(Token::Kw(Kw::Defs)), 4)));
+        assert_eq!(next_token("lets "), Ok((Some(Token::Kw(Kw::Lets)), 4)));
+        assert_eq!(next_token("Self "), Ok((Some(Token::Kw(Kw::Zelf)), 4)));
     }
 
     #[test]
     fn test_local() {
         assert_eq!(
             next_token("local "),
-            (Some(Token::Local("local".into())), 5)
+            Ok((Some(Token::Local("local".into())), 5))
         );
         assert_eq!(
             next_token("aLocalField "),
-            (Some(Token::Local("aLocalField".into())), 11)
+            Ok((Some(Token::Local("aLocalField".into())), 11))
         );
     }
 
@@ -243,19 +266,29 @@ mod test {
     fn test_global() {
         assert_eq!(
             next_token("Global "),
-            (Some(Token::Global("Global".into())), 6)
+            Ok((Some(Token::Global("Global".into())), 6))
         );
         assert_eq!(
             next_token("AGlobalField "),
-            (Some(Token::Global("AGlobalField".into())), 12)
+            Ok((Some(Token::Global("AGlobalField".into())), 12))
         );
         assert_eq!(
             next_token("\\Global "),
-            (Some(Token::Global("\\Global".into())), 7)
+            Ok((Some(Token::Global("\\Global".into())), 7))
         );
         assert_eq!(
             next_token("Module\\Global.Trait"),
-            (Some(Token::Global("Module\\Global".into())), 13)
+            Ok((Some(Token::Global("Module\\Global".into())), 13))
         );
+    }
+
+    #[test]
+    fn test_unexpected() {
+        assert_eq!(
+            next_token("£"),
+            Err(CompilationError {
+                message: "Unexpected character: £".to_string()
+            })
+        )
     }
 }
