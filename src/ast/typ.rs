@@ -1,7 +1,8 @@
-use std::ops::AddAssign;
 use crate::ast::parser::Parser;
 use crate::error::CResult;
+use crate::lex::token::{Kw, Token};
 use crate::lex::tokenizer::LeveledToken;
+use crate::lex::tokens::Tokens;
 use crate::sem::scope::ReferencePath;
 
 #[derive(Eq, PartialEq, Hash, Clone)]
@@ -40,12 +41,12 @@ pub enum RawType {
 
 impl Parser for Type {
     fn matches(tokens: &[LeveledToken]) -> bool {
-        true
+        matches!(tokens[0].0, Token::Global(_) | Token::Kw(Kw::Zelf))
     }
 
-    fn parse(tokens: &[LeveledToken], position: &mut usize) -> CResult<Self> {
+    fn parse(tokens: &mut Tokens) -> CResult<Self> {
         // TODO: actually implement
-        position.add_assign(1);
+        tokens.step();
 
         Ok(Type::Void)
     }

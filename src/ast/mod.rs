@@ -8,3 +8,4 @@ pub(crate) mod struct_statement;
 pub(crate) mod trait_statement;
 pub(crate) mod let_statement;
 pub(crate) mod def_statement;
+pub(crate) mod abstract_syntax_tree;

@@ -1,6 +1,6 @@
 use crate::error::{error, CResult};
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Token {
     Down(Level),
     Up(Level),
@@ -15,7 +15,7 @@ pub enum Token {
 }
 
 // Keyword
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Kw {
     Mod,
     Class,
@@ -27,7 +27,7 @@ pub enum Kw {
 }
 
 // Operator
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Op {
     Dot,
     Add,
@@ -40,19 +40,19 @@ pub enum Op {
 }
 
 // Literal
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Lit {
     String(String),
     Number(usize),
 }
 
-#[derive(Eq, Clone, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Level {
     Colon,
     Paren,
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Next {
     Comma,
     Line,

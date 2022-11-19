@@ -231,7 +231,7 @@ fn parse_trait(tokens: &[LeveledToken]) -> CResult<(String, Trait, usize)> {
         let leveled_token = &tokens[position];
 
         if leveled_token.1 <= base_level {
-            return error("Expected trait types".to_string());
+            return error("Expected trait types".to_string(), 0);
         }
 
         match leveled_token.0 {
@@ -266,7 +266,7 @@ fn parse_trait(tokens: &[LeveledToken]) -> CResult<(String, Trait, usize)> {
 
                 break;
             }
-            _ => return error(format!("Unexpected token {:?}", leveled_token.0)),
+            _ => return error(format!("Unexpected token {:?}", leveled_token.0), 0),
         }
     }
 
@@ -288,7 +288,7 @@ fn parse_parameter(tokens: &[LeveledToken]) -> CResult<(String, Type, usize)> {
     let name = parse_local(&tokens[0], base_level)?;
 
     if tokens[1].1 <= base_level {
-        return error("Expected type after parameter name".to_string());
+        return error("Expected type after parameter name".to_string(), 0);
     }
     let type_result = parse_type(&tokens[1..])?;
 
@@ -422,7 +422,7 @@ fn parse_expression(tokens: &[LeveledToken]) -> CResult<(Expression, usize)> {
                 position += 1;
                 Expression::Zelf
             }
-            _ => return error(format!("Unexpected keyword {:?}", kw)),
+            _ => return error(format!("Unexpected keyword {:?}", kw), 0),
         },
         Token::Global(_) => {
             let result = parse_let_call(&tokens[position..])?;

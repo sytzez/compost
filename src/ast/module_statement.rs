@@ -1,15 +1,15 @@
-use std::ops::AddAssign;
 use crate::ast::class_statement::ClassStatement;
 use crate::ast::def_statement::{DefsStatement, DefStatement};
 use crate::ast::let_statement::{LetsStatement, LetStatement};
 use crate::ast::parser::{parse_global, Parser};
 use crate::ast::struct_statement::StructStatement;
 use crate::ast::trait_statement::{TraitsStatement, TraitStatement};
-use crate::error::{CResult, error};
+use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
 use crate::lex::tokenizer::LeveledToken;
 use crate::lex::tokens::Tokens;
 
+/// A whole module.
 pub struct ModuleStatement {
     pub name: String,
     pub class: Option<ClassStatement>,
@@ -46,12 +46,8 @@ impl Parser for ModuleStatement {
 
         let mut statement = ModuleStatement::new(name);
 
-        while tokens.still_more() {
-            if tokens.level() <= base_level {
-                break;
-            }
-
-            if let Some(class) = ClassStatement::parse_maybe(tokens)? {
+        while tokens.deeper_than(base_level) {
+            if let Some(class) = ClassStatement::maybe_parse(tokens)? {
                 if statement.class.is_some() {
                     return tokens.error("Can't define more than one class per module".to_string())
                 }
@@ -61,7 +57,7 @@ impl Parser for ModuleStatement {
                 }
 
                 statement.class = Some(class);
-            } else if let Some(strukt) = StructStatement::parse_maybe(tokens)? {
+            } else if let Some(strukt) = StructStatement::maybe_parse(tokens)? {
                 if statement.strukt.is_some() {
                     return tokens.error("Can't define more than one struct per module".to_string())
                 }
@@ -71,12 +67,14 @@ impl Parser for ModuleStatement {
                 }
 
                 statement.strukt = Some(strukt);
-            } else if let Some(mut traits) = TraitsStatement::parse_maybe(tokens)? {
+            } else if let Some(mut traits) = TraitsStatement::maybe_parse(tokens)? {
                 statement.traits.append(&mut traits.traits);
-            } else if let Some(mut defs) = DefsStatement::parse_maybe(tokens)? {
+            } else if let Some(mut defs) = DefsStatement::maybe_parse(tokens)? {
                 statement.defs.append(&mut defs.defs);
-            } else if let Some(mut lets) = LetsStatement::parse_maybe(tokens)? {
+            } else if let Some(mut lets) = LetsStatement::maybe_parse(tokens)? {
                 statement.lets.append(&mut lets.lets);
+            } else {
+                return tokens.error(format!("Unexpected token {:?}", tokens.token()))
             }
         }
 
