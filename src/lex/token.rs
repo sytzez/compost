@@ -86,7 +86,7 @@ pub fn next_token(code: &str) -> CResult<SizedToken> {
         'A'..='Z' | '\\' => next_global_token(code),
         '0'..='9' => next_number_token(code),
         '\'' => next_string_token(code),
-        _ => return error(format!("Unexpected character: {}", char)),
+        _ => return error(format!("Unexpected character: {}", char), 0),
     };
 
     Ok(token)

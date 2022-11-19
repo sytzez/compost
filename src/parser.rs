@@ -24,7 +24,7 @@ pub fn parse_tokens(tokens: &[LeveledToken]) -> CResult<Scope> {
         let leveled_token = &tokens[position];
 
         if leveled_token.1 != 0 {
-            return error(format!("Unexpected level {}, expected 0", leveled_token.1));
+            return error(format!("Unexpected level {}, expected 0", leveled_token.1), 0);
         }
 
         match leveled_token.0 {
@@ -44,34 +44,34 @@ pub fn parse_tokens(tokens: &[LeveledToken]) -> CResult<Scope> {
                 position += result.1;
             }
             Token::Eof => break,
-            _ => return error(format!("Unexpected token {:?}", leveled_token.0)),
+            _ => return error(format!("Unexpected token {:?}", leveled_token.0), position),
         }
     }
 
     Ok(scope)
 }
 
-pub fn parse_global(token: &LeveledToken, expected_level: usize) -> CResult<String> {
+fn parse_global(token: &LeveledToken, expected_level: usize) -> CResult<String> {
     if let (Token::Global(name), actual_level) = token {
         if *actual_level != expected_level {
-            error("Unexpected code level for global name".to_string())
+            error("Unexpected code level for global name".to_string(), 0)
         } else {
             Ok(name.clone())
         }
     } else {
-        error(format!("Expected global name, got {:?} ", token))
+        error(format!("Expected global name, got {:?} ", token), 0)
     }
 }
 
-pub fn parse_local(token: &LeveledToken, expected_level: usize) -> CResult<String> {
+fn parse_local(token: &LeveledToken, expected_level: usize) -> CResult<String> {
     if let (Token::Local(name), actual_level) = token {
         if *actual_level != expected_level {
-            error("Unexpected code level for local name".to_string())
+            error("Unexpected code level for local name".to_string(), 0)
         } else {
             Ok(name.clone())
         }
     } else {
-        error(format!("Expected local name, got {:?} ", token))
+        error(format!("Expected local name, got {:?} ", token), 0)
     }
 }
 
@@ -130,7 +130,7 @@ fn parse_mod(tokens: &[LeveledToken]) -> CResult<(String, Module, usize)> {
                 position += result.1;
             }
             // TODO: when getting a def, add the def to all classes an strukts
-            _ => return error(format!("Unexpected token {:?}", leveled_token.0)),
+            _ => return error(format!("Unexpected token {:?}", leveled_token.0), 0),
         }
     }
 
@@ -191,7 +191,7 @@ fn parse_struct_field(tokens: &[LeveledToken]) -> CResult<(String, RawType, usiz
     let typ = match typ_name.borrow() {
         "int" => RawType::Int,
         "string" => RawType::String,
-        _ => return error(format!("Unknown raw type {}", typ_name)),
+        _ => return error(format!("Unknown struct field type {}", typ_name), 0),
     };
     Ok((name, typ, 2))
 }
@@ -323,7 +323,7 @@ fn parse_defs(tokens: &[LeveledToken]) -> CResult<(Vec<(String, Definition)>, us
                 position += result.1;
             }
             // TODO: nesting
-            _ => return error(format!("Unexpected token {:?}", leveled_token.0)),
+            _ => return error(format!("Unexpected token {:?}", leveled_token.0), 0),
         }
     }
 
@@ -394,7 +394,7 @@ fn parse_let(tokens: &[LeveledToken]) -> CResult<(String, Let, usize)> {
 
                 break;
             }
-            _ => return error(format!("Unexpected token {:?}", leveled_token.0)),
+            _ => return error(format!("Unexpected token {:?}", leveled_token.0), 0),
         }
     }
 
@@ -456,7 +456,7 @@ fn parse_expression(tokens: &[LeveledToken]) -> CResult<(Expression, usize)> {
                 inputs: [].into(),
             })
         }
-        _ => return error(format!("Unexpected token {:?}", tokens[0].0)),
+        _ => return error(format!("Unexpected token {:?}", tokens[0].0), 0),
     };
 
     // Further operations
@@ -510,14 +510,14 @@ fn parse_expression(tokens: &[LeveledToken]) -> CResult<(Expression, usize)> {
                             }
                             _ => return error(
                                 "Dot operator must be followed by a trait or friendly field name"
-                                    .to_string(),
+                                    .to_string(), 0
                             ),
                         }
                     }
-                    _ => return error(format!("Unexpected operator {:?}", op)),
+                    _ => return error(format!("Unexpected operator {:?}", op), 0),
                 }
             }
-            _ => return error(format!("Unexpected token {:?}", tokens[position].0)),
+            _ => return error(format!("Unexpected token {:?}", tokens[position].0), 0),
         };
     }
 
