@@ -5,6 +5,10 @@ The compiler itself is written in Rust.
 
 It currently doesn't actually compile a Compost program to a binary, but it **does** execute Compost code and show its output.
 
+## Playground
+
+You can run Compost code from your browser at the [Compost Playground](http://compost-playground.sytzez.com).
+
 ## Usage
 
 You need to have the Rust compiler installed to run the Compost compiler or to build it into a binary.
