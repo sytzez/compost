@@ -1,4 +1,4 @@
-use crate::error::{error, CompilationError};
+use crate::error::{error, CResult};
 
 #[derive(Eq, PartialEq, Debug)]
 pub enum Token {
@@ -60,7 +60,7 @@ pub enum Next {
 
 type SizedToken = (Option<Token>, usize);
 
-pub fn next_token(code: &str) -> Result<SizedToken, CompilationError> {
+pub fn next_token(code: &str) -> CResult<SizedToken> {
     let char = match code.chars().next() {
         Some(c) => c,
         None => return Ok((Some(Token::Eof), 1)),
