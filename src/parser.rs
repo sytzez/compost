@@ -1,6 +1,6 @@
 use crate::ast::expression::{BinaryCall, BinaryOp, DefCall, Expression, FriendlyField, LetCall};
 use crate::ast::raw_value::RawValue;
-use crate::ast::typ::{RawType, Type};
+use crate::sem::typ::{RawType, Type};
 use crate::error::{error, CResult};
 use crate::lex::token::{Kw, Lit, Op, Token};
 use crate::lex::tokenizer::LeveledToken;
@@ -404,7 +404,7 @@ fn parse_let(tokens: &[LeveledToken]) -> CResult<(String, Let, usize)> {
 
     let lett = Let {
         inputs,
-        outputs: [("".into(), output.unwrap())].into(),
+        output: output.unwrap(),
         expression,
     };
 

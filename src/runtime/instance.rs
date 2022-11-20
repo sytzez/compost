@@ -1,5 +1,5 @@
 use crate::ast::raw_value::RawValue;
-use crate::ast::typ::{RawType, Type};
+use crate::sem::typ::{RawType, Type};
 use crate::runtime::class_instance::ClassInstance;
 use crate::runtime::struct_instance::StructInstance;
 use crate::sem::definition::Definition;

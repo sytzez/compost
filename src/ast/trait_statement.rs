@@ -1,5 +1,5 @@
 use crate::ast::parser::{parse_global, parse_in_out_types, parse_parameter, Parser};
-use crate::ast::typ::Type;
+use crate::ast::type_statement::TypeStatement;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Op, Token};
 use crate::lex::tokenizer::LeveledToken;
@@ -8,8 +8,8 @@ use crate::lex::tokens::Tokens;
 /// A single trait.
 pub struct TraitStatement {
     pub name: String,
-    pub parameters: Vec<(String, Type)>,
-    pub output: Type,
+    pub parameters: Vec<(String, TypeStatement)>,
+    pub output: TypeStatement,
 }
 
 /// The traits keyword and its traits.

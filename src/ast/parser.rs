@@ -1,4 +1,5 @@
-use crate::ast::typ::Type;
+use crate::ast::type_statement::TypeStatement;
+use crate::sem::typ::Type;
 use crate::error::CResult;
 use crate::lex::token::{Op, Token};
 use crate::lex::tokenizer::LeveledToken;
@@ -43,7 +44,7 @@ pub fn parse_local(tokens: &mut Tokens) -> CResult<String> {
 }
 
 /// Parses parameters and an output type. Occurs in traits and lets.
-pub fn parse_in_out_types(tokens: &mut Tokens, base_level: usize) -> CResult<(Vec<(String, Type)>, Type)> {
+pub fn parse_in_out_types(tokens: &mut Tokens, base_level: usize) -> CResult<(Vec<(String, TypeStatement)>, TypeStatement)> {
     let mut parameters = vec![];
     let mut output = None;
 
@@ -62,7 +63,7 @@ pub fn parse_in_out_types(tokens: &mut Tokens, base_level: usize) -> CResult<(Ve
             }
             tokens.step();
 
-            output = Some(Type::parse(tokens)?);
+            output = Some(TypeStatement::parse(tokens)?);
             break;
         } else {
             return tokens.error(format!("Unexpected token {:?}", tokens.token()))
@@ -78,8 +79,8 @@ pub fn parse_in_out_types(tokens: &mut Tokens, base_level: usize) -> CResult<(Ve
 }
 
 /// Parses a parameter name and type.
-pub fn parse_parameter(tokens: &mut Tokens) -> CResult<(String, Type)> {
+pub fn parse_parameter(tokens: &mut Tokens) -> CResult<(String, TypeStatement)> {
     let name = parse_local(tokens)?;
-    let typ = Type::parse(tokens)?;
+    let typ = TypeStatement::parse(tokens)?;
     Ok((name, typ))
 }

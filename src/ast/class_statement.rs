@@ -1,5 +1,6 @@
 use crate::ast::parser::{parse_parameter, Parser};
-use crate::ast::typ::Type;
+use crate::ast::type_statement::TypeStatement;
+use crate::sem::typ::Type;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
 use crate::lex::tokenizer::LeveledToken;
@@ -7,7 +8,7 @@ use crate::lex::tokens::Tokens;
 
 /// The class keyword and its dependencies.
 pub struct ClassStatement {
-    pub dependencies: Vec<(String, Type)>,
+    pub dependencies: Vec<(String, TypeStatement)>,
 }
 
 impl Parser for ClassStatement {

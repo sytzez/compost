@@ -1,6 +1,6 @@
 use crate::ast::expression::Expression;
 use crate::ast::parser::{parse_global, parse_in_out_types, Parser};
-use crate::ast::typ::Type;
+use crate::ast::type_statement::TypeStatement;
 use crate::error::CResult;
 use crate::lex::tokenizer::LeveledToken;
 use crate::lex::tokens::Tokens;
@@ -8,8 +8,8 @@ use crate::lex::tokens::Tokens;
 /// A single let which is made up of a name, optional parameters, an output type and the expression.
 pub struct LetStatement {
     pub name: String,
-    pub parameters: Vec<(String, Type)>,
-    pub output: Type,
+    pub parameters: Vec<(String, TypeStatement)>,
+    pub output: TypeStatement,
     pub expr: Expression,
 }
 

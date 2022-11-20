@@ -1,5 +1,5 @@
 use crate::ast::expression::Expression;
-use crate::ast::typ::{combine_types, RawType, Type};
+use crate::sem::typ::{combine_types, RawType, Type};
 use crate::sem::definition::Definition;
 use crate::sem::lett::Let;
 use crate::sem::scope::ReferencePath;
@@ -37,7 +37,7 @@ impl Struct {
 
         Let {
             inputs,
-            outputs: [(String::new(), self.interface())].into(),
+            output: self.interface(),
             expression: Expression::ConstructStruct(Rc::clone(self)),
         }
     }

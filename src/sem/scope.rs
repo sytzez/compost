@@ -6,6 +6,7 @@ use crate::sem::module::Module;
 use crate::sem::strukt::Struct;
 use crate::sem::trayt::Trait;
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::rc::Rc;
 
 pub type ReferencePath = Vec<String>;
@@ -18,11 +19,11 @@ pub fn path(string: &str) -> ReferencePath {
 }
 
 pub struct Scope {
-    traits: References<Trait>,
-    classes: References<Class>,
-    structs: References<Struct>,
-    lets: References<Let>,
-    defs: References<Definition>,
+    traits: Table<Trait>,
+    classes: Table<Class>,
+    structs: Table<Struct>,
+    lets: Table<Let>,
+    defs: Table<Definition>,
 }
 
 pub struct LocalScope<'a> {
@@ -34,11 +35,11 @@ pub struct LocalScope<'a> {
 impl Scope {
     pub fn new() -> Self {
         Self {
-            traits: References::new(),
-            classes: References::new(),
-            structs: References::new(),
-            lets: References::new(),
-            defs: References::new(),
+            traits: Table::new(),
+            classes: Table::new(),
+            structs: Table::new(),
+            lets: Table::new(),
+            defs: Table::new(),
         }
     }
 
@@ -137,20 +138,21 @@ impl LocalScope<'_> {
     }
 }
 
-pub struct References<T> {
-    references: Vec<(ReferencePath, Rc<T>)>,
+/// A table of references to items of a kind.
+pub struct Table<T> {
+    items: Vec<(ReferencePath, Rc<T>)>,
 }
 
-impl<T> References<T> {
+impl<T> Table<T> {
     pub fn new() -> Self {
         Self {
-            references: Vec::new(),
+            items: Vec::new(),
         }
     }
 
     pub fn resolve(&self, path: &ReferencePath) -> Rc<T> {
         let matched_references = self
-            .references
+            .items
             .iter()
             .filter(|reference| reference_matches(&reference.0, path))
             .collect::<Vec<_>>();
@@ -164,7 +166,7 @@ impl<T> References<T> {
 
     pub fn add(&mut self, path: ReferencePath, item: T) {
         // TODO: change into hashmap. Error on conflict.
-        self.references.push((path, Rc::new(item)))
+        self.items.push((path, Rc::new(item)))
     }
 }
 
