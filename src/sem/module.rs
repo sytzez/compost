@@ -1,8 +1,3 @@
-
-
-
-
-
 // A module can contain classes, structs, traits, lets and other modules.
 // pub struct Module {
 //     pub classes: Vec<(String, Class)>,

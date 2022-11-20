@@ -20,9 +20,7 @@ pub struct LetsStatement {
 
 impl LetsStatement {
     pub fn new() -> Self {
-        Self {
-            lets: vec![],
-        }
+        Self { lets: vec![] }
     }
 }
 
@@ -52,6 +50,11 @@ fn parse_let(tokens: &mut Tokens) -> CResult<LetStatement> {
     let name = parse_global(tokens)?;
     let (parameters, output) = parse_in_out_types(tokens, base_level)?;
     let expr = Expression::parse(tokens)?;
-    let statement = LetStatement { name, parameters, output, expr };
+    let statement = LetStatement {
+        name,
+        parameters,
+        output,
+        expr,
+    };
     Ok(statement)
 }

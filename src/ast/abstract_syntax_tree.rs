@@ -1,4 +1,4 @@
-use crate::ast::let_statement::{LetsStatement, LetStatement};
+use crate::ast::let_statement::{LetStatement, LetsStatement};
 use crate::ast::module_statement::ModuleStatement;
 use crate::ast::parser::Parser;
 use crate::error::CResult;
@@ -35,9 +35,9 @@ impl Parser for AbstractSyntaxTree {
             } else if let Some(mut lets) = LetsStatement::maybe_parse(tokens)? {
                 ast.lets.append(&mut lets.lets)
             } else if matches!(tokens.token(), Token::Eof) {
-                break
+                break;
             } else {
-                return tokens.error(format!("Unexpected token {:?}", tokens.token()))
+                return tokens.error(format!("Unexpected token {:?}", tokens.token()));
             }
         }
 

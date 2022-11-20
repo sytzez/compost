@@ -19,9 +19,7 @@ pub struct TraitsStatement {
 
 impl TraitsStatement {
     pub fn new() -> Self {
-        Self {
-            traits: vec![],
-        }
+        Self { traits: vec![] }
     }
 }
 
@@ -50,6 +48,10 @@ fn parse_trait(tokens: &mut Tokens) -> CResult<TraitStatement> {
     let base_level = tokens.level();
     let name = parse_global(tokens)?;
     let (parameters, output) = parse_in_out_types(tokens, base_level)?;
-    let statement = TraitStatement { name, parameters, output, };
+    let statement = TraitStatement {
+        name,
+        parameters,
+        output,
+    };
     Ok(statement)
 }

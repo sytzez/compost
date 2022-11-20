@@ -6,7 +6,10 @@ use crate::lex::tokenizer::LeveledToken;
 use crate::lex::tokens::Tokens;
 
 /// Something that can be created by parsing tokens.
-pub trait Parser where Self: Sized {
+pub trait Parser
+where
+    Self: Sized,
+{
     /// Whether the upcoming tokens match this type of parser.
     fn matches(tokens: &[LeveledToken]) -> bool;
 
@@ -29,7 +32,10 @@ pub fn parse_global(tokens: &mut Tokens) -> CResult<String> {
         tokens.step();
         Ok(name)
     } else {
-        tokens.error(format!("Expected global name, got {:?} ", tokens.leveled_token()))
+        tokens.error(format!(
+            "Expected global name, got {:?} ",
+            tokens.leveled_token()
+        ))
     }
 }
 
@@ -39,12 +45,18 @@ pub fn parse_local(tokens: &mut Tokens) -> CResult<String> {
         tokens.step();
         Ok(name)
     } else {
-        tokens.error(format!("Expected local name, got {:?} ", tokens.leveled_token()))
+        tokens.error(format!(
+            "Expected local name, got {:?} ",
+            tokens.leveled_token()
+        ))
     }
 }
 
 /// Parses parameters and an output type. Occurs in traits and lets.
-pub fn parse_in_out_types(tokens: &mut Tokens, base_level: usize) -> CResult<(Vec<(String, TypeStatement)>, TypeStatement)> {
+pub fn parse_in_out_types(
+    tokens: &mut Tokens,
+    base_level: usize,
+) -> CResult<(Vec<(String, TypeStatement)>, TypeStatement)> {
     let mut parameters = vec![];
     let mut output = None;
 
@@ -58,21 +70,21 @@ pub fn parse_in_out_types(tokens: &mut Tokens, base_level: usize) -> CResult<(Ve
         } else if matches!(tokens.token(), Token::Op(Op::Sub)) {
             tokens.step();
 
-            if ! matches!(tokens.token(), Token::Op(Op::Gt)) {
-                return tokens.error("Expected > after -".to_string())
+            if !matches!(tokens.token(), Token::Op(Op::Gt)) {
+                return tokens.error("Expected > after -".to_string());
             }
             tokens.step();
 
             output = Some(TypeStatement::parse(tokens)?);
             break;
         } else {
-            return tokens.error(format!("Unexpected token {:?}", tokens.token()))
+            return tokens.error(format!("Unexpected token {:?}", tokens.token()));
         }
     }
 
     let output = match output {
         Some(output) => output,
-        None => return tokens.error("Expected output type".to_string())
+        None => return tokens.error("Expected output type".to_string()),
     };
 
     Ok((parameters, output))

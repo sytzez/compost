@@ -1,16 +1,16 @@
 use std::cell::RefCell;
 
-use crate::sem::typ::{combine_types, Type};
-use crate::sem::lett::Let;
-use crate::sem::scope::{path};
-use std::rc::Rc;
-use std::string::String;
 use crate::ast::class_statement::ClassStatement;
 use crate::ast::def_statement::DefStatement;
 use crate::error::CResult;
 use crate::sem::evaluation::Evaluation;
+use crate::sem::lett::Let;
+use crate::sem::scope::path;
 use crate::sem::semantic_analyser::SemanticContext;
 use crate::sem::trayt::Trait;
+use crate::sem::typ::{combine_types, Type};
+use std::rc::Rc;
+use std::string::String;
 
 // A class has a set of dependencies of certain types, and a set of trait definitions.
 pub struct Class {
@@ -19,7 +19,10 @@ pub struct Class {
 }
 
 impl Class {
-    pub fn constructor_inputs(statement: &ClassStatement, context: &SemanticContext) -> CResult<Vec<(String, Type)>> {
+    pub fn constructor_inputs(
+        statement: &ClassStatement,
+        context: &SemanticContext,
+    ) -> CResult<Vec<(String, Type)>> {
         let mut inputs = vec![];
 
         for (name, type_statement) in statement.dependencies.iter() {
@@ -31,7 +34,11 @@ impl Class {
         Ok(inputs)
     }
 
-    pub fn analyse(statement: &ClassStatement, def_statements: &[DefStatement], context: &SemanticContext) -> CResult<Self> {
+    pub fn analyse(
+        statement: &ClassStatement,
+        def_statements: &[DefStatement],
+        context: &SemanticContext,
+    ) -> CResult<Self> {
         let dependencies = Self::constructor_inputs(statement, context)?;
 
         // TODO: create special context with fields and self.
@@ -44,7 +51,10 @@ impl Class {
             definitions.push((trayt, evaluation));
         }
 
-        let class = Class { dependencies, definitions };
+        let class = Class {
+            dependencies,
+            definitions,
+        };
 
         Ok(class)
     }

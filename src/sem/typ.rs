@@ -1,10 +1,10 @@
-use std::cell::RefCell;
-use std::rc::Rc;
 use crate::ast::type_statement::{RawType, TypeStatement};
-use crate::error::{CResult, error};
+use crate::error::{error, CResult};
 use crate::sem::scope::path;
 use crate::sem::semantic_analyser::SemanticContext;
 use crate::sem::trayt::Trait;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Eq, PartialEq, Clone)]
 pub enum Type {
@@ -45,29 +45,25 @@ impl Type {
                 } else if let Ok(trayt) = context.traits.resolve(&path) {
                     Type::Trait(trayt)
                 } else {
-                    return error(format!("Could not find module or trait {}", name), 0)
+                    return error(format!("Could not find module or trait {}", name), 0);
                 }
             }
-            TypeStatement::And(a, b) => {
-                Type::And(
-                    Box::new(Type::analyse(a, context)?),
-                    Box::new(Type::analyse(b, context)?),
-                )
-            }
-            TypeStatement::Or(a, b) => {
-                Type::Or(
-                    Box::new(Type::analyse(a, context)?),
-                    Box::new(Type::analyse(b, context)?),
-                )
-            }
+            TypeStatement::And(a, b) => Type::And(
+                Box::new(Type::analyse(a, context)?),
+                Box::new(Type::analyse(b, context)?),
+            ),
+            TypeStatement::Or(a, b) => Type::Or(
+                Box::new(Type::analyse(a, context)?),
+                Box::new(Type::analyse(b, context)?),
+            ),
             TypeStatement::Zelf => {
                 if let Some(typ) = &context.zelf {
                     typ.clone()
                 } else {
                     Type::Zelf
                 }
-            },
-            TypeStatement::Void => Type::Void
+            }
+            TypeStatement::Void => Type::Void,
         };
 
         Ok(typ)

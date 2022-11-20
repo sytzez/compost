@@ -1,4 +1,4 @@
-use crate::error::{CompilationError, CResult};
+use crate::error::{CResult, CompilationError};
 use crate::lex::token::Token;
 use crate::lex::tokenizer::LeveledToken;
 
@@ -58,6 +58,9 @@ impl Tokens {
 
     /// Create an error at the current position.
     pub fn error<T>(&self, message: String) -> CResult<T> {
-        Err(CompilationError { message, position: self.position })
+        Err(CompilationError {
+            message,
+            position: self.position,
+        })
     }
 }

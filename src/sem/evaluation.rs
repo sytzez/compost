@@ -1,16 +1,16 @@
 use std::cell::RefCell;
 
-use std::rc::Rc;
 use crate::ast::expression::{BinaryOp, Expression, FriendlyField};
 use crate::ast::raw_value::RawValue;
 use crate::error::CResult;
 use crate::sem::class::Class;
 use crate::sem::lett::Let;
-use crate::sem::scope::{path};
+use crate::sem::scope::path;
 use crate::sem::semantic_analyser::SemanticContext;
 use crate::sem::strukt::Struct;
 use crate::sem::trayt::Trait;
 use crate::sem::typ::Type;
+use std::rc::Rc;
 
 /// A semantically analysed expression that can be evaluated.
 #[derive(Clone)]
@@ -50,20 +50,16 @@ impl Evaluation {
                     BinaryOp::Div => "Op\\Div",
                 };
 
-                let inputs = [
-                    ("rhs".into(), Evaluation::analyse(&call.rhs, context)?)
-                ].into();
+                let inputs = [("rhs".into(), Evaluation::analyse(&call.rhs, context)?)].into();
 
                 let subject = Box::new(Evaluation::analyse(&call.lhs, context)?);
 
                 // TODO: check lhs and rhs types.
-                Evaluation::Trait(
-                    TraitEvaluation {
-                        trayt: context.traits.resolve(&path(&trait_path))?,
-                        subject,
-                        inputs,
-                    }
-                )
+                Evaluation::Trait(TraitEvaluation {
+                    trayt: context.traits.resolve(&path(&trait_path))?,
+                    subject,
+                    inputs,
+                })
             }
             Expression::Def(call) => {
                 let mut inputs = vec![];
@@ -74,13 +70,11 @@ impl Evaluation {
                 }
 
                 // TODO: Check inputs match
-                Evaluation::Trait(
-                    TraitEvaluation {
-                        trayt: context.traits.resolve(&call.path)?,
-                        subject: Box::new(Evaluation::analyse(&call.subject, context)?),
-                        inputs,
-                    }
-                )
+                Evaluation::Trait(TraitEvaluation {
+                    trayt: context.traits.resolve(&call.path)?,
+                    subject: Box::new(Evaluation::analyse(&call.subject, context)?),
+                    inputs,
+                })
             }
             Expression::Let(call) => {
                 let mut inputs = vec![];
@@ -91,12 +85,10 @@ impl Evaluation {
                 }
 
                 // TODO: check inputs match
-                Evaluation::Let(
-                    LetEvaluation {
-                        lett: context.lets.resolve(&call.path)?,
-                        inputs,
-                    }
-                )
+                Evaluation::Let(LetEvaluation {
+                    lett: context.lets.resolve(&call.path)?,
+                    inputs,
+                })
             }
             Expression::Literal(value) => Evaluation::Literal(value),
             Expression::Local(name) => Evaluation::Local(name),

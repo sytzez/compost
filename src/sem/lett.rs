@@ -2,7 +2,7 @@ use crate::sem::typ::Type;
 
 use crate::ast::let_statement::LetStatement;
 use crate::error::CResult;
-use crate::sem::evaluation::{Evaluation};
+use crate::sem::evaluation::Evaluation;
 use crate::sem::semantic_analyser::SemanticContext;
 
 // A 'let' defines a constant instance or a function.
@@ -23,7 +23,10 @@ pub struct Let {
 
 impl Let {
     /// An earlier stage analysis that analyses only the inputs and output.
-    pub fn analyse_just_types(statement: &LetStatement, context: &SemanticContext) -> CResult<Self> {
+    pub fn analyse_just_types(
+        statement: &LetStatement,
+        context: &SemanticContext,
+    ) -> CResult<Self> {
         let mut inputs = vec![];
         for (param_name, type_statement) in statement.parameters.iter() {
             let typ = Type::analyse(type_statement, context)?;
@@ -49,7 +52,11 @@ impl Let {
         let evaluation = Evaluation::analyse(&statement.expr, context)?;
 
         // TODO: check if output type fits evaluation output type
-        let lett = Let { inputs: lett.inputs, output: lett.output, evaluation };
+        let lett = Let {
+            inputs: lett.inputs,
+            output: lett.output,
+            evaluation,
+        };
 
         Ok(lett)
     }

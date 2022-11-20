@@ -1,5 +1,5 @@
+use crate::error::{error, CResult};
 use std::rc::Rc;
-use crate::error::{CResult, error};
 
 pub type ReferencePath = Vec<String>;
 
@@ -138,9 +138,7 @@ pub struct Table<T> {
 
 impl<T> Table<T> {
     pub fn new() -> Self {
-        Self {
-            items: Vec::new(),
-        }
+        Self { items: Vec::new() }
     }
 
     pub fn resolve(&self, path: &ReferencePath) -> CResult<Rc<T>> {

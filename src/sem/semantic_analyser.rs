@@ -1,7 +1,4 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
 use crate::ast::abstract_syntax_tree::AbstractSyntaxTree;
-use crate::sem::typ::{combine_types, Type};
 use crate::error::CResult;
 use crate::sem::class::Class;
 use crate::sem::evaluation::Evaluation;
@@ -9,6 +6,9 @@ use crate::sem::lett::Let;
 use crate::sem::scope::{path, Table};
 use crate::sem::strukt::Struct;
 use crate::sem::trayt::Trait;
+use crate::sem::typ::{combine_types, Type};
+use std::cell::RefCell;
+use std::collections::HashMap;
 
 pub struct SemanticContext {
     pub traits: Table<RefCell<Option<Trait>>>,
@@ -160,7 +160,6 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // Analyse struct constructor and def expressions.
 
     // Analyse class constructor and def expressions.
-
 
     Ok(context)
 }
