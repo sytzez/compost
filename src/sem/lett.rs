@@ -1,5 +1,5 @@
 use crate::sem::typ::Type;
-use std::collections::HashMap;
+
 use crate::ast::let_statement::LetStatement;
 use crate::error::CResult;
 use crate::sem::evaluation::{Evaluation};

@@ -1,8 +1,8 @@
 use std::cell::RefCell;
-use crate::ast::expression::Expression;
+
 use crate::sem::typ::{combine_types, Type};
 use crate::sem::lett::Let;
-use crate::sem::scope::{path, ReferencePath};
+use crate::sem::scope::{path};
 use std::rc::Rc;
 use std::string::String;
 use crate::ast::class_statement::ClassStatement;

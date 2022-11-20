@@ -1,6 +1,6 @@
 use crate::ast::parser::{parse_parameter, Parser};
 use crate::ast::type_statement::TypeStatement;
-use crate::sem::typ::Type;
+
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
 use crate::lex::tokenizer::LeveledToken;

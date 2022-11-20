@@ -23,7 +23,7 @@ pub fn run_code(code: &str) -> CResult<String> {
 
     let context = analyse_ast(ast)?;
 
-    let main_let = context.lets.resolve(&path("Main"))?;
+    let _main_let = context.lets.resolve(&path("Main"))?;
 
     // let result = main_let.into_inner().unwrap().resolve([].into(), &scope).to_string(&scope);
     let result = "Test".to_string();

@@ -57,7 +57,7 @@ pub enum BinaryOp {
 }
 
 impl Parser for Expression {
-    fn matches(tokens: &[LeveledToken]) -> bool {
+    fn matches(_tokens: &[LeveledToken]) -> bool {
         true
     }
 

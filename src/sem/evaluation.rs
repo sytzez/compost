@@ -1,12 +1,12 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
+
 use std::rc::Rc;
 use crate::ast::expression::{BinaryOp, Expression, FriendlyField};
 use crate::ast::raw_value::RawValue;
 use crate::error::CResult;
 use crate::sem::class::Class;
 use crate::sem::lett::Let;
-use crate::sem::scope::{path, Table};
+use crate::sem::scope::{path};
 use crate::sem::semantic_analyser::SemanticContext;
 use crate::sem::strukt::Struct;
 use crate::sem::trayt::Trait;
@@ -111,9 +111,9 @@ impl Evaluation {
         match self {
             Evaluation::Let(call) => call.lett.borrow().as_ref().unwrap().output.clone(),
             Evaluation::Trait(call) => call.trayt.borrow().as_ref().unwrap().output.clone(),
-            Evaluation::Literal(raw_value) => todo!(),
+            Evaluation::Literal(_raw_value) => todo!(),
             Evaluation::Local(name) => context.locals.get(name).unwrap().clone(),
-            Evaluation::FriendlyField(ff) => todo!(),
+            Evaluation::FriendlyField(_ff) => todo!(),
             Evaluation::Zelf => context.zelf.as_ref().unwrap().clone(),
             Evaluation::ClassConstructor(class) => class.interface(),
             Evaluation::StructConstructor(strukt) => strukt.interface(),

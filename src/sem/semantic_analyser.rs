@@ -61,7 +61,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
 
     // Parse global let expressions, check types.
     for let_statement in ast.lets.into_iter() {
-        let path = path(&let_statement.name);
+        let _path = path(&let_statement.name);
 
 
     }

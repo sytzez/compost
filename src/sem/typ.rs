@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use crate::ast::type_statement::{RawType, TypeStatement};
-use crate::error::{CResult, error};
+use crate::error::{CResult};
 use crate::sem::scope::path;
 use crate::sem::semantic_analyser::SemanticContext;
 use crate::sem::trayt::Trait;
@@ -67,7 +67,7 @@ impl Type {
         Ok(typ)
     }
 
-    pub fn fits(&self, other: &Type) -> bool {
+    pub fn fits(&self, _other: &Type) -> bool {
         todo!()
     }
 }

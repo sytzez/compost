@@ -287,7 +287,8 @@ mod test {
         assert_eq!(
             next_token("£"),
             Err(CompilationError {
-                message: "Unexpected character: £".to_string()
+                message: "Unexpected character: £".to_string(),
+                position: 0,
             })
         )
     }

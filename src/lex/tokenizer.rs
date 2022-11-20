@@ -121,7 +121,7 @@ mod test {
                     Value: Int
         "#;
 
-        let leveled_tokens = tokenize(code).unwrap();
+        let tokens = tokenize(code).unwrap();
 
         let expected = vec![
             (Token::Kw(Kw::Mod), 12),
@@ -135,6 +135,6 @@ mod test {
             (Token::Eof, 0),
         ];
 
-        assert_eq!(leveled_tokens, expected)
+        assert_eq!(tokens.remaining(), &expected)
     }
 }
