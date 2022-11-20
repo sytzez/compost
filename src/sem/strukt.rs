@@ -49,7 +49,7 @@ impl Struct {
         Ok(strukt)
     }
 
-    pub fn constructor(self: &Rc<Self>) -> Let {
+    pub fn constructor(self) -> Let {
         let inputs = self
             .fields
             .iter()
@@ -59,7 +59,7 @@ impl Struct {
         Let {
             inputs,
             output: self.interface(),
-            evaluation: Evaluation::StructConstructor(Rc::clone(self)),
+            evaluation: Evaluation::StructConstructor(Rc::new(self)),
         }
     }
 

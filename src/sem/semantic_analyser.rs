@@ -35,7 +35,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     let mut context = SemanticContext::new();
 
     // ==========================================================================================
-    // STEP 1: Populate types.
+    // STEP 1: Populate trait identifiers.
     // ==========================================================================================
 
     // Populate trait identifiers and module interfaces.
@@ -47,11 +47,16 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         }
     }
 
+    // ==========================================================================================
+    // STEP 2: Analyse interface and trait types.
+    // ==========================================================================================
+
     // Populate module interfaces, made up of the module's own traits and def traits from other modules.
+    // By this point, all trait identifiers have been populated.
     for module in ast.mods.iter() {
         let mut types_for_module = vec![];
 
-        // Own traits.
+        // The modules own traits.
         for trait_statement in module.traits.iter() {
             let path = path(&format!("{}\\{}", module.name, trait_statement.name));
             let trayt = context.traits.resolve(&path)?;
@@ -59,7 +64,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             types_for_module.push(Type::Trait(trayt));
         }
 
-        // Traits added on through defs.
+        // Traits added on from other modules through defs.
         for def_statement in module.defs.iter() {
             let path = path(&def_statement.name);
             let trayt = context.traits.resolve(&path)?;
@@ -74,6 +79,8 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     }
 
     // Analyse trait input and output types.
+    // By this point, all trait and interface types have been populated, making it possible to
+    // analyse any type.
     for module in ast.mods.iter() {
         for trait_statement in module.traits.iter() {
             let path = path(&format!("{}\\{}", module.name, trait_statement.name));
@@ -85,7 +92,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     }
 
     // ==========================================================================================
-    // STEP 2: Populate let and def identifiers and types.
+    // STEP 3: Populate let and def identifiers and analyse types.
     // ==========================================================================================
 
     // Populate global let identifiers and types.
@@ -134,10 +141,12 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     }
 
     // ==========================================================================================
-    // STEP 3: Analyse let and def expressions.
+    // STEP 4: Analyse let and def expressions.
+    // By this point, all trait types and let types have been established, making it possible to
+    // analyse any expression.
     // ==========================================================================================
 
-    // Analyse global let expressions
+    // Analyse global let expressions.
     for let_statement in ast.lets.iter() {
         let path = path(&let_statement.name);
 
@@ -157,9 +166,20 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         }
     }
 
-    // Analyse struct constructor and def expressions.
+    // Analyse struct and class constructor and def expressions.
+    for module in ast.mods.iter() {
+        let path = path(&module.name);
 
-    // Analyse class constructor and def expressions.
+        if let Some(struct_statement) = &module.strukt {
+            let strukt = Struct::analyse(struct_statement, &module.defs, &context)?;
+
+            context.lets.resolve(&path)?.replace(strukt.constructor());
+        } else if let Some(class_statement) = &module.class {
+            let class = Class::analyse(class_statement, &module.defs, &context)?;
+
+            context.lets.resolve(&path)?.replace(class.constructor());
+        }
+    }
 
     Ok(context)
 }

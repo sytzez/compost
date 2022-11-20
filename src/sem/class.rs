@@ -59,11 +59,11 @@ impl Class {
         Ok(class)
     }
 
-    pub fn constructor(self: &Rc<Self>) -> Let {
+    pub fn constructor(self) -> Let {
         Let {
             inputs: self.dependencies.clone(),
             output: self.interface(),
-            evaluation: Evaluation::ClassConstructor(Rc::clone(self)),
+            evaluation: Evaluation::ClassConstructor(Rc::new(self)),
         }
     }
 
