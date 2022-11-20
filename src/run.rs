@@ -1,8 +1,10 @@
 use crate::error::CResult;
 use crate::lex::tokenizer::tokenize;
-use crate::parser::parse_tokens;
 use crate::sem::scope::path;
 use std::fs;
+use crate::ast::abstract_syntax_tree::AbstractSyntaxTree;
+use crate::ast::parser::Parser;
+use crate::sem::semantic_analyser::analyse_ast;
 
 pub fn run_file(file_path: &str) -> CResult<String> {
     let std = fs::read_to_string("lib/std.compost").expect("Unable to read lib/std.compost");
@@ -15,12 +17,16 @@ pub fn run_file(file_path: &str) -> CResult<String> {
 }
 
 pub fn run_code(code: &str) -> CResult<String> {
-    let scope = parse_tokens(&tokenize(code)?)?;
+    let mut tokens = tokenize(code)?;
 
-    let result = scope
-        .lett(&path("Main"))
-        .resolve([].into(), &scope)
-        .to_string(&scope);
+    let ast = AbstractSyntaxTree::parse(&mut tokens)?;
+
+    let context = analyse_ast(ast)?;
+
+    let main_let = context.lets.resolve(&path("Main"))?;
+
+    // let result = main_let.into_inner().unwrap().resolve([].into(), &scope).to_string(&scope);
+    let result = "Test".to_string();
 
     Ok(result)
 }

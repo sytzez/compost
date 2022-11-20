@@ -14,7 +14,8 @@ pub enum TypeStatement {
     Void,
 }
 
-pub enum RawTypeStatement {
+#[derive(Eq, PartialEq, Hash, Copy, Clone)]
+pub enum RawType {
     Int,
     String,
 }

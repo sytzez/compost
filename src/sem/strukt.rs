@@ -1,31 +1,62 @@
-use crate::ast::expression::Expression;
-use crate::sem::typ::{combine_types, RawType, Type};
-use crate::sem::definition::Definition;
+use std::cell::RefCell;
+use crate::sem::typ::{combine_types, Type};
 use crate::sem::lett::Let;
-use crate::sem::scope::ReferencePath;
-use std::collections::HashMap;
 use std::rc::Rc;
+use crate::ast::def_statement::DefStatement;
+use crate::ast::struct_statement::StructStatement;
+use crate::ast::type_statement::RawType;
+use crate::error::CResult;
+use crate::sem::evaluation::Evaluation;
+use crate::sem::scope::path;
+use crate::sem::semantic_analyser::SemanticContext;
+use crate::sem::trayt::Trait;
 
-// A struct has a set of fields which are of raw types, and a set of trait definitions.
+/// A struct has a set of fields which are of raw types, and a set of trait definitions.
 pub struct Struct {
-    pub fields: HashMap<String, RawType>,
-    pub definitions: HashMap<ReferencePath, Definition>,
+    pub fields: Vec<(String, RawType)>,
+    pub definitions: Vec<(Rc<RefCell<Option<Trait>>>, Evaluation)>,
 }
 
 impl Struct {
-    pub fn new() -> Self {
-        Struct {
-            fields: HashMap::new(),
-            definitions: HashMap::new(),
+    /// Step one of analysis.
+    pub fn analyse(statement: &StructStatement, def_statements: &[DefStatement], context: &SemanticContext) -> CResult<Self> {
+        // We process just the traits for now, so the struct will have an accurate interface.
+        let mut definitions = vec![];
+        for def_statement in def_statements.iter() {
+            let trayt = context.traits.resolve(&path(&def_statement.name))?;
+
+            // A dummy evaluation for now...
+            let evaluation = Evaluation::Zelf;
+
+            definitions.push((trayt, evaluation));
         }
+
+        let strukt = Struct {
+            fields: statement.fields.clone(),
+            definitions,
+        };
+
+        Ok(strukt)
     }
 
-    pub fn add_field(&mut self, name: String, typ: RawType) {
-        self.fields.insert(name, typ);
-    }
+    /// Step two of analysis, after all types and lets have been identified. Returns a new struct to replace the previous one.
+    pub fn analyse_definitions(&self, def_statements: &[DefStatement], context: &SemanticContext) -> CResult<Self> {
+        // TODO: create special context with fields and self.
+        let mut definitions = vec![];
+        for def_statement in def_statements.iter() {
+            let trayt = context.traits.resolve(&path(&def_statement.name))?;
 
-    pub fn add_definition(&mut self, trait_path: ReferencePath, definition: Definition) {
-        self.definitions.insert(trait_path, definition);
+            let evaluation = Evaluation::analyse(&def_statement.expr, context)?;
+
+            definitions.push((trayt, evaluation));
+        }
+
+        let strukt = Struct {
+            fields: self.fields.clone(),
+            definitions,
+        };
+
+        Ok(strukt)
     }
 
     pub fn constructor(self: &Rc<Self>) -> Let {
@@ -33,22 +64,21 @@ impl Struct {
             .fields
             .iter()
             .map(|(name, typ)| (name.clone(), Type::Raw(*typ)))
-            .collect::<HashMap<_, _>>();
+            .collect();
 
         Let {
             inputs,
             output: self.interface(),
-            expression: Expression::ConstructStruct(Rc::clone(self)),
+            evaluation: Evaluation::StructConstructor(Rc::clone(self)),
         }
     }
 
     pub fn interface(&self) -> Type {
         let types = self
             .definitions
-            .keys()
-            .cloned()
-            .map(Type::Trait)
-            .collect::<Vec<_>>();
+            .iter()
+            .map(|(trayt, _)| Type::Trait(Rc::clone(trayt)))
+            .collect();
 
         combine_types(types)
     }

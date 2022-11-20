@@ -1,5 +1,5 @@
 use crate::ast::type_statement::TypeStatement;
-use crate::sem::typ::Type;
+
 use crate::error::CResult;
 use crate::lex::token::{Op, Token};
 use crate::lex::tokenizer::LeveledToken;
@@ -49,7 +49,7 @@ pub fn parse_in_out_types(tokens: &mut Tokens, base_level: usize) -> CResult<(Ve
     let mut output = None;
 
     while tokens.deeper_than(base_level) {
-        if let Some(typ) = Type::maybe_parse(tokens)? {
+        if let Some(typ) = TypeStatement::maybe_parse(tokens)? {
             output = Some(typ);
             break;
         } else if matches!(tokens.token(), Token::Local(_)) {

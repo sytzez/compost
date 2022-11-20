@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
 use crate::ast::parser::{parse_local, Parser};
-use crate::ast::type_statement::RawTypeStatement;
+use crate::ast::type_statement::RawType;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
 use crate::lex::tokenizer::LeveledToken;
@@ -8,7 +8,7 @@ use crate::lex::tokens::Tokens;
 
 /// The struct keyword and its fields.
 pub struct StructStatement {
-    pub fields: Vec<(String, RawTypeStatement)>,
+    pub fields: Vec<(String, RawType)>,
 }
 
 impl StructStatement {
@@ -40,14 +40,14 @@ impl Parser for StructStatement {
     }
 }
 
-fn parse_field(tokens: &mut Tokens) -> CResult<(String, RawTypeStatement)> {
+fn parse_field(tokens: &mut Tokens) -> CResult<(String, RawType)> {
     let name = parse_local(tokens)?;
 
     let type_name = parse_local(tokens)?;
 
     let typ = match type_name.borrow() {
-        "int" => RawTypeStatement::Int,
-        "string" => RawTypeStatement::String,
+        "int" => RawType::Int,
+        "string" => RawType::String,
         _ => return tokens.error(format!("Unknown struct field type {}", type_name)),
     };
 

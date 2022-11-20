@@ -1,22 +1,33 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 use crate::ast::abstract_syntax_tree::AbstractSyntaxTree;
-use crate::ast::type_statement::TypeStatement;
 use crate::sem::typ::Type;
 use crate::error::CResult;
 use crate::sem::lett::Let;
-use crate::sem::scope::{path, Scope, Table};
+use crate::sem::scope::{path, Table};
 use crate::sem::trayt::Trait;
 
+pub struct SemanticContext {
+    pub traits: Table<RefCell<Option<Trait>>>,
+    pub lets: Table<RefCell<Option<Let>>>,
+    pub locals: HashMap<String, Type>,
+    pub zelf: Option<Type>,
+}
 
-pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<Scope> {
-    let mut scope = Scope::new();
+pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
+    let mut context = SemanticContext {
+        zelf: None,
+        lets: Table::new(),
+        traits: Table::new(),
+        locals: HashMap::new(),
+    };
 
     // Populate traits identifiers.
-    let mut traits: Table<RefCell<Option<Trait>>> = Table::new();
     for module in ast.mods.iter() {
         for trait_statement in module.traits.iter() {
             let path = path(&format!("{}\\{}", module.name, trait_statement.name));
-            traits.add(path, RefCell::new(None));
+
+            context.traits.add(path, RefCell::new(None));
         }
     }
 
@@ -25,58 +36,38 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<Scope> {
         for trait_statement in module.traits.iter() {
             let path = path(&format!("{}\\{}", module.name, trait_statement.name));
 
-            let inputs = trait_statement.parameters
-                .iter()
-                .map(|(param_name, type_statement)| {
-                    let typ = analyse_type(type_statement, &traits);
+            let trayt = Trait::analyse(trait_statement, &context)?;
 
-                    (param_name.clone(), typ)
-                })
-                .collect();
-
-            let output = analyse_type(&trait_statement.output, &traits);
-
-            let trayt = Trait { inputs, output, };
-
-            traits.resolve(&path).replace(Some(trayt));
+            context.traits.resolve(&path)?.replace(Some(trayt));
         }
     }
 
-    // Populate let identifiers from lets + struct and class constructors
+    // TODO: add module interface types
 
-    // Add let input types.
+    // Populate let identifiers from lets
+    for module in ast.mods.iter() {
+        for let_statement in module.lets.iter() {
+            let path = path(&format!("{}\\{}", module.name, let_statement.name));
 
-    // Parse let expressions, check types.
-    let mut lets = Table::new();
+            let lett = Let::analyse(let_statement, &context)?;
+
+            context.lets.resolve(&path)?.replace(Some(lett));
+        }
+    }
+
+    // Add struct contructor lets
+
+    // Add class constructors lets
+
+    // Parse global let expressions, check types.
     for let_statement in ast.lets.into_iter() {
         let path = path(&let_statement.name);
-        let lett = Let::from(let_statement);
-        lets.add(path, lett)
+
+
     }
 
-    Ok(scope)
-}
+    // Parse struct let expressions, check types.
 
-fn analyse_type(statement: &TypeStatement, traits: &Table<RefCell<Option<Trait>>>) -> Type {
-    match statement {
-        TypeStatement::Name(path_name) => {
-            // TODO: check if it's a module name -> use module interface
-            let trayt = traits.resolve(&path(path_name));
-            Type::Trait(trayt)
-        }
-        TypeStatement::And(left, right) => {
-            Type::And(
-                Box::new(analyse_type(left, traits)),
-                Box::new(analyse_type(right,traits)),
-            )
-        }
-        TypeStatement::Or(left, right) => {
-            Type::Or(
-                Box::new(analyse_type(left, traits)),
-                Box::new(analyse_type(right,traits)),
-            )
-        }
-        TypeStatement::Zelf => Type::Zelf,
-        TypeStatement::Void => Type::Void,
-    }
+
+    Ok(context)
 }

@@ -1,10 +1,11 @@
-use crate::error::CompilationError;
+use crate::error::CResult;
 use crate::lex::token::{next_token, Level, Next, Token};
+use crate::lex::tokens::Tokens;
 
 pub type LeveledToken = (Token, usize);
 
 // Turns a string of raw code into a vector of tokens with levels.
-pub fn tokenize(code: &str) -> Result<Vec<LeveledToken>, CompilationError> {
+pub fn tokenize(code: &str) -> CResult<Tokens> {
     let mut position: usize = 0;
     let mut level_stack = LevelStack::new();
     let mut leveled_tokens: Vec<LeveledToken> = vec![];
@@ -43,7 +44,9 @@ pub fn tokenize(code: &str) -> Result<Vec<LeveledToken>, CompilationError> {
         }
     }
 
-    Ok(leveled_tokens)
+    let tokens = Tokens::new(leveled_tokens);
+
+    Ok(tokens)
 }
 
 // Utility to keep track of the depth level of our code.
