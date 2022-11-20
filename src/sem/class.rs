@@ -19,34 +19,21 @@ pub struct Class {
 }
 
 impl Class {
-    /// Step one of analysis.
-    pub fn analyse(statement: &ClassStatement, def_statements: &[DefStatement], context: &SemanticContext) -> CResult<Self> {
-        let mut dependencies = vec![];
+    pub fn constructor_inputs(statement: &ClassStatement, context: &SemanticContext) -> CResult<Vec<(String, Type)>> {
+        let mut inputs = vec![];
+
         for (name, type_statement) in statement.dependencies.iter() {
             let typ = Type::analyse(type_statement, context)?;
 
-            dependencies.push((name.clone(), typ));
+            inputs.push((name.clone(), typ));
         }
 
-        // We process just the traits for now, so the struct will have an accurate interface.
-        let mut definitions = vec![];
-        for def_statement in def_statements.iter() {
-            let trayt = context.traits.resolve(&path(&def_statement.name))?;
-
-            // A dummy evaluation for now...
-            let evaluation = Evaluation::Zelf;
-
-            definitions.push((trayt, evaluation));
-        }
-
-
-        let class = Class { dependencies, definitions };
-
-        Ok(class)
+        Ok(inputs)
     }
 
-    /// Step two of analysis, after all types and lets have been identified. Returns a new class to replace the previous one.
-    pub fn analyse_definitions(&self, def_statements: &[DefStatement], context: &SemanticContext) -> CResult<Self> {
+    pub fn analyse(statement: &ClassStatement, def_statements: &[DefStatement], context: &SemanticContext) -> CResult<Self> {
+        let dependencies = Self::constructor_inputs(statement, context)?;
+
         // TODO: create special context with fields and self.
         let mut definitions = vec![];
         for def_statement in def_statements.iter() {
@@ -57,10 +44,7 @@ impl Class {
             definitions.push((trayt, evaluation));
         }
 
-        let class = Class {
-            dependencies: self.dependencies.clone(),
-            definitions,
-        };
+        let class = Class { dependencies, definitions };
 
         Ok(class)
     }

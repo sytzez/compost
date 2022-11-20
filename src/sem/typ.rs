@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use crate::ast::type_statement::{RawType, TypeStatement};
-use crate::error::{CResult};
+use crate::error::{CResult, error};
 use crate::sem::scope::path;
 use crate::sem::semantic_analyser::SemanticContext;
 use crate::sem::trayt::Trait;
@@ -38,9 +38,15 @@ impl Type {
     pub fn analyse(statement: &TypeStatement, context: &SemanticContext) -> CResult<Self> {
         let typ = match statement {
             TypeStatement::Name(name) => {
-                // Will be a type or an interface
-                // TODO: mod interfaces
-                Type::Trait(context.traits.resolve(&path(name))?)
+                let path = path(name);
+
+                if let Ok(interface) = context.interfaces.resolve(&path) {
+                    interface.as_ref().clone()
+                } else if let Ok(trayt) = context.traits.resolve(&path) {
+                    Type::Trait(trayt)
+                } else {
+                    return error(format!("Could not find module or trait {}", name), 0)
+                }
             }
             TypeStatement::And(a, b) => {
                 Type::And(

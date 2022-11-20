@@ -18,29 +18,14 @@ pub struct Struct {
 }
 
 impl Struct {
-    /// Step one of analysis.
-    pub fn analyse(statement: &StructStatement, def_statements: &[DefStatement], context: &SemanticContext) -> CResult<Self> {
-        // We process just the traits for now, so the struct will have an accurate interface.
-        let mut definitions = vec![];
-        for def_statement in def_statements.iter() {
-            let trayt = context.traits.resolve(&path(&def_statement.name))?;
-
-            // A dummy evaluation for now...
-            let evaluation = Evaluation::Zelf;
-
-            definitions.push((trayt, evaluation));
-        }
-
-        let strukt = Struct {
-            fields: statement.fields.clone(),
-            definitions,
-        };
-
-        Ok(strukt)
+    pub fn constructor_inputs(statement: &StructStatement) -> Vec<(String, Type)> {
+        statement.fields
+            .iter()
+            .map(|(name, typ)| (name.clone(), Type::Raw(*typ)))
+            .collect()
     }
 
-    /// Step two of analysis, after all types and lets have been identified. Returns a new struct to replace the previous one.
-    pub fn analyse_definitions(&self, def_statements: &[DefStatement], context: &SemanticContext) -> CResult<Self> {
+    pub fn analyse(statement: &StructStatement, def_statements: &[DefStatement], context: &SemanticContext) -> CResult<Self> {
         // TODO: create special context with fields and self.
         let mut definitions = vec![];
         for def_statement in def_statements.iter() {
@@ -52,7 +37,7 @@ impl Struct {
         }
 
         let strukt = Struct {
-            fields: self.fields.clone(),
+            fields: statement.fields.clone(),
             definitions,
         };
 

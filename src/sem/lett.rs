@@ -22,7 +22,8 @@ pub struct Let {
 // }
 
 impl Let {
-    pub fn analyse(statement: &LetStatement, context: &SemanticContext) -> CResult<Self> {
+    /// An earlier stage analysis that analyses only the inputs and output.
+    pub fn analyse_just_types(statement: &LetStatement, context: &SemanticContext) -> CResult<Self> {
         let mut inputs = vec![];
         for (param_name, type_statement) in statement.parameters.iter() {
             let typ = Type::analyse(type_statement, context)?;
@@ -32,10 +33,23 @@ impl Let {
 
         let output = Type::analyse(&statement.output, context)?;
 
+        let lett = Let {
+            inputs,
+            output,
+            evaluation: Evaluation::Zelf,
+        };
+
+        Ok(lett)
+    }
+
+    /// The final analysis.
+    pub fn analyse(statement: &LetStatement, context: &SemanticContext) -> CResult<Self> {
+        let lett = Self::analyse_just_types(statement, context)?;
+
         let evaluation = Evaluation::analyse(&statement.expr, context)?;
 
         // TODO: check if output type fits evaluation output type
-        let lett = Let { inputs, output, evaluation };
+        let lett = Let { inputs: lett.inputs, output: lett.output, evaluation };
 
         Ok(lett)
     }

@@ -28,7 +28,7 @@ pub enum Evaluation {
 
 #[derive(Clone)]
 pub struct LetEvaluation {
-    pub lett: Rc<RefCell<Option<Let>>>,
+    pub lett: Rc<RefCell<Let>>,
     pub inputs: Vec<(String, Evaluation)>,
 }
 
@@ -109,7 +109,7 @@ impl Evaluation {
 
     pub fn typ(&self, context: &SemanticContext) -> Type {
         match self {
-            Evaluation::Let(call) => call.lett.borrow().as_ref().unwrap().output.clone(),
+            Evaluation::Let(call) => call.lett.borrow().output.clone(),
             Evaluation::Trait(call) => call.trayt.borrow().as_ref().unwrap().output.clone(),
             Evaluation::Literal(_raw_value) => todo!(),
             Evaluation::Local(name) => context.locals.get(name).unwrap().clone(),
