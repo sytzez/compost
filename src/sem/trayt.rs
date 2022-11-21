@@ -11,6 +11,13 @@ pub struct Trait {
 }
 
 impl Trait {
+    pub fn dummy() -> Self {
+        Trait {
+            inputs: vec![],
+            output: Type::Void,
+        }
+    }
+
     pub fn analyse(statement: &TraitStatement, context: &SemanticContext) -> CResult<Self> {
         let mut inputs = vec![];
         for (param_name, type_statement) in statement.parameters.iter() {

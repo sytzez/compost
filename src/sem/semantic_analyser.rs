@@ -38,18 +38,16 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // STEP 1: Populate trait and interface identifiers.
     // ==========================================================================================
 
-    // Populate trait identifiers and module interfaces.
+    // Populate trait identifiers.
     for module in ast.mods.iter() {
         for trait_statement in module.traits.iter() {
             let path = path(&format!("{}\\{}", module.name, trait_statement.name));
 
-            let dummy_trait = Trait {
-                inputs: vec![],
-                output: Type::Void,
-            };
-
-            context.traits.add(path.clone(), RefCell::new(dummy_trait));
+            context.traits.add(path.clone(), RefCell::new(Trait::dummy()));
         }
+
+        // Each module has an eponymous trait, which has the module interface as output type.
+        context.traits.add(path(&module.name), RefCell::new(Trait::dummy()));
     }
 
     // Populate module interfaces, made up of the module's own traits and def traits from other modules.
@@ -76,7 +74,13 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         let path = path(&module.name);
         let interface = combine_types(types_for_module);
 
-        context.interfaces.add(path, interface);
+        context.interfaces.add(path.clone(), interface.clone());
+
+        let eponymous_trait = Trait {
+            inputs: vec![],
+            output: interface,
+        };
+        context.traits.resolve(&path)?.replace(eponymous_trait);
     }
 
     // ==========================================================================================

@@ -1,3 +1,4 @@
+use std::backtrace::Backtrace;
 use crate::error::{error, CResult};
 use std::rc::Rc;
 
@@ -130,7 +131,7 @@ pub fn path(string: &str) -> ReferencePath {
 //     }
 // }
 
-// TODO: move to separate module
+// TODO: move to separate module. Move logic of path() function into it.
 /// A table of references to items of a kind.
 pub struct Table<T> {
     items: Vec<(ReferencePath, Rc<T>)>,
