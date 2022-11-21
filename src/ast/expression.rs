@@ -81,7 +81,7 @@ impl Parser for Expression {
             Token::Local(name) => {
                 tokens.step();
 
-                Expression::Local(name.clone())
+                Expression::Local(name)
             }
             Token::Lit(lit) => {
                 tokens.step();

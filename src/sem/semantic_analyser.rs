@@ -45,7 +45,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // Populate trait identifiers.
     for module in ast.mods.iter() {
         for trait_statement in module.traits.iter() {
-            let name = &format!("{}\\{}", module.name, trait_statement.name);
+            let name = format!("{}\\{}", module.name, trait_statement.name);
 
             context
                 .traits
@@ -197,14 +197,14 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // Analyse struct and class constructor and def expressions.
     for module in ast.mods.iter() {
         if module.strukt.is_some() {
-            let strukt = Struct::analyse(&module, &context)?;
+            let strukt = Struct::analyse(module, &context)?;
 
             context
                 .lets
                 .resolve(&module.name, "")?
                 .replace(strukt.constructor());
         } else if module.class.is_some() {
-            let class = Class::analyse(&module, &context)?;
+            let class = Class::analyse(module, &context)?;
 
             context
                 .lets

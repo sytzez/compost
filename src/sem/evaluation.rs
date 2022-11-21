@@ -55,7 +55,7 @@ impl Evaluation {
 
                 // TODO: check lhs and rhs types.
                 Evaluation::Trait(TraitEvaluation {
-                    trayt: scope.context.traits.resolve(&trait_path, "")?,
+                    trayt: scope.context.traits.resolve(trait_path, "")?,
                     subject,
                     inputs,
                 })

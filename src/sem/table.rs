@@ -33,14 +33,14 @@ impl<T> Table<T> {
                     let start = item_path.len() - match_len;
                     let shortened_item_path = &item_path[start..];
 
-                    if shortened_item_path == &path {
+                    if shortened_item_path == path {
                         return Ok(Rc::clone(item));
                     }
                 }
             }
         }
 
-        if scope != "" {
+        if !scope.is_empty() {
             // Retry without a scope.
             self.resolve(name, "")
         } else {
@@ -64,7 +64,7 @@ impl<T> Table<T> {
     fn path(string: &str) -> Vec<String> {
         string
             .split('\\')
-            .filter(|segment| ! segment.is_empty())
+            .filter(|segment| !segment.is_empty())
             .map(|segment| segment.to_string())
             .collect()
     }

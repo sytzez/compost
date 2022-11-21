@@ -21,11 +21,6 @@ impl Tokens {
         self.position += 1;
     }
 
-    /// Advance a number of steps.
-    pub fn steps(&mut self, amount: usize) {
-        self.position += amount;
-    }
-
     /// Whether there are more tokens left.
     pub fn still_more(&self) -> bool {
         self.position < self.tokens.len()
@@ -43,11 +38,6 @@ impl Tokens {
     /// The remaining tokens.
     pub fn remaining(&self) -> &[LeveledToken] {
         &self.tokens[self.position..]
-    }
-
-    /// The current token and level.
-    pub fn leveled_token(&self) -> &LeveledToken {
-        &self.tokens[self.position]
     }
 
     /// The current token.
