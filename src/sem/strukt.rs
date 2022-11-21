@@ -14,7 +14,7 @@ use std::rc::Rc;
 /// A struct has a set of fields which are of raw types, and a set of trait definitions.
 pub struct Struct {
     pub fields: Vec<(String, RawType)>,
-    pub definitions: Vec<(Rc<RefCell<Option<Trait>>>, Evaluation)>,
+    pub definitions: Vec<(Rc<RefCell<Trait>>, Evaluation)>,
 }
 
 impl Struct {

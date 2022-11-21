@@ -8,7 +8,7 @@ use std::rc::Rc;
 
 #[derive(Eq, PartialEq, Clone)]
 pub enum Type {
-    Trait(Rc<RefCell<Option<Trait>>>),
+    Trait(Rc<RefCell<Trait>>),
     Raw(RawType),
     And(Box<Type>, Box<Type>),
     Or(Box<Type>, Box<Type>),

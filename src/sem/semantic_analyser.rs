@@ -11,7 +11,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 pub struct SemanticContext {
-    pub traits: Table<RefCell<Option<Trait>>>,
+    pub traits: Table<RefCell<Trait>>,
     pub lets: Table<RefCell<Let>>,
     pub interfaces: Table<Type>,
     pub locals: HashMap<String, Type>,
@@ -35,7 +35,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     let mut context = SemanticContext::new();
 
     // ==========================================================================================
-    // STEP 1: Populate trait identifiers.
+    // STEP 1: Populate trait and interface identifiers.
     // ==========================================================================================
 
     // Populate trait identifiers and module interfaces.
@@ -43,13 +43,14 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         for trait_statement in module.traits.iter() {
             let path = path(&format!("{}\\{}", module.name, trait_statement.name));
 
-            context.traits.add(path.clone(), RefCell::new(None));
+            let dummy_trait = Trait {
+                inputs: vec![],
+                output: Type::Void,
+            };
+
+            context.traits.add(path.clone(), RefCell::new(dummy_trait));
         }
     }
-
-    // ==========================================================================================
-    // STEP 2: Analyse interface and trait types.
-    // ==========================================================================================
 
     // Populate module interfaces, made up of the module's own traits and def traits from other modules.
     // By this point, all trait identifiers have been populated.
@@ -78,22 +79,22 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         context.interfaces.add(path, interface);
     }
 
-    // Analyse trait input and output types.
+    // ==========================================================================================
+    // STEP 2: Analyse trait, let and def input and output types
     // By this point, all trait and interface types have been populated, making it possible to
     // analyse any type.
+    // ==========================================================================================
+
+    // Analyse trait input and output types.
     for module in ast.mods.iter() {
         for trait_statement in module.traits.iter() {
             let path = path(&format!("{}\\{}", module.name, trait_statement.name));
 
             let trayt = Trait::analyse(trait_statement, &context)?;
 
-            context.traits.resolve(&path)?.replace(Some(trayt));
+            context.traits.resolve(&path)?.replace(trayt);
         }
     }
-
-    // ==========================================================================================
-    // STEP 3: Populate let and def identifiers and analyse types.
-    // ==========================================================================================
 
     // Populate global let identifiers and types.
     for let_statement in ast.lets.iter() {
@@ -141,7 +142,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     }
 
     // ==========================================================================================
-    // STEP 4: Analyse let and def expressions.
+    // STEP 3: Analyse let and def expressions.
     // By this point, all trait types and let types have been established, making it possible to
     // analyse any expression.
     // ==========================================================================================

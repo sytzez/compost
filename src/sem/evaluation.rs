@@ -34,7 +34,7 @@ pub struct LetEvaluation {
 
 #[derive(Clone)]
 pub struct TraitEvaluation {
-    pub trayt: Rc<RefCell<Option<Trait>>>,
+    pub trayt: Rc<RefCell<Trait>>,
     pub subject: Box<Evaluation>,
     pub inputs: Vec<(String, Evaluation)>,
 }
@@ -102,7 +102,7 @@ impl Evaluation {
     pub fn typ(&self, context: &SemanticContext) -> Type {
         match self {
             Evaluation::Let(call) => call.lett.borrow().output.clone(),
-            Evaluation::Trait(call) => call.trayt.borrow().as_ref().unwrap().output.clone(),
+            Evaluation::Trait(call) => call.trayt.borrow().output.clone(),
             Evaluation::Literal(_raw_value) => todo!(),
             Evaluation::Local(name) => context.locals.get(name).unwrap().clone(),
             Evaluation::FriendlyField(_ff) => todo!(),
