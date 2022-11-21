@@ -89,6 +89,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             inputs: vec![],
             output: interface,
         };
+
         context
             .traits
             .resolve(&module.name, "")?

@@ -45,8 +45,6 @@ impl<T> Table<T> {
             self.resolve(name, "")
         } else {
             panic!("No resolution for {} '{}'", self.name, name);
-
-            error(format!("No resolution for {} {}", self.name, name), 0)
         }
     }
 
@@ -66,6 +64,7 @@ impl<T> Table<T> {
     fn path(string: &str) -> Vec<String> {
         string
             .split('\\')
+            .filter(|segment| ! segment.is_empty())
             .map(|segment| segment.to_string())
             .collect()
     }
