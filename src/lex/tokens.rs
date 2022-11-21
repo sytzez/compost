@@ -36,6 +36,10 @@ impl Tokens {
         self.still_more() && self.level() > level
     }
 
+    pub fn deeper_than_or_eq(&self, level: usize) -> bool {
+        self.still_more() && self.level() >= level
+    }
+
     /// The remaining tokens.
     pub fn remaining(&self) -> &[LeveledToken] {
         &self.tokens[self.position..]

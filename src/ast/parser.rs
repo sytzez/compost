@@ -32,10 +32,7 @@ pub fn parse_global(tokens: &mut Tokens) -> CResult<String> {
         tokens.step();
         Ok(name)
     } else {
-        tokens.error(format!(
-            "Expected global name, got {:?} ",
-            tokens.leveled_token()
-        ))
+        tokens.error(format!("Expected global name, got {:?} ", tokens.token()))
     }
 }
 
@@ -45,10 +42,7 @@ pub fn parse_local(tokens: &mut Tokens) -> CResult<String> {
         tokens.step();
         Ok(name)
     } else {
-        tokens.error(format!(
-            "Expected local name, got {:?} ",
-            tokens.leveled_token()
-        ))
+        tokens.error(format!("Expected local name, got {:?} ", tokens.token()))
     }
 }
 

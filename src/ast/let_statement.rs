@@ -2,6 +2,7 @@ use crate::ast::expression::Expression;
 use crate::ast::parser::{parse_global, parse_in_out_types, Parser};
 use crate::ast::type_statement::TypeStatement;
 use crate::error::CResult;
+use crate::lex::token::{Kw, Token};
 use crate::lex::tokenizer::LeveledToken;
 use crate::lex::tokens::Tokens;
 
@@ -25,8 +26,8 @@ impl LetsStatement {
 }
 
 impl Parser for LetsStatement {
-    fn matches(_tokens: &[LeveledToken]) -> bool {
-        todo!()
+    fn matches(tokens: &[LeveledToken]) -> bool {
+        matches!(tokens[0].0, Token::Kw(Kw::Lets))
     }
 
     fn parse(tokens: &mut Tokens) -> CResult<Self> {

@@ -111,7 +111,7 @@ impl Parser for Expression {
         };
 
         // Parse further operations
-        while tokens.deeper_than(base_level) {
+        while tokens.deeper_than_or_eq(base_level) {
             // Needs cloning to prevent immutable borrow errors.
             let token = tokens.token().clone();
 

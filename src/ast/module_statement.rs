@@ -42,7 +42,6 @@ impl Parser for ModuleStatement {
         tokens.step();
 
         let name = parse_global(tokens)?;
-        tokens.step();
 
         let mut statement = ModuleStatement::new(name);
 
