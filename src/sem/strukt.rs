@@ -4,11 +4,13 @@ use crate::ast::type_statement::RawType;
 use crate::error::CResult;
 use crate::sem::evaluation::Evaluation;
 use crate::sem::lett::Let;
-use crate::sem::semantic_analyser::SemanticContext;
+use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::trayt::Trait;
 use crate::sem::typ::{combine_types, Type};
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
+use crate::ast::module_statement::ModuleStatement;
 
 /// A struct has a set of fields which are of raw types, and a set of trait definitions.
 pub struct Struct {
@@ -26,22 +28,38 @@ impl Struct {
     }
 
     pub fn analyse(
-        statement: &StructStatement,
-        def_statements: &[DefStatement],
+        module_statement: &ModuleStatement,
         context: &SemanticContext,
     ) -> CResult<Self> {
-        // TODO: create special context with fields and self.
-        let mut definitions = vec![];
-        for def_statement in def_statements.iter() {
-            let trayt = context.traits.resolve(&def_statement.name)?;
+        let struct_statement = module_statement.strukt.as_ref().unwrap();
 
-            let evaluation = Evaluation::analyse(&def_statement.expr, context)?;
+        let constructor_inputs = Self::constructor_inputs(struct_statement);
+
+        let path = &module_statement.name;
+
+        let mut scope = SemanticScope {
+            context,
+            path,
+            locals: HashMap::new(),
+            zelf: Some(context.interfaces.resolve(path, "")?),
+        };
+
+        let mut definitions = vec![];
+        for def_statement in module_statement.defs.iter() {
+            let trayt = context.traits.resolve(&def_statement.name, path)?;
+
+            scope.locals = [
+                constructor_inputs.clone(),
+                trayt.borrow().inputs.clone(),
+            ].concat().into_iter().collect();
+
+            let evaluation = Evaluation::analyse(&def_statement.expr, &scope)?;
 
             definitions.push((trayt, evaluation));
         }
 
         let strukt = Struct {
-            fields: statement.fields.clone(),
+            fields: struct_statement.fields.clone(),
             definitions,
         };
 

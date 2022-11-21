@@ -1,15 +1,17 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 
 use crate::ast::class_statement::ClassStatement;
 use crate::ast::def_statement::DefStatement;
 use crate::error::CResult;
 use crate::sem::evaluation::Evaluation;
 use crate::sem::lett::Let;
-use crate::sem::semantic_analyser::SemanticContext;
+use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::trayt::Trait;
 use crate::sem::typ::{combine_types, Type};
 use std::rc::Rc;
 use std::string::String;
+use crate::ast::module_statement::ModuleStatement;
 
 // A class has a set of dependencies of certain types, and a set of trait definitions.
 pub struct Class {
@@ -19,13 +21,15 @@ pub struct Class {
 
 impl Class {
     pub fn constructor_inputs(
-        statement: &ClassStatement,
+        module_statement: &ModuleStatement,
         context: &SemanticContext,
     ) -> CResult<Vec<(String, Type)>> {
         let mut inputs = vec![];
 
-        for (name, type_statement) in statement.dependencies.iter() {
-            let typ = Type::analyse(type_statement, context)?;
+        let dependencies = &module_statement.class.as_ref().unwrap().dependencies;
+
+        for (name, type_statement) in dependencies.iter() {
+            let typ = Type::analyse(type_statement, context, &module_statement.name)?;
 
             inputs.push((name.clone(), typ));
         }
@@ -34,18 +38,30 @@ impl Class {
     }
 
     pub fn analyse(
-        statement: &ClassStatement,
-        def_statements: &[DefStatement],
+        module_statement: &ModuleStatement,
         context: &SemanticContext,
     ) -> CResult<Self> {
-        let dependencies = Self::constructor_inputs(statement, context)?;
+        let dependencies = Self::constructor_inputs(module_statement, context)?;
 
-        // TODO: create special context with fields and self.
+        let path = &module_statement.name;
+
+        let mut scope = SemanticScope {
+            context,
+            path,
+            locals: HashMap::new(),
+            zelf: Some(context.interfaces.resolve(path, "")?),
+        };
+
         let mut definitions = vec![];
-        for def_statement in def_statements.iter() {
-            let trayt = context.traits.resolve(&def_statement.name)?;
+        for def_statement in module_statement.defs.iter() {
+            let trayt = context.traits.resolve(&def_statement.name, path)?;
 
-            let evaluation = Evaluation::analyse(&def_statement.expr, context)?;
+            scope.locals = [
+                dependencies.clone(),
+                trayt.borrow().inputs.clone(),
+            ].concat().into_iter().collect();
+
+            let evaluation = Evaluation::analyse(&def_statement.expr, &scope)?;
 
             definitions.push((trayt, evaluation));
         }

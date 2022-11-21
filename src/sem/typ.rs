@@ -34,32 +34,26 @@ pub fn combine_types(types: Vec<Type>) -> Type {
 }
 
 impl Type {
-    pub fn analyse(statement: &TypeStatement, context: &SemanticContext) -> CResult<Self> {
+    pub fn analyse(statement: &TypeStatement, context: &SemanticContext, path: &str) -> CResult<Self> {
         let typ = match statement {
             TypeStatement::Name(name) => {
-                if let Ok(interface) = context.interfaces.resolve(name) {
+                if let Ok(interface) = context.interfaces.resolve(name, path) {
                     interface.as_ref().clone()
-                } else if let Ok(trayt) = context.traits.resolve(name) {
+                } else if let Ok(trayt) = context.traits.resolve(name, path) {
                     Type::Trait(trayt)
                 } else {
                     return error(format!("Could not find module or trait {}", name), 0);
                 }
             }
             TypeStatement::And(a, b) => Type::And(
-                Box::new(Type::analyse(a, context)?),
-                Box::new(Type::analyse(b, context)?),
+                Box::new(Type::analyse(a, context, path)?),
+                Box::new(Type::analyse(b, context, path)?),
             ),
             TypeStatement::Or(a, b) => Type::Or(
-                Box::new(Type::analyse(a, context)?),
-                Box::new(Type::analyse(b, context)?),
+                Box::new(Type::analyse(a, context, path)?),
+                Box::new(Type::analyse(b, context, path)?),
             ),
-            TypeStatement::Zelf => {
-                if let Some(typ) = &context.zelf {
-                    typ.clone()
-                } else {
-                    Type::Zelf
-                }
-            }
+            TypeStatement::Zelf => Type::Zelf,
             TypeStatement::Void => Type::Void,
         };
 

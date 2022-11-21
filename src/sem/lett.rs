@@ -3,7 +3,7 @@ use crate::sem::typ::Type;
 use crate::ast::let_statement::LetStatement;
 use crate::error::CResult;
 use crate::sem::evaluation::Evaluation;
-use crate::sem::semantic_analyser::SemanticContext;
+use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 
 // A 'let' defines a constant instance or a function.
 pub struct Let {
@@ -26,15 +26,16 @@ impl Let {
     pub fn analyse_just_types(
         statement: &LetStatement,
         context: &SemanticContext,
+        path: &str,
     ) -> CResult<Self> {
         let mut inputs = vec![];
         for (param_name, type_statement) in statement.parameters.iter() {
-            let typ = Type::analyse(type_statement, context)?;
+            let typ = Type::analyse(type_statement, context, path)?;
 
             inputs.push((param_name.clone(), typ));
         }
 
-        let output = Type::analyse(&statement.output, context)?;
+        let output = Type::analyse(&statement.output, context, path)?;
 
         let lett = Let {
             inputs,
@@ -46,10 +47,17 @@ impl Let {
     }
 
     /// The final analysis.
-    pub fn analyse(statement: &LetStatement, context: &SemanticContext) -> CResult<Self> {
-        let lett = Self::analyse_just_types(statement, context)?;
+    pub fn analyse(statement: &LetStatement, context: &SemanticContext, path: &str) -> CResult<Self> {
+        let lett = Self::analyse_just_types(statement, context, path)?;
 
-        let evaluation = Evaluation::analyse(&statement.expr, context)?;
+        let scope = SemanticScope {
+            context,
+            path,
+            locals: lett.inputs.iter().cloned().collect(),
+            zelf: None,
+        };
+
+        let evaluation = Evaluation::analyse(&statement.expr, &scope)?;
 
         // TODO: check if output type fits evaluation output type
         let lett = Let {

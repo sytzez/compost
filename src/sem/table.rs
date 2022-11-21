@@ -1,45 +1,72 @@
-use std::collections::HashMap;
+use std::cmp::max;
 use std::rc::Rc;
 use crate::error::{CResult, error};
 
-type ReferencePath = Vec<String>;
-
-fn path(string: &str) -> ReferencePath {
-    string
-        .split('\\')
-        .map(|segment| segment.to_string())
-        .collect()
-}
-
 /// A table of references to items of a kind.
 pub struct Table<T> {
-    items: HashMap<ReferencePath, Rc<T>>,
+    name: &'static str,
+    items: Vec<(Vec<String>, Rc<T>)>,
+    longest_path: usize,
 }
 
 impl<T> Table<T> {
-    pub fn new() -> Self {
-        Self { items: HashMap::new() }
+    pub fn new(name: &'static str) -> Self {
+        Self {
+            name,
+            items: vec![],
+            longest_path: 0,
+        }
     }
 
-    pub fn resolve(&self, name: &str) -> CResult<Rc<T>> {
-        let path = path(name);
-        let end = path.len() - 1;
+    /// Resolves the best match of the given path.
+    /// When "Add" and "Op\Add" are available, "Add" should resolve to the former.
+    /// In the "Op" scope, "Add" should resolve to the latter.
+    /// When only "Op\Add" is available, "Add" should resolve to that.
+    /// Only when the name is not available inside the scope, global search should be tried.
+    pub fn resolve(&self, name: &str, scope: &str) -> CResult<Rc<T>> {
+        let path = [Self::path(scope), Self::path(name)].concat();
 
-        for i in 0..=end {
-            let partial_path = &path[(end - i)..end];
+        // Check shortest match first, then longer ones.
+        for match_len in path.len()..=self.longest_path {
+            for (item_path, item) in self.items.iter() {
+                if item_path.len() == match_len {
+                    let start = item_path.len() - match_len;
+                    let shortened_item_path = &item_path[start..];
 
-            if let Some(item) = self.items.get(partial_path) {
-                return Ok(Rc::clone(item))
+                    if shortened_item_path == &path {
+                        return Ok(Rc::clone(item))
+                    }
+                }
             }
         }
 
-        error(format!("No resolution for {}", name), 0)
+        if scope != "" {
+            // Retry without a scope.
+            self.resolve(name, "")
+        } else {
+            panic!("No resolution for {} '{}'", self.name, name);
+
+            error(format!("No resolution for {} {}", self.name, name), 0)
+        }
     }
 
     pub fn declare(&mut self, name: &str, item: T) -> CResult<()> {
-        match self.items.insert(path(name), Rc::new(item)) {
-            None => Ok(()),
-            Some(_) => error(format!("{} is already declared", name), 0),
+        let path = Self::path(name);
+
+        if self.items.iter().any(|(p, _)| p == &path) {
+            return error(format!("{} '{}' was declared twice", self.name, name), 0);
         }
+
+        self.longest_path = max(self.longest_path, path.len());
+        self.items.push((path, Rc::new(item)));
+
+        Ok(())
+    }
+
+    fn path(string: &str) -> Vec<String> {
+        string
+            .split('\\')
+            .map(|segment| segment.to_string())
+            .collect()
     }
 }

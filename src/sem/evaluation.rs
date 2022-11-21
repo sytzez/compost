@@ -2,10 +2,10 @@ use std::cell::RefCell;
 
 use crate::ast::expression::{BinaryOp, Expression, FriendlyField};
 use crate::ast::raw_value::RawValue;
-use crate::error::CResult;
+use crate::error::{CResult, error};
 use crate::sem::class::Class;
 use crate::sem::lett::Let;
-use crate::sem::semantic_analyser::SemanticContext;
+use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::strukt::Struct;
 use crate::sem::trayt::Trait;
 use crate::sem::typ::Type;
@@ -39,7 +39,7 @@ pub struct TraitEvaluation {
 }
 
 impl Evaluation {
-    pub fn analyse(expr: &Expression, context: &SemanticContext) -> CResult<Self> {
+    pub fn analyse(expr: &Expression, scope: &SemanticScope) -> CResult<Self> {
         let eval = match expr.clone() {
             Expression::Binary(call) => {
                 let trait_path = match call.op {
@@ -49,13 +49,13 @@ impl Evaluation {
                     BinaryOp::Div => "Op\\Div",
                 };
 
-                let inputs = [("rhs".into(), Evaluation::analyse(&call.rhs, context)?)].into();
+                let inputs = [("rhs".into(), Evaluation::analyse(&call.rhs, scope)?)].into();
 
-                let subject = Box::new(Evaluation::analyse(&call.lhs, context)?);
+                let subject = Box::new(Evaluation::analyse(&call.lhs, scope)?);
 
                 // TODO: check lhs and rhs types.
                 Evaluation::Trait(TraitEvaluation {
-                    trayt: context.traits.resolve(&trait_path)?,
+                    trayt: scope.context.traits.resolve(&trait_path, "")?,
                     subject,
                     inputs,
                 })
@@ -63,29 +63,29 @@ impl Evaluation {
             Expression::Def(call) => {
                 let mut inputs = vec![];
                 for (param_name, expr) in call.inputs.into_iter() {
-                    let eval = Evaluation::analyse(&expr, context)?;
+                    let eval = Evaluation::analyse(&expr, scope)?;
 
                     inputs.push((param_name, eval));
                 }
 
                 // TODO: Check inputs match
                 Evaluation::Trait(TraitEvaluation {
-                    trayt: context.traits.resolve(&call.name)?,
-                    subject: Box::new(Evaluation::analyse(&call.subject, context)?),
+                    trayt: scope.context.traits.resolve(&call.name, scope.path)?,
+                    subject: Box::new(Evaluation::analyse(&call.subject, scope)?),
                     inputs,
                 })
             }
             Expression::Let(call) => {
                 let mut inputs = vec![];
                 for (param_name, expr) in call.inputs.into_iter() {
-                    let eval = Evaluation::analyse(&expr, context)?;
+                    let eval = Evaluation::analyse(&expr, scope)?;
 
                     inputs.push((param_name, eval));
                 }
 
                 // TODO: check inputs match
                 Evaluation::Let(LetEvaluation {
-                    lett: context.lets.resolve(&call.name)?,
+                    lett: scope.context.lets.resolve(&call.name, scope.path)?,
                     inputs,
                 })
             }
@@ -98,16 +98,23 @@ impl Evaluation {
         Ok(eval)
     }
 
-    pub fn typ(&self, context: &SemanticContext) -> Type {
-        match self {
+    pub fn typ(&self, scope: &SemanticScope) -> CResult<Type> {
+        let typ = match self {
             Evaluation::Let(call) => call.lett.borrow().output.clone(),
             Evaluation::Trait(call) => call.trayt.borrow().output.clone(),
             Evaluation::Literal(_raw_value) => todo!(),
-            Evaluation::Local(name) => context.locals.get(name).unwrap().clone(),
+            Evaluation::Local(name) => scope.locals.get(name).unwrap().clone(),
             Evaluation::FriendlyField(_ff) => todo!(),
-            Evaluation::Zelf => context.zelf.as_ref().unwrap().clone(),
+            Evaluation::Zelf => {
+                match &scope.zelf {
+                    Some(typ) => typ.as_ref().clone(),
+                    None => return error("There is no 'Self' in this scope".to_string(), 0),
+                }
+            },
             Evaluation::ClassConstructor(class) => class.interface(),
             Evaluation::StructConstructor(strukt) => strukt.interface(),
-        }
+        };
+
+        Ok(typ)
     }
 }

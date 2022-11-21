@@ -8,26 +8,30 @@ use crate::sem::trayt::Trait;
 use crate::sem::typ::{combine_types, Type};
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 use crate::sem::table::Table;
 
 pub struct SemanticContext {
     pub traits: Table<RefCell<Trait>>,
     pub lets: Table<RefCell<Let>>,
     pub interfaces: Table<Type>,
-    pub locals: HashMap<String, Type>,
-    pub zelf: Option<Type>,
 }
 
 impl SemanticContext {
     pub fn new() -> Self {
         SemanticContext {
-            zelf: None,
-            lets: Table::new(),
-            traits: Table::new(),
-            interfaces: Table::new(),
-            locals: HashMap::new(),
+            lets: Table::new("Let"),
+            traits: Table::new("Trait"),
+            interfaces: Table::new("Interface"),
         }
     }
+}
+
+pub struct SemanticScope<'a> {
+    pub context: &'a SemanticContext,
+    pub path: &'a str,
+    pub locals: HashMap<String, Type>,
+    pub zelf: Option<Rc<Type>>,
 }
 
 /// Analyses the semantics of a complete AST, and returns the global semantic context.
@@ -57,16 +61,14 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
 
         // The modules own traits.
         for trait_statement in module.traits.iter() {
-            let name = format!("{}\\{}", module.name, trait_statement.name);
-            let trayt = context.traits.resolve(&name)?;
+            let trayt = context.traits.resolve(&trait_statement.name, &module.name)?;
 
             types_for_module.push(Type::Trait(trayt));
         }
 
         // Traits added on from other modules through defs.
         for def_statement in module.defs.iter() {
-            let name = format!("{}\\{}", module.name, def_statement.name);
-            let trayt = context.traits.resolve(&name)?;
+            let trayt = context.traits.resolve(&def_statement.name, &module.name)?;
 
             types_for_module.push(Type::Trait(trayt));
         }
@@ -79,7 +81,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             inputs: vec![],
             output: interface,
         };
-        context.traits.resolve(&module.name)?.replace(eponymous_trait);
+        context.traits.resolve(&module.name, "")?.replace(eponymous_trait);
     }
 
     // ==========================================================================================
@@ -91,17 +93,15 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // Analyse trait input and output types.
     for module in ast.mods.iter() {
         for trait_statement in module.traits.iter() {
-            let name = format!("{}\\{}", module.name, trait_statement.name);
+            let trayt = Trait::analyse(trait_statement, &context, &module.name)?;
 
-            let trayt = Trait::analyse(trait_statement, &context)?;
-
-            context.traits.resolve(&name)?.replace(trayt);
+            context.traits.resolve(&trait_statement.name, &module.name)?.replace(trayt);
         }
     }
 
     // Populate global let identifiers and types.
     for let_statement in ast.lets.iter() {
-        let lett = Let::analyse_just_types(let_statement, &context)?;
+        let lett = Let::analyse_just_types(let_statement, &context, "")?;
 
         context.lets.declare(&let_statement.name, RefCell::new(lett))?;
     }
@@ -111,7 +111,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         for let_statement in module.lets.iter() {
             let name = format!("{}\\{}", module.name, let_statement.name);
 
-            let lett = Let::analyse_just_types(let_statement, &context)?;
+            let lett = Let::analyse_just_types(let_statement, &context, &module.name)?;
 
             context.lets.declare(&name, RefCell::new(lett))?;
         }
@@ -123,16 +123,16 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             // Just the inputs and output of the constructor.
             let constructor = Let {
                 inputs: Struct::constructor_inputs(struct_statement),
-                output: context.interfaces.resolve(&module.name)?.as_ref().clone(),
+                output: context.interfaces.resolve(&module.name, "")?.as_ref().clone(),
                 evaluation: Evaluation::Zelf,
             };
 
             context.lets.declare(&module.name, RefCell::new(constructor))?;
-        } else if let Some(class_statement) = &module.class {
+        } else if module.class.is_some() {
             // Just the inputs and output of the constructor.
             let constructor = Let {
-                inputs: Class::constructor_inputs(class_statement, &context)?,
-                output: context.interfaces.resolve(&module.name)?.as_ref().clone(),
+                inputs: Class::constructor_inputs(module, &context)?,
+                output: context.interfaces.resolve(&module.name, "")?.as_ref().clone(),
                 evaluation: Evaluation::Zelf,
             };
 
@@ -148,32 +148,30 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
 
     // Analyse global let expressions.
     for let_statement in ast.lets.iter() {
-        let lett = Let::analyse(let_statement, &context)?;
+        let lett = Let::analyse(let_statement, &context, "")?;
 
-        context.lets.resolve(&let_statement.name)?.replace(lett);
+        context.lets.resolve(&let_statement.name, "")?.replace(lett);
     }
 
     // Analyse module let expressions.
     for module in ast.mods.iter() {
         for let_statement in module.lets.iter() {
-            let name = format!("{}\\{}", module.name, let_statement.name);
+            let lett = Let::analyse(let_statement, &context, &module.name)?;
 
-            let lett = Let::analyse(let_statement, &context)?;
-
-            context.lets.resolve(&name)?.replace(lett);
+            context.lets.resolve(&let_statement.name, &module.name)?.replace(lett);
         }
     }
 
     // Analyse struct and class constructor and def expressions.
     for module in ast.mods.iter() {
-        if let Some(struct_statement) = &module.strukt {
-            let strukt = Struct::analyse(struct_statement, &module.defs, &context)?;
+        if module.strukt.is_some() {
+            let strukt = Struct::analyse(&module, &context)?;
 
-            context.lets.resolve(&module.name)?.replace(strukt.constructor());
-        } else if let Some(class_statement) = &module.class {
-            let class = Class::analyse(class_statement, &module.defs, &context)?;
+            context.lets.resolve(&module.name, "")?.replace(strukt.constructor());
+        } else if module.class.is_some() {
+            let class = Class::analyse(&module, &context)?;
 
-            context.lets.resolve(&module.name)?.replace(class.constructor());
+            context.lets.resolve(&module.name, "")?.replace(class.constructor());
         }
     }
 
