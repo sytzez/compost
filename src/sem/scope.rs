@@ -2,14 +2,6 @@ use std::backtrace::Backtrace;
 use crate::error::{error, CResult};
 use std::rc::Rc;
 
-pub type ReferencePath = Vec<String>;
-
-pub fn path(string: &str) -> ReferencePath {
-    string
-        .split('\\')
-        .map(|segment| segment.to_string())
-        .collect()
-}
 
 // pub struct Scope {
 //     traits: Table<Trait>,
@@ -130,47 +122,3 @@ pub fn path(string: &str) -> ReferencePath {
 //         self.scope
 //     }
 // }
-
-// TODO: move to separate module. Move logic of path() function into it.
-/// A table of references to items of a kind.
-pub struct Table<T> {
-    items: Vec<(ReferencePath, Rc<T>)>,
-}
-
-impl<T> Table<T> {
-    pub fn new() -> Self {
-        Self { items: Vec::new() }
-    }
-
-    pub fn resolve(&self, path: &ReferencePath) -> CResult<Rc<T>> {
-        let matched_references = self
-            .items
-            .iter()
-            .filter(|reference| reference_matches(&reference.0, path))
-            .collect::<Vec<_>>();
-
-        match matched_references.len() {
-            0 => error(format!("No resolution for {}", path.join("\\")), 0),
-            1 => Ok(Rc::clone(&matched_references.first().unwrap().1)),
-            _ => error(format!("Multiple resolutions for {}", path.join("\\")), 0),
-        }
-    }
-
-    pub fn add(&mut self, path: ReferencePath, item: T) {
-        // TODO: change into hashmap. Error on conflict.
-        self.items.push((path, Rc::new(item)))
-    }
-}
-
-pub fn reference_matches(own_path: &ReferencePath, path: &ReferencePath) -> bool {
-    let own_path_len = own_path.len();
-
-    if path.len() > own_path_len {
-        return false;
-    }
-
-    path.iter()
-        .rev()
-        .enumerate()
-        .all(|(i, segment)| segment == own_path.get(own_path_len - i - 1).unwrap())
-}

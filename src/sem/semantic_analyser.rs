@@ -3,12 +3,12 @@ use crate::error::CResult;
 use crate::sem::class::Class;
 use crate::sem::evaluation::Evaluation;
 use crate::sem::lett::Let;
-use crate::sem::scope::{path, Table};
 use crate::sem::strukt::Struct;
 use crate::sem::trayt::Trait;
 use crate::sem::typ::{combine_types, Type};
 use std::cell::RefCell;
 use std::collections::HashMap;
+use crate::sem::table::Table;
 
 pub struct SemanticContext {
     pub traits: Table<RefCell<Trait>>,
@@ -41,13 +41,13 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // Populate trait identifiers.
     for module in ast.mods.iter() {
         for trait_statement in module.traits.iter() {
-            let path = path(&format!("{}\\{}", module.name, trait_statement.name));
+            let name = &format!("{}\\{}", module.name, trait_statement.name);
 
-            context.traits.add(path.clone(), RefCell::new(Trait::dummy()));
+            context.traits.add(&name, RefCell::new(Trait::dummy()))?;
         }
 
         // Each module has an eponymous trait, which has the module interface as output type.
-        context.traits.add(path(&module.name), RefCell::new(Trait::dummy()));
+        context.traits.add(&module.name, RefCell::new(Trait::dummy()))?;
     }
 
     // Populate module interfaces, made up of the module's own traits and def traits from other modules.
@@ -57,30 +57,29 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
 
         // The modules own traits.
         for trait_statement in module.traits.iter() {
-            let path = path(&format!("{}\\{}", module.name, trait_statement.name));
-            let trayt = context.traits.resolve(&path)?;
+            let name = format!("{}\\{}", module.name, trait_statement.name);
+            let trayt = context.traits.resolve(&name)?;
 
             types_for_module.push(Type::Trait(trayt));
         }
 
         // Traits added on from other modules through defs.
         for def_statement in module.defs.iter() {
-            let path = path(&def_statement.name);
-            let trayt = context.traits.resolve(&path)?;
+            let name = format!("{}\\{}", module.name, def_statement.name);
+            let trayt = context.traits.resolve(&name)?;
 
             types_for_module.push(Type::Trait(trayt));
         }
 
-        let path = path(&module.name);
         let interface = combine_types(types_for_module);
 
-        context.interfaces.add(path.clone(), interface.clone());
+        context.interfaces.add(&module.name, interface.clone())?;
 
         let eponymous_trait = Trait {
             inputs: vec![],
             output: interface,
         };
-        context.traits.resolve(&path)?.replace(eponymous_trait);
+        context.traits.resolve(&module.name)?.replace(eponymous_trait);
     }
 
     // ==========================================================================================

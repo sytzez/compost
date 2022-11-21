@@ -7,3 +7,4 @@ pub(crate) mod semantic_analyser;
 pub(crate) mod strukt;
 pub(crate) mod trayt;
 pub(crate) mod typ;
+pub(crate) mod table;
