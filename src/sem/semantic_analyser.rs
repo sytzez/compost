@@ -11,6 +11,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+/// All available symbols in a program
 pub struct SemanticContext {
     pub traits: Table<RefCell<Trait>>,
     pub lets: Table<RefCell<Let>>,
@@ -27,6 +28,7 @@ impl SemanticContext {
     }
 }
 
+// All available symbols inside a scope
 pub struct SemanticScope<'a> {
     pub context: &'a SemanticContext,
     pub path: &'a str,
