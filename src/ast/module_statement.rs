@@ -60,7 +60,8 @@ impl Parser for ModuleStatement {
                 statement.class = Some(class);
             } else if let Some(strukt) = StructStatement::maybe_parse(tokens)? {
                 if statement.strukt.is_some() {
-                    return tokens.error("Can't define more than one struct per module".to_string());
+                    return tokens
+                        .error("Can't define more than one struct per module".to_string());
                 }
 
                 if statement.class.is_some() {

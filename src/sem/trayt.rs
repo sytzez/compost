@@ -18,7 +18,11 @@ impl Trait {
         }
     }
 
-    pub fn analyse(statement: &TraitStatement, context: &SemanticContext, path: &str) -> CResult<Self> {
+    pub fn analyse(
+        statement: &TraitStatement,
+        context: &SemanticContext,
+        path: &str,
+    ) -> CResult<Self> {
         let mut inputs = vec![];
         for (param_name, type_statement) in statement.parameters.iter() {
             let typ = Type::analyse(type_statement, context, path)?;

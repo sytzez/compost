@@ -2,10 +2,10 @@ use std::cell::RefCell;
 
 use crate::ast::expression::{BinaryOp, Expression, FriendlyField};
 use crate::ast::raw_value::RawValue;
-use crate::error::{CResult, error};
+use crate::error::{error, CResult};
 use crate::sem::class::Class;
 use crate::sem::lett::Let;
-use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
+use crate::sem::semantic_analyser::SemanticScope;
 use crate::sem::strukt::Struct;
 use crate::sem::trayt::Trait;
 use crate::sem::typ::Type;
@@ -105,11 +105,9 @@ impl Evaluation {
             Evaluation::Literal(_raw_value) => todo!(),
             Evaluation::Local(name) => scope.locals.get(name).unwrap().clone(),
             Evaluation::FriendlyField(_ff) => todo!(),
-            Evaluation::Zelf => {
-                match &scope.zelf {
-                    Some(typ) => typ.as_ref().clone(),
-                    None => return error("There is no 'Self' in this scope".to_string(), 0),
-                }
+            Evaluation::Zelf => match &scope.zelf {
+                Some(typ) => typ.as_ref().clone(),
+                None => return error("There is no 'Self' in this scope".to_string(), 0),
             },
             Evaluation::ClassConstructor(class) => class.interface(),
             Evaluation::StructConstructor(strukt) => strukt.interface(),

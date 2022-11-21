@@ -1,6 +1,6 @@
+use crate::error::{error, CResult};
 use std::cmp::max;
 use std::rc::Rc;
-use crate::error::{CResult, error};
 
 /// A table of references to items of a kind.
 pub struct Table<T> {
@@ -34,7 +34,7 @@ impl<T> Table<T> {
                     let shortened_item_path = &item_path[start..];
 
                     if shortened_item_path == &path {
-                        return Ok(Rc::clone(item))
+                        return Ok(Rc::clone(item));
                     }
                 }
             }

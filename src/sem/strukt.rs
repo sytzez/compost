@@ -1,4 +1,4 @@
-use crate::ast::def_statement::DefStatement;
+use crate::ast::module_statement::ModuleStatement;
 use crate::ast::struct_statement::StructStatement;
 use crate::ast::type_statement::RawType;
 use crate::error::CResult;
@@ -10,7 +10,6 @@ use crate::sem::typ::{combine_types, Type};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::ast::module_statement::ModuleStatement;
 
 /// A struct has a set of fields which are of raw types, and a set of trait definitions.
 pub struct Struct {
@@ -27,10 +26,7 @@ impl Struct {
             .collect()
     }
 
-    pub fn analyse(
-        module_statement: &ModuleStatement,
-        context: &SemanticContext,
-    ) -> CResult<Self> {
+    pub fn analyse(module_statement: &ModuleStatement, context: &SemanticContext) -> CResult<Self> {
         let struct_statement = module_statement.strukt.as_ref().unwrap();
 
         let constructor_inputs = Self::constructor_inputs(struct_statement);
@@ -48,10 +44,10 @@ impl Struct {
         for def_statement in module_statement.defs.iter() {
             let trayt = context.traits.resolve(&def_statement.name, path)?;
 
-            scope.locals = [
-                constructor_inputs.clone(),
-                trayt.borrow().inputs.clone(),
-            ].concat().into_iter().collect();
+            scope.locals = [constructor_inputs.clone(), trayt.borrow().inputs.clone()]
+                .concat()
+                .into_iter()
+                .collect();
 
             let evaluation = Evaluation::analyse(&def_statement.expr, &scope)?;
 

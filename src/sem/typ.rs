@@ -34,7 +34,11 @@ pub fn combine_types(types: Vec<Type>) -> Type {
 }
 
 impl Type {
-    pub fn analyse(statement: &TypeStatement, context: &SemanticContext, path: &str) -> CResult<Self> {
+    pub fn analyse(
+        statement: &TypeStatement,
+        context: &SemanticContext,
+        path: &str,
+    ) -> CResult<Self> {
         let typ = match statement {
             TypeStatement::Name(name) => {
                 if let Ok(interface) = context.interfaces.resolve(name, path) {

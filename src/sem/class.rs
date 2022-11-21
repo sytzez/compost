@@ -1,8 +1,7 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-use crate::ast::class_statement::ClassStatement;
-use crate::ast::def_statement::DefStatement;
+use crate::ast::module_statement::ModuleStatement;
 use crate::error::CResult;
 use crate::sem::evaluation::Evaluation;
 use crate::sem::lett::Let;
@@ -11,7 +10,6 @@ use crate::sem::trayt::Trait;
 use crate::sem::typ::{combine_types, Type};
 use std::rc::Rc;
 use std::string::String;
-use crate::ast::module_statement::ModuleStatement;
 
 // A class has a set of dependencies of certain types, and a set of trait definitions.
 pub struct Class {
@@ -37,10 +35,7 @@ impl Class {
         Ok(inputs)
     }
 
-    pub fn analyse(
-        module_statement: &ModuleStatement,
-        context: &SemanticContext,
-    ) -> CResult<Self> {
+    pub fn analyse(module_statement: &ModuleStatement, context: &SemanticContext) -> CResult<Self> {
         let dependencies = Self::constructor_inputs(module_statement, context)?;
 
         let path = &module_statement.name;
@@ -56,10 +51,10 @@ impl Class {
         for def_statement in module_statement.defs.iter() {
             let trayt = context.traits.resolve(&def_statement.name, path)?;
 
-            scope.locals = [
-                dependencies.clone(),
-                trayt.borrow().inputs.clone(),
-            ].concat().into_iter().collect();
+            scope.locals = [dependencies.clone(), trayt.borrow().inputs.clone()]
+                .concat()
+                .into_iter()
+                .collect();
 
             let evaluation = Evaluation::analyse(&def_statement.expr, &scope)?;
 

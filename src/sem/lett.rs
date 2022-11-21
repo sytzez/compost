@@ -47,7 +47,11 @@ impl Let {
     }
 
     /// The final analysis.
-    pub fn analyse(statement: &LetStatement, context: &SemanticContext, path: &str) -> CResult<Self> {
+    pub fn analyse(
+        statement: &LetStatement,
+        context: &SemanticContext,
+        path: &str,
+    ) -> CResult<Self> {
         let lett = Self::analyse_just_types(statement, context, path)?;
 
         let scope = SemanticScope {

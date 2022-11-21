@@ -1,8 +1,3 @@
-
-
-
-
-
 // pub struct Scope {
 //     traits: Table<Trait>,
 //     classes: Table<Class>,

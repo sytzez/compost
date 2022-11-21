@@ -198,10 +198,7 @@ fn parse_let_call(tokens: &mut Tokens) -> CResult<LetCall> {
         }
     }
 
-    let call = LetCall {
-        name,
-        inputs,
-    };
+    let call = LetCall { name, inputs };
 
     Ok(call)
 }
