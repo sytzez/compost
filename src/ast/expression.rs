@@ -4,7 +4,6 @@ use crate::error::CResult;
 use crate::lex::token::{Kw, Lit, Op, Token};
 use crate::lex::tokenizer::LeveledToken;
 use crate::lex::tokens::Tokens;
-use crate::sem::scope::{path, ReferencePath};
 use std::collections::HashMap;
 
 #[derive(Clone)]
@@ -30,13 +29,13 @@ pub struct BinaryCall {
 
 #[derive(Clone)]
 pub struct LetCall {
-    pub path: ReferencePath,
+    pub name: String,
     pub inputs: HashMap<String, Expression>,
 }
 
 #[derive(Clone)]
 pub struct DefCall {
-    pub path: ReferencePath,
+    pub name: String,
     pub subject: Box<Expression>,
     pub inputs: HashMap<String, Expression>,
 }
@@ -102,7 +101,7 @@ impl Parser for Expression {
                 let expr = Expression::parse(tokens)?;
 
                 Expression::Def(DefCall {
-                    path: path("Op\\Neg"),
+                    name: "Op\\Neg".to_string(),
                     subject: Box::new(expr),
                     inputs: [].into(),
                 })
@@ -154,7 +153,7 @@ impl Parser for Expression {
                                     let call = parse_let_call(tokens)?;
 
                                     Expression::Def(DefCall {
-                                        path: call.path,
+                                        name: call.name,
                                         subject: Box::new(expr),
                                         inputs: call.inputs,
                                     })
@@ -200,7 +199,7 @@ fn parse_let_call(tokens: &mut Tokens) -> CResult<LetCall> {
     }
 
     let call = LetCall {
-        path: path(&name),
+        name,
         inputs,
     };
 

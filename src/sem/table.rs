@@ -36,7 +36,7 @@ impl<T> Table<T> {
         error(format!("No resolution for {}", name), 0)
     }
 
-    pub fn add(&mut self, name: &str, item: T) -> CResult<()> {
+    pub fn declare(&mut self, name: &str, item: T) -> CResult<()> {
         match self.items.insert(path(name), Rc::new(item)) {
             None => Ok(()),
             Some(_) => error(format!("{} is already declared", name), 0),

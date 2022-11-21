@@ -4,7 +4,6 @@ use crate::ast::type_statement::RawType;
 use crate::error::CResult;
 use crate::sem::evaluation::Evaluation;
 use crate::sem::lett::Let;
-use crate::sem::scope::path;
 use crate::sem::semantic_analyser::SemanticContext;
 use crate::sem::trayt::Trait;
 use crate::sem::typ::{combine_types, Type};
@@ -34,7 +33,7 @@ impl Struct {
         // TODO: create special context with fields and self.
         let mut definitions = vec![];
         for def_statement in def_statements.iter() {
-            let trayt = context.traits.resolve(&path(&def_statement.name))?;
+            let trayt = context.traits.resolve(&def_statement.name)?;
 
             let evaluation = Evaluation::analyse(&def_statement.expr, context)?;
 

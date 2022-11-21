@@ -2,7 +2,6 @@ use crate::ast::abstract_syntax_tree::AbstractSyntaxTree;
 use crate::ast::parser::Parser;
 use crate::error::CResult;
 use crate::lex::tokenizer::tokenize;
-use crate::sem::scope::path;
 use crate::sem::semantic_analyser::analyse_ast;
 use std::fs;
 
@@ -23,7 +22,7 @@ pub fn run_code(code: &str) -> CResult<String> {
 
     let context = analyse_ast(ast)?;
 
-    let _main_let = context.lets.resolve(&path("Main"))?;
+    let _main_let = context.lets.resolve("Main")?;
 
     // let result = main_let.into_inner().unwrap().resolve([].into(), &scope).to_string(&scope);
     let result = "Test".to_string();

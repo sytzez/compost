@@ -43,11 +43,11 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         for trait_statement in module.traits.iter() {
             let name = &format!("{}\\{}", module.name, trait_statement.name);
 
-            context.traits.add(&name, RefCell::new(Trait::dummy()))?;
+            context.traits.declare(&name, RefCell::new(Trait::dummy()))?;
         }
 
         // Each module has an eponymous trait, which has the module interface as output type.
-        context.traits.add(&module.name, RefCell::new(Trait::dummy()))?;
+        context.traits.declare(&module.name, RefCell::new(Trait::dummy()))?;
     }
 
     // Populate module interfaces, made up of the module's own traits and def traits from other modules.
@@ -73,7 +73,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
 
         let interface = combine_types(types_for_module);
 
-        context.interfaces.add(&module.name, interface.clone())?;
+        context.interfaces.declare(&module.name, interface.clone())?;
 
         let eponymous_trait = Trait {
             inputs: vec![],
@@ -91,56 +91,52 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // Analyse trait input and output types.
     for module in ast.mods.iter() {
         for trait_statement in module.traits.iter() {
-            let path = path(&format!("{}\\{}", module.name, trait_statement.name));
+            let name = format!("{}\\{}", module.name, trait_statement.name);
 
             let trayt = Trait::analyse(trait_statement, &context)?;
 
-            context.traits.resolve(&path)?.replace(trayt);
+            context.traits.resolve(&name)?.replace(trayt);
         }
     }
 
     // Populate global let identifiers and types.
     for let_statement in ast.lets.iter() {
-        let path = path(&let_statement.name);
-
         let lett = Let::analyse_just_types(let_statement, &context)?;
 
-        context.lets.add(path, RefCell::new(lett));
+        context.lets.declare(&let_statement.name, RefCell::new(lett))?;
     }
 
     // Populate module let identifiers.
     for module in ast.mods.iter() {
         for let_statement in module.lets.iter() {
-            let path = path(&format!("{}\\{}", module.name, let_statement.name));
+            let name = format!("{}\\{}", module.name, let_statement.name);
 
             let lett = Let::analyse_just_types(let_statement, &context)?;
 
-            context.lets.add(path, RefCell::new(lett));
+            context.lets.declare(&name, RefCell::new(lett))?;
         }
     }
 
     // Populate struct and class constructor and def identifiers.
     for module in ast.mods.iter() {
-        let path = path(&module.name);
-
         if let Some(struct_statement) = &module.strukt {
             // Just the inputs and output of the constructor.
             let constructor = Let {
                 inputs: Struct::constructor_inputs(struct_statement),
-                output: context.interfaces.resolve(&path)?.as_ref().clone(),
+                output: context.interfaces.resolve(&module.name)?.as_ref().clone(),
                 evaluation: Evaluation::Zelf,
             };
 
-            context.lets.add(path, RefCell::new(constructor));
+            context.lets.declare(&module.name, RefCell::new(constructor))?;
         } else if let Some(class_statement) = &module.class {
             // Just the inputs and output of the constructor.
             let constructor = Let {
                 inputs: Class::constructor_inputs(class_statement, &context)?,
-                output: context.interfaces.resolve(&path)?.as_ref().clone(),
+                output: context.interfaces.resolve(&module.name)?.as_ref().clone(),
                 evaluation: Evaluation::Zelf,
             };
 
-            context.lets.add(path, RefCell::new(constructor));
+            context.lets.declare(&module.name, RefCell::new(constructor))?;
         }
     }
 
@@ -152,36 +148,32 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
 
     // Analyse global let expressions.
     for let_statement in ast.lets.iter() {
-        let path = path(&let_statement.name);
-
         let lett = Let::analyse(let_statement, &context)?;
 
-        context.lets.resolve(&path)?.replace(lett);
+        context.lets.resolve(&let_statement.name)?.replace(lett);
     }
 
     // Analyse module let expressions.
     for module in ast.mods.iter() {
         for let_statement in module.lets.iter() {
-            let path = path(&format!("{}\\{}", module.name, let_statement.name));
+            let name = format!("{}\\{}", module.name, let_statement.name);
 
             let lett = Let::analyse(let_statement, &context)?;
 
-            context.lets.resolve(&path)?.replace(lett);
+            context.lets.resolve(&name)?.replace(lett);
         }
     }
 
     // Analyse struct and class constructor and def expressions.
     for module in ast.mods.iter() {
-        let path = path(&module.name);
-
         if let Some(struct_statement) = &module.strukt {
             let strukt = Struct::analyse(struct_statement, &module.defs, &context)?;
 
-            context.lets.resolve(&path)?.replace(strukt.constructor());
+            context.lets.resolve(&module.name)?.replace(strukt.constructor());
         } else if let Some(class_statement) = &module.class {
             let class = Class::analyse(class_statement, &module.defs, &context)?;
 
-            context.lets.resolve(&path)?.replace(class.constructor());
+            context.lets.resolve(&module.name)?.replace(class.constructor());
         }
     }
 

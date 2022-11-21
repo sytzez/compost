@@ -5,7 +5,6 @@ use crate::ast::raw_value::RawValue;
 use crate::error::CResult;
 use crate::sem::class::Class;
 use crate::sem::lett::Let;
-use crate::sem::scope::path;
 use crate::sem::semantic_analyser::SemanticContext;
 use crate::sem::strukt::Struct;
 use crate::sem::trayt::Trait;
@@ -56,7 +55,7 @@ impl Evaluation {
 
                 // TODO: check lhs and rhs types.
                 Evaluation::Trait(TraitEvaluation {
-                    trayt: context.traits.resolve(&path(&trait_path))?,
+                    trayt: context.traits.resolve(&trait_path)?,
                     subject,
                     inputs,
                 })
@@ -71,7 +70,7 @@ impl Evaluation {
 
                 // TODO: Check inputs match
                 Evaluation::Trait(TraitEvaluation {
-                    trayt: context.traits.resolve(&call.path)?,
+                    trayt: context.traits.resolve(&call.name)?,
                     subject: Box::new(Evaluation::analyse(&call.subject, context)?),
                     inputs,
                 })
@@ -86,7 +85,7 @@ impl Evaluation {
 
                 // TODO: check inputs match
                 Evaluation::Let(LetEvaluation {
-                    lett: context.lets.resolve(&call.path)?,
+                    lett: context.lets.resolve(&call.name)?,
                     inputs,
                 })
             }
