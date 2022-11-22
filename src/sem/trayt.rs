@@ -53,13 +53,15 @@ impl Trait {
             inputs.push((param_name.clone(), typ));
         }
 
-        let mut default_expr = module.defs
+        let full_name = format!("{}\\{}", path, statement.name);
+
+        let default_expr = module.defs
             .iter()
-            .find(|def| def.name == module.name)
+            .find(|def| def.name == statement.name || def.name == full_name)
             .map(|def| def.expr.clone());
 
         let trayt = Trait {
-            full_name: format!("{}\\{}", path, statement.name),
+            full_name,
             interface: context.interfaces.resolve(path, "")?,
             inputs,
             output: Type::analyse(&statement.output, context, path)?,

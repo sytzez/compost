@@ -47,8 +47,6 @@ impl Class {
             zelf: Some(interface_type(context.interfaces.resolve(path, "")?.as_ref())),
         };
 
-        println!("Class {}", path);
-
         let mut used_interfaces = vec![];
 
         let mut definitions = vec![];
@@ -56,8 +54,6 @@ impl Class {
             let trayt = context.traits.resolve(&def_statement.name, path)?;
 
             used_interfaces.push(trayt.as_ref().borrow().interface.clone());
-
-            println!(" - Trait {}", &def_statement.name);
 
             scope.locals = [dependencies.clone(), trayt.borrow().inputs.clone()]
                 .concat()
@@ -78,8 +74,6 @@ impl Class {
                 }
 
                 if let Some(expr) = &trayt.borrow().default_expr {
-                    println!(" - Default Trait {}", &trayt.borrow().full_name);
-
                     scope.locals = [dependencies.clone(), trayt.borrow().inputs.clone()]
                         .concat()
                         .into_iter()
