@@ -1,7 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::ast::expression::Expression;
 use crate::ast::module_statement::ModuleStatement;
 use crate::ast::trait_statement::TraitStatement;
 use crate::error::CResult;

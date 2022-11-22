@@ -99,7 +99,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     }
 
     // ==========================================================================================
-    // STEP 2: Analyse trait, let and def input and output types
+    // STEP 2: Analyse trait, let and def *input and output types*.
     // By this point, all trait and interface types have been populated, making it possible to
     // analyse any type.
     // ==========================================================================================
@@ -160,7 +160,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     }
 
     // ==========================================================================================
-    // STEP 3: Analyse let and def expressions.
+    // STEP 3: Analyse let and def *expressions*.
     // By this point, all trait types and let types have been established, making it possible to
     // analyse any expression.
     // ==========================================================================================
