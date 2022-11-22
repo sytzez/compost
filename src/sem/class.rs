@@ -75,15 +75,8 @@ impl Class {
                     continue;
                 }
 
-                if let Some(expr) = &trayt.borrow().default_expr {
-                    scope.locals = [dependencies.clone(), trayt.borrow().inputs.clone()]
-                        .concat()
-                        .into_iter()
-                        .collect();
-
-                    let evaluation = Evaluation::analyse(&expr, &scope)?;
-
-                    definitions.push((Rc::clone(trayt), evaluation));
+                if let Some(eval) = &trayt.borrow().default_definition {
+                    definitions.push((Rc::clone(trayt), eval.clone()))
                 }
             }
         }

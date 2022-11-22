@@ -256,7 +256,7 @@ mod Rectangle
         Y: y
         Width: width
         Height: height
-        Area: .Rectangle\Width * .Rectangle\Height
+        Area: .Width * .Height
 
 # Square 'inherits' from Rectangle by defining some of its traits.
 # The remaining traits are 'inherited' from the Rectangle class.
@@ -325,8 +325,6 @@ There are many features of Compost that I have designed but haven't had the time
 - Functions and constants within modules.
 - Automatically resolving `string` and `int` literals to `String` and `Int` structs, so we can do
   `MyPoint.String + '!'` instead of `MyPoint.String + String(value: '!')`.
-- Shortened localized references to traits, functions and constants so we can do `Circumference: .Width * 2 + .Height * 2` 
-  instead of `Rectangle\Circumference: .Rectangle\Width * 2 + .Rectangle\Height * 2`
 - Operator precedence.
 - More advanced types such as `Op/Add & Op/Sub`.
 - Enum types.

@@ -5,8 +5,9 @@ use crate::ast::expression::Expression;
 use crate::ast::module_statement::ModuleStatement;
 use crate::ast::trait_statement::TraitStatement;
 use crate::error::CResult;
+use crate::sem::evaluation::Evaluation;
 
-use crate::sem::semantic_analyser::SemanticContext;
+use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::typ::{combine_types, Type};
 
 /// A trait has input types and an output type. It can be defined on classes and structs.
@@ -16,7 +17,7 @@ pub struct Trait {
     pub interface: Rc<Interface>, // Used to do automatic traits
     pub inputs: Vec<(String, Type)>,
     pub output: Type,
-    pub default_expr: Option<Expression>,
+    pub default_definition: Option<Evaluation>,
 }
 
 /// An interface is a set of traits.
@@ -35,7 +36,7 @@ impl Trait {
             interface: Rc::new(vec![]),
             inputs: vec![],
             output: Type::Void,
-            default_expr: None,
+            default_definition: None,
         }
     }
 
@@ -43,6 +44,7 @@ impl Trait {
         statement: &TraitStatement,
         module: &ModuleStatement,
         context: &SemanticContext,
+        with_default_definition: bool,
     ) -> CResult<Self> {
         let path = &module.name;
 
@@ -55,18 +57,37 @@ impl Trait {
 
         let full_name = format!("{}\\{}", path, statement.name);
 
-        let default_expr = module
-            .defs
-            .iter()
-            .find(|def| def.name == statement.name || def.name == full_name)
-            .map(|def| def.expr.clone());
+        // Analyse default def, if provided.
+        let default_definition = if with_default_definition {
+            let def = module
+                .defs
+                .iter()
+                .find(|def| def.name == statement.name || def.name == full_name);
+
+            if let Some(def) = def {
+                let scope = SemanticScope {
+                    context,
+                    path,
+                    locals: inputs.iter().cloned().collect(),
+                    zelf: Some(interface_type(
+                        context.interfaces.resolve(path, "")?.as_ref(),
+                    )),
+                };
+
+                Some(Evaluation::analyse(&def.expr, &scope)?)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
 
         let trayt = Trait {
             full_name,
             interface: context.interfaces.resolve(path, "")?,
             inputs,
             output: Type::analyse(&statement.output, context, path)?,
-            default_expr,
+            default_definition,
         };
 
         Ok(trayt)

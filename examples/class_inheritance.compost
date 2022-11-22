@@ -6,7 +6,7 @@ mod Rectangle
         Y: y
         Width: width
         Height: height
-        Area: .Rectangle\Width * .Rectangle\Height
+        Area: .Width * .Height
 
 # Square 'inherits' from Rectangle by defining some of its traits.
 # The remaining traits are 'inherited' from the Rectangle class.

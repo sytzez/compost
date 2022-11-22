@@ -44,6 +44,8 @@ impl<T> Table<T> {
             // Retry without a scope.
             self.resolve(name, "")
         } else {
+            println!("Scope: {}", scope);
+            println!("Name: {}", name);
             error(format!("No resolution for {} '{}'", self.name, name), 0)
         }
     }

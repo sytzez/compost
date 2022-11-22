@@ -49,9 +49,9 @@ impl Evaluation {
                     BinaryOp::Div => "Op\\Div",
                 };
 
-                let inputs = [("rhs".into(), Evaluation::analyse(&call.rhs, scope)?)].into();
-
                 let subject = Box::new(Evaluation::analyse(&call.lhs, scope)?);
+
+                let inputs = [("rhs".into(), Evaluation::analyse(&call.rhs, scope)?)].into();
 
                 // TODO: check lhs and rhs types.
                 Evaluation::Trait(TraitEvaluation {
@@ -69,6 +69,7 @@ impl Evaluation {
                 }
 
                 // TODO: Check inputs match
+                println!("Doing def {} in scope {}", call.name, scope.path);
                 Evaluation::Trait(TraitEvaluation {
                     trayt: scope.context.traits.resolve(&call.name, scope.path)?,
                     subject: Box::new(Evaluation::analyse(&call.subject, scope)?),

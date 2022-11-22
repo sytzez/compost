@@ -89,7 +89,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             interface,
             inputs: vec![],
             output,
-            default_expr: None,
+            default_definition: None,
         };
 
         context
@@ -107,7 +107,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // Analyse trait input and output types.
     for module in ast.mods.iter() {
         for trait_statement in module.traits.iter() {
-            let trayt = Trait::analyse(trait_statement, module, &context)?;
+            let trayt = Trait::analyse(trait_statement, module, &context, false)?;
 
             context
                 .traits
@@ -188,8 +188,18 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         }
     }
 
-    // Analyse struct and class constructor and def expressions.
     for module in ast.mods.iter() {
+        // Re-analyse traits with default definitions.
+        for trait_statement in module.traits.iter() {
+            let trayt = Trait::analyse(trait_statement, module, &context, true)?;
+
+            context
+                .traits
+                .resolve(&trait_statement.name, &module.name)?
+                .replace(trayt);
+        }
+
+        // Analyse struct and class constructor and def expressions.
         if module.strukt.is_some() {
             let strukt = Struct::analyse(module, &context)?;
 
