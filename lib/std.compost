@@ -29,4 +29,4 @@ mod Int
         Op\Mul: Int(value: value * rhs.value)
         Op\Div: Int(value: value / rhs.value)
         Op\Neg: Int(value: -value)
-        String: String(value: value.toString)
+        String: String(value: value.String)

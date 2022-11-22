@@ -88,6 +88,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             .declare(&module.name, interface.clone())?;
 
         let eponymous_trait = Trait {
+            full_name: module.name.clone(),
             inputs: vec![],
             output: interface,
         };

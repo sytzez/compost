@@ -5,6 +5,7 @@ use std::rc::Rc;
 use crate::runtime::class_instance::ClassInstance;
 use crate::runtime::struct_instance::StructInstance;
 
+/// Evaluate an evaluation into an instance.
 pub fn evaluate(
     eval: &Evaluation,
     locals: HashMap<String, Rc<Instance>>,
@@ -35,7 +36,7 @@ pub fn evaluate(
 
                 Rc::new(Instance::Raw(value.clone()))
             } else {
-                unreachable!()
+                unreachable!("{}.{}", ff.local_name, ff.field_name)
             }
         }
         Evaluation::Zelf => Rc::clone(&zelf.unwrap()),
@@ -63,7 +64,7 @@ pub fn evaluate(
     }
 }
 
-pub fn evaluate_inputs(inputs: &Vec<(String, Evaluation)>, locals: &HashMap<String, Rc<Instance>>, zelf: &Option<Rc<Instance>>) -> HashMap<String, Rc<Instance>> {
+fn evaluate_inputs(inputs: &Vec<(String, Evaluation)>, locals: &HashMap<String, Rc<Instance>>, zelf: &Option<Rc<Instance>>) -> HashMap<String, Rc<Instance>> {
     inputs.iter()
         .map(|(name, eval)| (
             name.clone(),

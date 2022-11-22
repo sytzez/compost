@@ -7,10 +7,12 @@ use crate::ast::type_statement::RawType;
 use crate::error::CResult;
 use crate::runtime::class_instance::ClassInstance;
 use crate::runtime::evaluate::evaluate;
+use crate::runtime::raw_operation::raw_operation;
 use crate::runtime::struct_instance::StructInstance;
 use crate::sem::semantic_analyser::SemanticContext;
 use crate::sem::trayt::Trait;
 
+/// An instantiated class or struct, or a raw value.
 pub enum Instance {
     Class(ClassInstance),
     Struct(StructInstance),
@@ -27,35 +29,25 @@ impl Instance {
     }
 
     pub fn call(self: &Rc<Self>, trayt: Rc<RefCell<Trait>>, mut inputs: HashMap<String, Rc<Instance>>) -> Rc<Instance> {
+        let definitions = match self.as_ref() {
+            Instance::Struct(instance) => &instance.strukt().definitions,
+            Instance::Class(instance) =>  &instance.class().definitions,
+            Instance::Raw(value) => {
+                let result = raw_operation(value, &trayt.as_ref().borrow().full_name, inputs);
+
+                return Rc::new(Instance::Raw(result));
+            }
+        };
+
+        let evaluation = &definitions
+            .iter()
+            .find(|(t, _)| t == &trayt)
+            .unwrap()
+            .1;
+
         inputs.extend(self.locals());
 
-        match self.as_ref() {
-            Instance::Struct(instance) => {
-                let evaluation = &instance
-                    .strukt()
-                    .definitions
-                    .iter()
-                    .find(|(t, _)| t == &trayt)
-                    .unwrap()
-                    .1;
-
-                evaluate(evaluation, inputs, Some(Rc::clone(self)))
-            }
-            Instance::Class(instance) => {
-                let evaluation = &instance
-                    .class()
-                    .definitions
-                    .iter()
-                    .find(|(t, _)| t == &trayt)
-                    .unwrap()
-                    .1;
-
-                evaluate(evaluation, inputs, Some(Rc::clone(self)))
-            }
-            Instance::Raw(value) => {
-                todo!()
-            }
-        }
+        evaluate(evaluation, inputs, Some(Rc::clone(self)))
     }
 
     pub fn to_string(self: &Rc<Self>, context: &SemanticContext) -> CResult<String> {
