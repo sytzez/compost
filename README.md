@@ -151,8 +151,8 @@ mod Point
         X: Int
         Y: Int
     defs
-        Point\X: x
-        Point\Y: y
+        X: x
+        Y: y
         String: .Point\X.String + String(value: ', ') + .Point\Y.String
 
 mod Rectangle
@@ -164,16 +164,16 @@ mod Rectangle
         Height: Int
     defs
         # Some automatic definitions based on other traits we have.
-        Rectangle\TopLeft
+        TopLeft
             Point
                 x: .Rectangle\BottomRight.Point\X - .Rectangle\Width
                 y: .Rectangle\BottomRight.Point\Y - .Rectangle\Height
-        Rectangle\BottomRight
+        BottomRight
             Point
                 x: .Rectangle\TopLeft.Point\X + .Rectangle\Width
                 y: .Rectangle\TopLeft.Point\Y + .Rectangle\Height
-        Rectangle\Width: .Rectangle\BottomRight.Point\X - .Rectangle\TopLeft.Point\X
-        Rectangle\Height: .Rectangle\BottomRight.Point\Y - .Rectangle\TopLeft.Point\Y
+        Width: .Rectangle\BottomRight.Point\X - .Rectangle\TopLeft.Point\X
+        Height: .Rectangle\BottomRight.Point\Y - .Rectangle\TopLeft.Point\Y
 
 # A class that implements 'Rectangle', constructed using a point and a size.
 mod RectangleBySize
@@ -252,11 +252,11 @@ mod Rectangle
     class(x: Int, y: Int, width: Int, height: Int)
     traits(X: Int, Y: Int, Width: Int, Height: Int, Area: Int)
     defs
-        Rectangle\X: x
-        Rectangle\Y: y
-        Rectangle\Width: width
-        Rectangle\Height: height
-        Rectangle\Area: .Rectangle\Width * .Rectangle\Height
+        X: x
+        Y: y
+        Width: width
+        Height: height
+        Area: .Rectangle\Width * .Rectangle\Height
 
 # Square 'inherits' from Rectangle by defining some of its traits.
 # The remaining traits are 'inherited' from the Rectangle class.

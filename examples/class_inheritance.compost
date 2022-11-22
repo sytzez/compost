@@ -2,11 +2,11 @@ mod Rectangle
     class(x: Int, y: Int, width: Int, height: Int)
     traits(X: Int, Y: Int, Width: Int, Height: Int, Area: Int)
     defs
-        Rectangle\X: x
-        Rectangle\Y: y
-        Rectangle\Width: width
-        Rectangle\Height: height
-        Rectangle\Area: .Rectangle\Width * .Rectangle\Height
+        X: x
+        Y: y
+        Width: width
+        Height: height
+        Area: .Rectangle\Width * .Rectangle\Height
 
 # Square 'inherits' from Rectangle by defining some of its traits.
 # The remaining traits are 'inherited' from the Rectangle class.
