@@ -11,8 +11,9 @@ pub fn raw_operation(value: &RawValue, trayt: &str, inputs: HashMap<String, Rc<I
         "Op\\Sub" => sub(value, &rhs(inputs)),
         "Op\\Mul" => mul(value, &rhs(inputs)),
         "Op\\Div" => div(value, &rhs(inputs)),
+        "Op\\Neg" => neg(value),
         "String" => to_string(value),
-        _ => unreachable!(),
+        _ => unreachable!("No such raw trait: {}", trayt),
     }
 }
 
@@ -64,6 +65,13 @@ fn mul(value: &RawValue, rhs: &RawValue) -> RawValue {
 fn div(value: &RawValue, rhs: &RawValue) -> RawValue {
     match value {
         RawValue::Int(value) => RawValue::Int(*value / int(rhs)),
+        RawValue::String(_) => unreachable!(),
+    }
+}
+
+fn neg(value: &RawValue) -> RawValue {
+    match value {
+        RawValue::Int(value) => RawValue::Int(-*value),
         RawValue::String(_) => unreachable!(),
     }
 }
