@@ -69,6 +69,7 @@ impl Evaluation {
                 }
 
                 // TODO: Check inputs match
+                // TODO: Resolve trait by checking subject output type traits!
                 println!("Doing def {} in scope {}", call.name, scope.path);
                 Evaluation::Trait(TraitEvaluation {
                     trayt: scope.context.traits.resolve(&call.name, scope.path)?,

@@ -14,7 +14,7 @@ mod Point
                 x: -.X # .X is a shorthand for Self.X
                 y: -.Y
         # The String definition allows the Point to be an output of Main
-        String: .Point\X.String + String(value: ', ') + .Point\Y.String
+        String: .X.String + String(value: ', ') + .Y.String
 
 lets
     MyPoint: Point

@@ -117,7 +117,7 @@ mod Point
                 x: -.X # .X is a shorthand for Self.X.
                 y: -.Y
         # The String definition allows the Point to be an output of Main.
-        String: .Point\X.String + String(value: ', ') + .Point\Y.String
+        String: .X.String + String(value: ', ') + .Y.String
 
 lets
     MyPoint: Point
@@ -153,7 +153,7 @@ mod Point
     defs
         X: x
         Y: y
-        String: .Point\X.String + String(value: ', ') + .Point\Y.String
+        String: .X.String + String(value: ', ') + .Y.String
 
 mod Rectangle
     traits
@@ -166,14 +166,14 @@ mod Rectangle
         # Some automatic definitions based on other traits we have.
         TopLeft
             Point
-                x: .Rectangle\BottomRight.Point\X - .Rectangle\Width
-                y: .Rectangle\BottomRight.Point\Y - .Rectangle\Height
+                x: .BottomRight.Point\X - .Width
+                y: .BottomRight.Point\Y - .Height
         BottomRight
             Point
-                x: .Rectangle\TopLeft.Point\X + .Rectangle\Width
-                y: .Rectangle\TopLeft.Point\Y + .Rectangle\Height
-        Width: .Rectangle\BottomRight.Point\X - .Rectangle\TopLeft.Point\X
-        Height: .Rectangle\BottomRight.Point\Y - .Rectangle\TopLeft.Point\Y
+                x: .TopLeft.Point\X + .Width
+                y: .TopLeft.Point\Y + .Height
+        Width: .BottomRight.Point\X - .TopLeft.Point\X
+        Height: .BottomRight.Point\Y - .TopLeft.Point\Y
 
 # A class that implements 'Rectangle', constructed using a point and a size.
 mod RectangleBySize
