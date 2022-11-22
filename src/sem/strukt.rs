@@ -37,7 +37,9 @@ impl Struct {
             context,
             path,
             locals: HashMap::new(),
-            zelf: Some(interface_type(context.interfaces.resolve(path, "")?.as_ref())),
+            zelf: Some(interface_type(
+                context.interfaces.resolve(path, "")?.as_ref(),
+            )),
         };
 
         let mut used_interfaces = vec![];

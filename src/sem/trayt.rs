@@ -1,11 +1,11 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::ast::def_statement::DefStatement;
+
 use crate::ast::expression::Expression;
 use crate::ast::module_statement::ModuleStatement;
 use crate::ast::trait_statement::TraitStatement;
 use crate::error::CResult;
-use crate::sem::evaluation::Evaluation;
+
 use crate::sem::semantic_analyser::SemanticContext;
 use crate::sem::typ::{combine_types, Type};
 
@@ -55,7 +55,8 @@ impl Trait {
 
         let full_name = format!("{}\\{}", path, statement.name);
 
-        let default_expr = module.defs
+        let default_expr = module
+            .defs
             .iter()
             .find(|def| def.name == statement.name || def.name == full_name)
             .map(|def| def.expr.clone());
@@ -77,4 +78,3 @@ impl PartialEq for Trait {
         self.full_name == other.full_name
     }
 }
-

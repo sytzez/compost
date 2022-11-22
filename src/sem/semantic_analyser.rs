@@ -5,7 +5,7 @@ use crate::sem::evaluation::Evaluation;
 use crate::sem::lett::Let;
 use crate::sem::strukt::Struct;
 use crate::sem::table::Table;
-use crate::sem::trayt::{Interface, interface_type, Trait};
+use crate::sem::trayt::{interface_type, Interface, Trait};
 use crate::sem::typ::Type;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -80,9 +80,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             interface.push(trayt);
         }
 
-        let interface = context
-            .interfaces
-            .declare(&module.name, interface)?;
+        let interface = context.interfaces.declare(&module.name, interface)?;
 
         let output = interface_type(&interface);
 
@@ -144,10 +142,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             // Just the inputs and output of the constructor.
             let constructor = Let {
                 inputs: Struct::constructor_inputs(struct_statement),
-                output: interface_type(context
-                    .interfaces
-                    .resolve(&module.name, "")?
-                    .as_ref()),
+                output: interface_type(context.interfaces.resolve(&module.name, "")?.as_ref()),
                 evaluation: Evaluation::Zelf,
             };
 
@@ -158,10 +153,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             // Just the inputs and output of the constructor.
             let constructor = Let {
                 inputs: Class::constructor_inputs(module, &context)?,
-                output: interface_type(context
-                    .interfaces
-                    .resolve(&module.name, "")?
-                    .as_ref()),
+                output: interface_type(context.interfaces.resolve(&module.name, "")?.as_ref()),
                 evaluation: Evaluation::Zelf,
             };
 

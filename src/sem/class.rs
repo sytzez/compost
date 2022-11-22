@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use crate::ast::module_statement::ModuleStatement;
 use crate::error::CResult;
@@ -44,7 +44,9 @@ impl Class {
             context,
             path,
             locals: HashMap::new(),
-            zelf: Some(interface_type(context.interfaces.resolve(path, "")?.as_ref())),
+            zelf: Some(interface_type(
+                context.interfaces.resolve(path, "")?.as_ref(),
+            )),
         };
 
         let mut used_interfaces = vec![];
