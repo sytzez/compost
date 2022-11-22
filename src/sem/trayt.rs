@@ -36,7 +36,11 @@ impl Trait {
 
         let output = Type::analyse(&statement.output, context, path)?;
 
-        let trayt = Trait { full_name, inputs, output };
+        let trayt = Trait {
+            full_name,
+            inputs,
+            output,
+        };
 
         Ok(trayt)
     }

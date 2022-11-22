@@ -2,9 +2,9 @@ use crate::ast::abstract_syntax_tree::AbstractSyntaxTree;
 use crate::ast::parser::Parser;
 use crate::error::CResult;
 use crate::lex::tokenizer::tokenize;
+use crate::runtime::evaluate::evaluate;
 use crate::sem::semantic_analyser::analyse_ast;
 use std::fs;
-use crate::runtime::evaluate::evaluate;
 
 pub fn run_file(file_path: &str) -> CResult<String> {
     let std = fs::read_to_string("lib/std.compost").expect("Unable to read lib/std.compost");

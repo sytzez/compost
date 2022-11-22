@@ -1,11 +1,15 @@
+use crate::ast::raw_value::RawValue;
+use crate::runtime::instance::Instance;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::ast::raw_value::RawValue;
-use crate::runtime::instance::Instance;
 
 /// Performs an operation on a raw value.
-pub fn raw_operation(value: &RawValue, trayt: &str, inputs: HashMap<String, Rc<Instance>>) -> RawValue {
+pub fn raw_operation(
+    value: &RawValue,
+    trayt: &str,
+    inputs: HashMap<String, Rc<Instance>>,
+) -> RawValue {
     match trayt {
         "Op\\Add" => add(value, &rhs(inputs)),
         "Op\\Sub" => sub(value, &rhs(inputs)),
@@ -18,7 +22,7 @@ pub fn raw_operation(value: &RawValue, trayt: &str, inputs: HashMap<String, Rc<I
 }
 
 fn rhs(inputs: HashMap<String, Rc<Instance>>) -> RawValue {
-    if let Instance::Raw(value) =  inputs.get("rhs").unwrap().borrow() {
+    if let Instance::Raw(value) = inputs.get("rhs").unwrap().borrow() {
         value.clone()
     } else {
         unreachable!()

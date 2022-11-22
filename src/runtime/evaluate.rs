@@ -1,9 +1,9 @@
+use crate::runtime::class_instance::ClassInstance;
 use crate::runtime::instance::Instance;
+use crate::runtime::struct_instance::StructInstance;
 use crate::sem::evaluation::Evaluation;
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::runtime::class_instance::ClassInstance;
-use crate::runtime::struct_instance::StructInstance;
 
 /// Evaluate an evaluation into an instance.
 pub fn evaluate(
@@ -64,11 +64,13 @@ pub fn evaluate(
     }
 }
 
-fn evaluate_inputs(inputs: &Vec<(String, Evaluation)>, locals: &HashMap<String, Rc<Instance>>, zelf: &Option<Rc<Instance>>) -> HashMap<String, Rc<Instance>> {
-    inputs.iter()
-        .map(|(name, eval)| (
-            name.clone(),
-            evaluate(eval, locals.clone(), zelf.clone())),
-        )
+fn evaluate_inputs(
+    inputs: &[(String, Evaluation)],
+    locals: &HashMap<String, Rc<Instance>>,
+    zelf: &Option<Rc<Instance>>,
+) -> HashMap<String, Rc<Instance>> {
+    inputs
+        .iter()
+        .map(|(name, eval)| (name.clone(), evaluate(eval, locals.clone(), zelf.clone())))
         .collect()
 }
