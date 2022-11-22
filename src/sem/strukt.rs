@@ -40,9 +40,13 @@ impl Struct {
             zelf: Some(interface_type(context.interfaces.resolve(path, "")?.as_ref())),
         };
 
+        let mut used_interfaces = vec![];
+
         let mut definitions = vec![];
         for def_statement in module_statement.defs.iter() {
             let trayt = context.traits.resolve(&def_statement.name, path)?;
+
+            used_interfaces.push(trayt.as_ref().borrow().interface.clone());
 
             scope.locals = [constructor_inputs.clone(), trayt.borrow().inputs.clone()]
                 .concat()
@@ -52,6 +56,27 @@ impl Struct {
             let evaluation = Evaluation::analyse(&def_statement.expr, &scope)?;
 
             definitions.push((trayt, evaluation));
+        }
+
+        // Add automatic definitions from other modules.
+        for interface in used_interfaces.into_iter() {
+            for trayt in interface.iter() {
+                // Skip if the trait has already been defined.
+                if definitions.iter().any(|(t, _)| t == trayt) {
+                    continue;
+                }
+
+                if let Some(expr) = &trayt.borrow().default_expr {
+                    scope.locals = [constructor_inputs.clone(), trayt.borrow().inputs.clone()]
+                        .concat()
+                        .into_iter()
+                        .collect();
+
+                    let evaluation = Evaluation::analyse(&expr, &scope)?;
+
+                    definitions.push((Rc::clone(trayt), evaluation));
+                }
+            }
         }
 
         let strukt = Struct {
