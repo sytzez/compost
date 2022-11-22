@@ -175,7 +175,7 @@ mod Rectangle
         Rectangle\Width: .Rectangle\BottomRight.Point\X - .Rectangle\TopLeft.Point\X
         Rectangle\Height: .Rectangle\BottomRight.Point\Y - .Rectangle\TopLeft.Point\Y
 
-# A class that implements 'Rectangle', constructed using a point an size.
+# A class that implements 'Rectangle', constructed using a point and a size.
 mod RectangleBySize
     class
         topLeft: Point
