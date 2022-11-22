@@ -1,9 +1,8 @@
-- Use errors instead of panic!
-- Shorthands so you don't have to provide the full path every time
-- Add context to tokens to provide better errors
+- Shorter trait *calls*
+- Parsing complex types
 - Compile time type checking
+- Add context to tokens to provide better errors
 - Control flow keywords
 - Array types
-- Parsing complex types
 - Lets in scopes
 - Nested definitions
