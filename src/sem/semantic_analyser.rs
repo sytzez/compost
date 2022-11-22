@@ -104,18 +104,6 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // analyse any type.
     // ==========================================================================================
 
-    // Analyse trait input and output types.
-    for module in ast.mods.iter() {
-        for trait_statement in module.traits.iter() {
-            let trayt = Trait::analyse(trait_statement, module, &context, false)?;
-
-            context
-                .traits
-                .resolve(&trait_statement.name, &module.name)?
-                .replace(trayt);
-        }
-    }
-
     // Populate global let identifiers and types.
     for let_statement in ast.lets.iter() {
         let lett = Let::analyse_just_types(let_statement, &context, "")?;
@@ -125,8 +113,18 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             .declare(&let_statement.name, RefCell::new(lett))?;
     }
 
-    // Populate module let identifiers.
     for module in ast.mods.iter() {
+        // Analyse trait input and output types.
+        for trait_statement in module.traits.iter() {
+            let trayt = Trait::analyse(trait_statement, module, &context, false)?;
+
+            context
+                .traits
+                .resolve(&trait_statement.name, &module.name)?
+                .replace(trayt);
+        }
+
+        // Populate module let identifiers.
         for let_statement in module.lets.iter() {
             let name = format!("{}\\{}", module.name, let_statement.name);
 
@@ -134,10 +132,8 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
 
             context.lets.declare(&name, RefCell::new(lett))?;
         }
-    }
 
-    // Populate struct and class constructor and def identifiers.
-    for module in ast.mods.iter() {
+        // Populate struct and class constructor and def identifiers.
         if let Some(struct_statement) = &module.strukt {
             // Just the inputs and output of the constructor.
             let constructor = Let {
@@ -176,8 +172,8 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         context.lets.resolve(&let_statement.name, "")?.replace(lett);
     }
 
-    // Analyse module let expressions.
     for module in ast.mods.iter() {
+        // Analyse module let expressions.
         for let_statement in module.lets.iter() {
             let lett = Let::analyse(let_statement, &context, &module.name)?;
 
@@ -186,9 +182,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
                 .resolve(&let_statement.name, &module.name)?
                 .replace(lett);
         }
-    }
 
-    for module in ast.mods.iter() {
         // Re-analyse traits with default definitions.
         for trait_statement in module.traits.iter() {
             let trayt = Trait::analyse(trait_statement, module, &context, true)?;
