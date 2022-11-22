@@ -4,6 +4,7 @@ use crate::error::CResult;
 use crate::lex::tokenizer::tokenize;
 use crate::sem::semantic_analyser::analyse_ast;
 use std::fs;
+use crate::runtime::evaluate::evaluate;
 
 pub fn run_file(file_path: &str) -> CResult<String> {
     let std = fs::read_to_string("lib/std.compost").expect("Unable to read lib/std.compost");
@@ -22,10 +23,11 @@ pub fn run_code(code: &str) -> CResult<String> {
 
     let context = analyse_ast(ast)?;
 
-    let _main_let = context.lets.resolve("Main", "")?;
+    let main_let = context.lets.resolve("Main", "")?;
 
-    // let result = main_let.into_inner().unwrap().resolve([].into(), &scope).to_string(&scope);
-    let result = "Test".to_string();
+    let result = evaluate(&main_let.borrow().evaluation, [].into(), None);
 
-    Ok(result)
+    let string = result.to_string(&context)?;
+
+    Ok(string)
 }

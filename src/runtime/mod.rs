@@ -1,3 +1,4 @@
-pub mod class_instance;
-pub mod instance;
-pub mod struct_instance;
+pub(crate) mod class_instance;
+pub(crate) mod instance;
+pub(crate) mod struct_instance;
+pub(crate) mod evaluate;
