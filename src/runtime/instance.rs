@@ -35,6 +35,8 @@ impl Instance {
             }
         };
 
+        println!("Doing trait {}", &trayt.as_ref().borrow().full_name);
+
         let evaluation = &definitions.iter().find(|(t, _)| t == &trayt).unwrap().1;
 
         inputs.extend(self.locals());

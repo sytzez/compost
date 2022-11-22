@@ -1,12 +1,12 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::ast::module_statement::ModuleStatement;
 use crate::error::CResult;
 use crate::sem::evaluation::Evaluation;
 use crate::sem::lett::Let;
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
-use crate::sem::trayt::Trait;
+use crate::sem::trayt::{interface_type, Trait};
 use crate::sem::typ::{combine_types, Type};
 use std::rc::Rc;
 use std::string::String;
@@ -44,12 +44,20 @@ impl Class {
             context,
             path,
             locals: HashMap::new(),
-            zelf: Some(context.interfaces.resolve(path, "")?),
+            zelf: Some(interface_type(context.interfaces.resolve(path, "")?.as_ref())),
         };
+
+        println!("Class {}", path);
+
+        let mut used_interfaces = vec![];
 
         let mut definitions = vec![];
         for def_statement in module_statement.defs.iter() {
             let trayt = context.traits.resolve(&def_statement.name, path)?;
+
+            used_interfaces.push(trayt.as_ref().borrow().interface.clone());
+
+            println!(" - Trait {}", &def_statement.name);
 
             scope.locals = [dependencies.clone(), trayt.borrow().inputs.clone()]
                 .concat()
@@ -59,6 +67,29 @@ impl Class {
             let evaluation = Evaluation::analyse(&def_statement.expr, &scope)?;
 
             definitions.push((trayt, evaluation));
+        }
+
+        // Add automatic definitions from other modules.
+        for interface in used_interfaces.into_iter() {
+            for trayt in interface.iter() {
+                // Skip if the trait has already been defined.
+                if definitions.iter().any(|(t, _)| t == trayt) {
+                    continue;
+                }
+
+                if let Some(expr) = &trayt.borrow().default_expr {
+                    println!(" - Default Trait {}", &trayt.borrow().full_name);
+
+                    scope.locals = [dependencies.clone(), trayt.borrow().inputs.clone()]
+                        .concat()
+                        .into_iter()
+                        .collect();
+
+                    let evaluation = Evaluation::analyse(&expr, &scope)?;
+
+                    definitions.push((Rc::clone(trayt), evaluation));
+                }
+            }
         }
 
         let class = Class {

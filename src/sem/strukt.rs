@@ -5,7 +5,7 @@ use crate::error::CResult;
 use crate::sem::evaluation::Evaluation;
 use crate::sem::lett::Let;
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
-use crate::sem::trayt::Trait;
+use crate::sem::trayt::{interface_type, Trait};
 use crate::sem::typ::{combine_types, Type};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -37,7 +37,7 @@ impl Struct {
             context,
             path,
             locals: HashMap::new(),
-            zelf: Some(context.interfaces.resolve(path, "")?),
+            zelf: Some(interface_type(context.interfaces.resolve(path, "")?.as_ref())),
         };
 
         let mut definitions = vec![];

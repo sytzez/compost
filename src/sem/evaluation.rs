@@ -106,7 +106,7 @@ impl Evaluation {
             Evaluation::Local(name) => scope.locals.get(name).unwrap().clone(),
             Evaluation::FriendlyField(_ff) => todo!(),
             Evaluation::Zelf => match &scope.zelf {
-                Some(typ) => typ.as_ref().clone(),
+                Some(typ) => typ.clone(),
                 None => return error("There is no 'Self' in this scope".to_string(), 0),
             },
             Evaluation::ClassConstructor(class) => class.interface(),

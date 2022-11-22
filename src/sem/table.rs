@@ -44,21 +44,23 @@ impl<T> Table<T> {
             // Retry without a scope.
             self.resolve(name, "")
         } else {
-            panic!("No resolution for {} '{}'", self.name, name);
+            error(format!("No resolution for {} '{}'", self.name, name), 0)
         }
     }
 
-    pub fn declare(&mut self, name: &str, item: T) -> CResult<()> {
+    pub fn declare(&mut self, name: &str, item: T) -> CResult<Rc<T>> {
         let path = Self::path(name);
 
         if self.items.iter().any(|(p, _)| p == &path) {
             return error(format!("{} '{}' was declared twice", self.name, name), 0);
         }
 
-        self.longest_path = max(self.longest_path, path.len());
-        self.items.push((path, Rc::new(item)));
+        let rc = Rc::new(item);
 
-        Ok(())
+        self.longest_path = max(self.longest_path, path.len());
+        self.items.push((path, Rc::clone(&rc)));
+
+        Ok(rc)
     }
 
     fn path(string: &str) -> Vec<String> {

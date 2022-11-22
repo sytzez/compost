@@ -5,17 +5,16 @@ use crate::sem::evaluation::Evaluation;
 use crate::sem::lett::Let;
 use crate::sem::strukt::Struct;
 use crate::sem::table::Table;
-use crate::sem::trayt::Trait;
-use crate::sem::typ::{combine_types, Type};
+use crate::sem::trayt::{Interface, interface_type, Trait};
+use crate::sem::typ::Type;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::rc::Rc;
 
 /// All available symbols in a program
 pub struct SemanticContext {
     pub traits: Table<RefCell<Trait>>,
     pub lets: Table<RefCell<Let>>,
-    pub interfaces: Table<Type>,
+    pub interfaces: Table<Interface>,
 }
 
 impl SemanticContext {
@@ -33,7 +32,7 @@ pub struct SemanticScope<'a> {
     pub context: &'a SemanticContext,
     pub path: &'a str,
     pub locals: HashMap<String, Type>,
-    pub zelf: Option<Rc<Type>>,
+    pub zelf: Option<Type>,
 }
 
 /// Analyses the semantics of a complete AST, and returns the global semantic context.
@@ -63,7 +62,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // Populate module interfaces, made up of the module's own traits and def traits from other modules.
     // By this point, all trait identifiers have been populated.
     for module in ast.mods.iter() {
-        let mut types_for_module = vec![];
+        let mut interface = vec![];
 
         // The modules own traits.
         for trait_statement in module.traits.iter() {
@@ -71,26 +70,28 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
                 .traits
                 .resolve(&trait_statement.name, &module.name)?;
 
-            types_for_module.push(Type::Trait(trayt));
+            interface.push(trayt);
         }
 
         // Traits added on from other modules through defs.
         for def_statement in module.defs.iter() {
             let trayt = context.traits.resolve(&def_statement.name, &module.name)?;
 
-            types_for_module.push(Type::Trait(trayt));
+            interface.push(trayt);
         }
 
-        let interface = combine_types(types_for_module);
-
-        context
+        let interface = context
             .interfaces
-            .declare(&module.name, interface.clone())?;
+            .declare(&module.name, interface)?;
+
+        let output = interface_type(&interface);
 
         let eponymous_trait = Trait {
             full_name: module.name.clone(),
+            interface,
             inputs: vec![],
-            output: interface,
+            output,
+            default_expr: None,
         };
 
         context
@@ -108,7 +109,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // Analyse trait input and output types.
     for module in ast.mods.iter() {
         for trait_statement in module.traits.iter() {
-            let trayt = Trait::analyse(trait_statement, &context, &module.name)?;
+            let trayt = Trait::analyse(trait_statement, module, &context)?;
 
             context
                 .traits
@@ -143,11 +144,10 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             // Just the inputs and output of the constructor.
             let constructor = Let {
                 inputs: Struct::constructor_inputs(struct_statement),
-                output: context
+                output: interface_type(context
                     .interfaces
                     .resolve(&module.name, "")?
-                    .as_ref()
-                    .clone(),
+                    .as_ref()),
                 evaluation: Evaluation::Zelf,
             };
 
@@ -158,11 +158,10 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             // Just the inputs and output of the constructor.
             let constructor = Let {
                 inputs: Class::constructor_inputs(module, &context)?,
-                output: context
+                output: interface_type(context
                     .interfaces
                     .resolve(&module.name, "")?
-                    .as_ref()
-                    .clone(),
+                    .as_ref()),
                 evaluation: Evaluation::Zelf,
             };
 

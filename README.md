@@ -110,9 +110,9 @@ mod Point
         Y: Int
         Opposite: Point # A trait that returns something of the Point type.
     defs
-        Point\X: x
-        Point\Y: y
-        Point\Opposite
+        X: x
+        Y: y
+        Opposite
             Point
                 x: -.X # .X is a shorthand for Self.X.
                 y: -.Y

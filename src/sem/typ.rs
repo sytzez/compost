@@ -1,11 +1,11 @@
 use crate::ast::type_statement::{RawType, TypeStatement};
 use crate::error::{error, CResult};
 use crate::sem::semantic_analyser::SemanticContext;
-use crate::sem::trayt::Trait;
+use crate::sem::trayt::{interface_type, Trait};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-#[derive(Eq, PartialEq, Clone)]
+#[derive(PartialEq, Clone)]
 pub enum Type {
     Trait(Rc<RefCell<Trait>>),
     Raw(RawType),
@@ -42,7 +42,7 @@ impl Type {
         let typ = match statement {
             TypeStatement::Name(name) => {
                 if let Ok(interface) = context.interfaces.resolve(name, path) {
-                    interface.as_ref().clone()
+                    interface_type(interface.as_ref())
                 } else if let Ok(trayt) = context.traits.resolve(name, path) {
                     Type::Trait(trayt)
                 } else {
