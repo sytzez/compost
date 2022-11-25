@@ -1,4 +1,5 @@
-use crate::lex::token::{next_token, Token};
+use crate::lex::token::Token;
+use crate::lex::tokenizer::get_position_of_token;
 
 /// An error during compilation.
 #[derive(Debug, Eq, PartialEq)]
@@ -8,13 +9,13 @@ pub struct CompilationError {
 }
 
 impl CompilationError {
-    pub fn to_string(&self, code: &str) -> String {
+    pub fn to_string(&self, std_code: &str, all_code: &str) -> String {
         let message = String::from(&self.message);
 
         match &self.context {
             Some(context) => {
-                let position = context.get_position_in_code(code);
-                let (line, col) = get_line_and_col_number(code, position);
+                let position = context.get_position_in_code(all_code);
+                let (line, col) = get_line_and_col_number(std_code, all_code, position);
                 format!("{} at line {} col {}", message, line, col)
             }
             None => message,
@@ -79,39 +80,29 @@ impl ErrorContext {
     pub fn get_position_in_code(&self, code: &str) -> usize {
         match self {
             ErrorContext::Character(position) => *position,
-            ErrorContext::Token(token_position) => {
-                let mut char_position = 0;
-                let mut current_token_position = 0;
-
-                while current_token_position < *token_position {
-                    let token = next_token(&code[char_position..]).unwrap();
-                    char_position += token.1;
-                    current_token_position += 1;
-                }
-
-                char_position
-            }
+            ErrorContext::Token(token_number) => get_position_of_token(code, *token_number),
             ErrorContext::Syntax => todo!(),
         }
     }
 }
 
-pub fn get_line_and_col_number(code: &str, position: usize) -> (usize, usize) {
-    let mut line = 0;
-    let mut col = 0;
-    let mut chars = code.chars();
+pub fn get_line_and_col_number(std_code: &str, all_code: &str, position: usize) -> (usize, usize) {
+    let lines_in_std_code = std_code.chars().filter(|char| *char == '\n').count();
+    let mut line = 1;
+    let mut col = 1;
+    let mut chars = all_code.chars();
 
     for _ in 0..position {
         let char = chars.next().unwrap();
         if char == '\n' {
             line += 1;
-            col = 0;
+            col = 1;
         } else {
             col += 1;
         }
     }
 
-    (line, col)
+    (line - lines_in_std_code, col)
 }
 
 pub fn error<T>(message: ErrorMessage) -> CResult<T> {

@@ -55,7 +55,36 @@ pub fn tokenize(code: &str) -> CResult<Tokens> {
     Ok(leveled_tokens.into())
 }
 
-// Utility to keep track of the depth level of our code.
+/// Purely for showing line numbers in error messages
+pub fn get_position_of_token(code: &str, token_number: usize) -> usize {
+    let mut position: usize = 0;
+    let mut leveled_tokens = 0;
+    let mut is_beginning_of_line = true;
+    let mut sized_token = (None, 0);
+
+    while leveled_tokens <= token_number {
+        sized_token = next_token(&code[position..]).unwrap();
+
+        position += sized_token.1;
+
+        if let Some(token) = sized_token.0 {
+            is_beginning_of_line = is_beginning_of_line && token == Token::Space;
+
+            match token {
+                Token::Next(Next::Line) => is_beginning_of_line = true,
+                Token::Space | Token::Down(_) | Token::Up(_) | Token::Next(_) => {
+
+                },
+                _ => leveled_tokens += 1,
+            }
+        }
+    }
+
+    // Return the beginning position of the token
+    position - sized_token.1
+}
+
+/// Utility to keep track of the depth level of our code.
 struct LevelStack {
     levels: Vec<Level>,
     indentation: usize,
