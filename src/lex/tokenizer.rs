@@ -1,4 +1,4 @@
-use crate::error::CResult;
+use crate::error::{CResult, CompilationError, ErrorContext};
 use crate::lex::token::{next_token, Level, Next, Token};
 use crate::lex::tokens::Tokens;
 
@@ -12,7 +12,15 @@ pub fn tokenize(code: &str) -> CResult<Tokens> {
     let mut is_beginning_of_line = true;
 
     while position <= code.len() {
-        let sized_token = next_token(&code[position..])?;
+        let sized_token = match next_token(&code[position..]) {
+            Ok(sized_token) => sized_token,
+            Err(message) => {
+                return Err(CompilationError {
+                    message,
+                    context: Some(ErrorContext::Character(position)),
+                })
+            }
+        };
 
         assert!(
             sized_token.1 > 0,
@@ -44,9 +52,7 @@ pub fn tokenize(code: &str) -> CResult<Tokens> {
         }
     }
 
-    let tokens = Tokens::new(leveled_tokens);
-
-    Ok(tokens)
+    Ok(leveled_tokens.into())
 }
 
 // Utility to keep track of the depth level of our code.

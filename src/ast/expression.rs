@@ -104,7 +104,7 @@ impl Parser for Expression {
                     inputs: [].into(),
                 })
             }
-            _ => return tokens.error(format!("Unexpected token {:?}", tokens.token())),
+            _ => return tokens.unexpected_token_error(),
         };
 
         // Parse further operations
@@ -156,16 +156,13 @@ impl Parser for Expression {
                                         inputs: call.inputs,
                                     })
                                 }
-                                _ => return tokens.error(
-                                    "Dot operator must be followed by a trait or friendly field"
-                                        .to_string(),
-                                ),
+                                _ => return tokens.unexpected_token_error(),
                             }
                         }
-                        _ => return tokens.error(format!("Unexpected operator {:?}", op)),
+                        _ => return tokens.unexpected_token_error(),
                     }
                 }
-                _ => return tokens.error(format!("Unexpected token {:?}", tokens.token())),
+                _ => return tokens.unexpected_token_error(),
             }
         }
 

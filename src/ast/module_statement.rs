@@ -4,7 +4,7 @@ use crate::ast::let_statement::{LetStatement, LetsStatement};
 use crate::ast::parser::{parse_global, Parser};
 use crate::ast::struct_statement::StructStatement;
 use crate::ast::trait_statement::{TraitStatement, TraitsStatement};
-use crate::error::CResult;
+use crate::error::{CResult, ErrorMessage};
 use crate::lex::token::{Kw, Token};
 use crate::lex::tokenizer::LeveledToken;
 use crate::lex::tokens::Tokens;
@@ -48,26 +48,19 @@ impl Parser for ModuleStatement {
         while tokens.deeper_than(base_level) {
             if let Some(class) = ClassStatement::maybe_parse(tokens)? {
                 if statement.class.is_some() {
-                    return tokens.error("Can't define more than one class per module".to_string());
+                    return tokens.error(ErrorMessage::DuplicateClass(statement.name));
                 }
-
                 if statement.strukt.is_some() {
-                    return tokens.error(
-                        "Can't define a class for a module that already has a struct".to_string(),
-                    );
+                    return tokens.error(ErrorMessage::ClassAndStruct(statement.name));
                 }
 
                 statement.class = Some(class);
             } else if let Some(strukt) = StructStatement::maybe_parse(tokens)? {
                 if statement.strukt.is_some() {
-                    return tokens
-                        .error("Can't define more than one struct per module".to_string());
+                    return tokens.error(ErrorMessage::DuplicateStruct(statement.name));
                 }
-
                 if statement.class.is_some() {
-                    return tokens.error(
-                        "Can't define a struct for a module that already has a class".to_string(),
-                    );
+                    return tokens.error(ErrorMessage::ClassAndStruct(statement.name));
                 }
 
                 statement.strukt = Some(strukt);
@@ -78,7 +71,7 @@ impl Parser for ModuleStatement {
             } else if let Some(mut lets) = LetsStatement::maybe_parse(tokens)? {
                 statement.lets.append(&mut lets.lets);
             } else {
-                return tokens.error(format!("Unexpected token {:?}", tokens.token()));
+                return tokens.unexpected_token_error();
             }
         }
 

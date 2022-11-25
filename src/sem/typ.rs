@@ -1,5 +1,5 @@
 use crate::ast::type_statement::{RawType, TypeStatement};
-use crate::error::{error, CResult};
+use crate::error::{error, CResult, ErrorMessage};
 use crate::sem::semantic_analyser::SemanticContext;
 use crate::sem::trayt::{interface_type, Trait};
 use std::cell::RefCell;
@@ -46,7 +46,7 @@ impl Type {
                 } else if let Ok(trayt) = context.traits.resolve(name, path) {
                     Type::Trait(trayt)
                 } else {
-                    return error(format!("Could not find module or trait {}", name), 0);
+                    return error(ErrorMessage::NoModuleOrTrait(name.clone()));
                 }
             }
             TypeStatement::And(a, b) => Type::And(

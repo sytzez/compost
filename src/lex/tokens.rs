@@ -1,21 +1,14 @@
-use crate::error::{CResult, CompilationError};
+use crate::error::{CResult, CompilationError, ErrorContext, ErrorMessage};
 use crate::lex::token::Token;
 use crate::lex::tokenizer::LeveledToken;
 
-/// Provides semantic utility functions for traversing the tokens.
+/// Provides utility functions for traversing the tokens.
 pub struct Tokens {
     tokens: Vec<LeveledToken>,
     position: usize,
 }
 
 impl Tokens {
-    pub fn new(tokens: Vec<LeveledToken>) -> Self {
-        Self {
-            tokens,
-            position: 0,
-        }
-    }
-
     /// Advance one step.
     pub fn step(&mut self) {
         self.position += 1;
@@ -51,10 +44,27 @@ impl Tokens {
     }
 
     /// Create an error at the current position.
-    pub fn error<T>(&self, message: String) -> CResult<T> {
+    pub fn error<T>(&self, message: ErrorMessage) -> CResult<T> {
         Err(CompilationError {
             message,
-            position: self.position,
+            context: Some(ErrorContext::Token(self.position)),
         })
+    }
+
+    /// Create an unexpected token error at the current position
+    pub fn unexpected_token_error<T>(&self) -> CResult<T> {
+        Err(CompilationError {
+            message: ErrorMessage::UnexpectedToken(self.token().clone()),
+            context: Some(ErrorContext::Token(self.position)),
+        })
+    }
+}
+
+impl From<Vec<LeveledToken>> for Tokens {
+    fn from(tokens: Vec<LeveledToken>) -> Self {
+        Tokens {
+            tokens,
+            position: 0,
+        }
     }
 }

@@ -37,7 +37,7 @@ impl Parser for AbstractSyntaxTree {
             } else if matches!(tokens.token(), Token::Eof) {
                 break;
             } else {
-                return tokens.error(format!("Unexpected token {:?}", tokens.token()));
+                return tokens.unexpected_token_error();
             }
         }
 

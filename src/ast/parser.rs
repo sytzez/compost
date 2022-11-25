@@ -32,7 +32,7 @@ pub fn parse_global(tokens: &mut Tokens) -> CResult<String> {
         tokens.step();
         Ok(name)
     } else {
-        tokens.error(format!("Expected global name, got {:?} ", tokens.token()))
+        tokens.unexpected_token_error()
     }
 }
 
@@ -42,7 +42,7 @@ pub fn parse_local(tokens: &mut Tokens) -> CResult<String> {
         tokens.step();
         Ok(name)
     } else {
-        tokens.error(format!("Expected local name, got {:?} ", tokens.token()))
+        tokens.unexpected_token_error()
     }
 }
 
@@ -65,20 +65,20 @@ pub fn parse_in_out_types(
             tokens.step();
 
             if !matches!(tokens.token(), Token::Op(Op::Gt)) {
-                return tokens.error("Expected > after -".to_string());
+                return tokens.unexpected_token_error();
             }
             tokens.step();
 
             output = Some(TypeStatement::parse(tokens)?);
             break;
         } else {
-            return tokens.error(format!("Unexpected token {:?}", tokens.token()));
+            return tokens.unexpected_token_error();
         }
     }
 
     let output = match output {
         Some(output) => output,
-        None => return tokens.error("Expected output type".to_string()),
+        None => return tokens.unexpected_token_error(),
     };
 
     Ok((parameters, output))

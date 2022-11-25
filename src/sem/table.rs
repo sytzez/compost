@@ -1,4 +1,4 @@
-use crate::error::{error, CResult};
+use crate::error::{error, CResult, ErrorMessage};
 use std::cmp::max;
 use std::rc::Rc;
 
@@ -44,9 +44,7 @@ impl<T> Table<T> {
             // Retry without a scope.
             self.resolve(name, "")
         } else {
-            println!("Scope: {}", scope);
-            println!("Name: {}", name);
-            error(format!("No resolution for {} '{}'", self.name, name), 0)
+            error(ErrorMessage::NoResolution(self.name, name.into()))
         }
     }
 
@@ -54,7 +52,7 @@ impl<T> Table<T> {
         let path = Self::path(name);
 
         if self.items.iter().any(|(p, _)| p == &path) {
-            return error(format!("{} '{}' was declared twice", self.name, name), 0);
+            return error(ErrorMessage::DoubleDeclaration(self.name, name.into()));
         }
 
         let rc = Rc::new(item);

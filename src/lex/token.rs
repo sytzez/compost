@@ -1,4 +1,4 @@
-use crate::error::{error, CResult};
+use crate::error::ErrorMessage;
 
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Token {
@@ -60,7 +60,7 @@ pub enum Next {
 
 type SizedToken = (Option<Token>, usize);
 
-pub fn next_token(code: &str) -> CResult<SizedToken> {
+pub fn next_token(code: &str) -> Result<SizedToken, ErrorMessage> {
     let char = match code.chars().next() {
         Some(c) => c,
         None => return Ok((Some(Token::Eof), 1)),
@@ -86,7 +86,7 @@ pub fn next_token(code: &str) -> CResult<SizedToken> {
         'A'..='Z' | '\\' => next_global_token(code),
         '0'..='9' => next_number_token(code),
         '\'' => next_string_token(code),
-        _ => return error(format!("Unexpected character: {}", char), 0),
+        _ => return Err(ErrorMessage::UnexpectedChar(char.to_string())),
     };
 
     Ok(token)
@@ -176,7 +176,7 @@ fn next_string_token(code: &str) -> SizedToken {
 
 #[cfg(test)]
 mod test {
-    use crate::error::CompilationError;
+    use crate::error::{CompilationError, ErrorMessage};
     use crate::lex::token::{next_token, Kw, Level, Lit, Next, Op, Token};
 
     #[test]
@@ -286,10 +286,7 @@ mod test {
     fn test_unexpected() {
         assert_eq!(
             next_token("£"),
-            Err(CompilationError {
-                message: "Unexpected character: £".to_string(),
-                position: 0,
-            })
+            Err(ErrorMessage::UnexpectedChar("£".to_string()))
         )
     }
 }

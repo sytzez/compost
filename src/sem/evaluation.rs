@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use crate::ast::expression::{BinaryOp, Expression, FriendlyField};
 use crate::ast::raw_value::RawValue;
-use crate::error::{error, CResult};
+use crate::error::{error, CResult, ErrorMessage};
 use crate::sem::class::Class;
 use crate::sem::lett::Let;
 use crate::sem::semantic_analyser::SemanticScope;
@@ -109,7 +109,7 @@ impl Evaluation {
             Evaluation::FriendlyField(_ff) => todo!(),
             Evaluation::Zelf => match &scope.zelf {
                 Some(typ) => typ.clone(),
-                None => return error("There is no 'Self' in this scope".to_string(), 0),
+                None => return error(ErrorMessage::NoSelf),
             },
             Evaluation::ClassConstructor(class) => class.interface(),
             Evaluation::StructConstructor(strukt) => strukt.interface(),

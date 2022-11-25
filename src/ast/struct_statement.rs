@@ -1,6 +1,6 @@
 use crate::ast::parser::{parse_local, Parser};
 use crate::ast::type_statement::RawType;
-use crate::error::CResult;
+use crate::error::{CResult, ErrorMessage};
 use crate::lex::token::{Kw, Token};
 use crate::lex::tokenizer::LeveledToken;
 use crate::lex::tokens::Tokens;
@@ -46,7 +46,7 @@ fn parse_field(tokens: &mut Tokens) -> CResult<(String, RawType)> {
     let typ = match type_name.borrow() {
         "int" => RawType::Int,
         "string" => RawType::String,
-        _ => return tokens.error(format!("Unknown struct field type {}", type_name)),
+        _ => return tokens.error(ErrorMessage::UnknownRawType(type_name.clone())),
     };
 
     Ok((name, typ))
