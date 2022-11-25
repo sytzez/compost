@@ -7,23 +7,28 @@ use crate::sem::semantic_analyser::analyse_ast;
 use std::fs;
 
 pub fn run_file(file_path: &str) -> String {
-    let std = fs::read_to_string("lib/std.compost").expect("Unable to read lib/std.compost");
-
+    let std = include_str!("resources/lib/std.compost");
     let code = fs::read_to_string(file_path).expect("Unable to read file");
+    let all_code = std.to_string() + &code;
 
-    let all_code = std + &code;
-
-    run_code_or_show_error(&all_code)
+    run_or_show_error(&all_code)
 }
 
-pub fn run_code_or_show_error(code: &str) -> String {
-    match run_code(code) {
+pub fn run_code(code: &str) -> String {
+    let std = include_str!("resources/lib/std.compost");
+    let all_code = std.to_string() + &code;
+
+    run_or_show_error(&all_code)
+}
+
+fn run_or_show_error(code: &str) -> String {
+    match run(code) {
         Ok(result) => result,
         Err(error) => error.to_string(code),
     }
 }
 
-pub fn run_code(code: &str) -> CResult<String> {
+fn run(code: &str) -> CResult<String> {
     let mut tokens = tokenize(code)?;
 
     let ast = AbstractSyntaxTree::parse(&mut tokens)?;
