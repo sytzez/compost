@@ -14,7 +14,7 @@ use std::collections::HashMap;
 pub struct SemanticContext {
     pub traits: Table<RefCell<Trait>>,
     pub lets: Table<RefCell<Let>>,
-    pub interfaces: Table<Interface>,
+    pub interfaces: Table<RefCell<Interface>>,
 }
 
 impl SemanticContext {
@@ -43,28 +43,30 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // STEP 1: Populate trait and interface identifiers.
     // ==========================================================================================
 
-    // Populate trait identifiers.
+    // Populate trait and interface identifiers.
     for module in ast.mods.iter() {
+        let dummy_interface = context.interfaces.declare(&module.name, RefCell::new(vec![]))?;
+
         for trait_statement in module.traits.iter() {
             let name = format!("{}\\{}", module.name, trait_statement.name);
 
             context
                 .traits
-                .declare(&name, RefCell::new(Trait::dummy()))?;
+                .declare(&name, RefCell::new(Trait::dummy(&dummy_interface)))?;
         }
 
         // Each module has an eponymous trait, which has the module interface as output type.
         context
             .traits
-            .declare(&module.name, RefCell::new(Trait::dummy()))?;
+            .declare(&module.name, RefCell::new(Trait::dummy(&dummy_interface)))?;
     }
 
-    // Populate module interfaces, made up of the module's own traits and def traits from other modules.
+    // Fill module interfaces, made up of the module's own traits and def traits from other modules.
     // By this point, all trait identifiers have been populated.
     for module in ast.mods.iter() {
         let mut interface = vec![];
 
-        // The modules own traits.
+        // The module's own traits.
         for trait_statement in module.traits.iter() {
             let trayt = context
                 .traits
@@ -74,19 +76,19 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         }
 
         // Traits added on from other modules through defs.
-        for def_statement in module.defs.iter() {
-            let trayt = context.traits.resolve(&def_statement.name, &module.name)?;
+        for def in module.defs.iter() {
+            let trayt = context.traits.resolve(&def.name, &module.name)?;
 
             interface.push(trayt);
         }
 
-        let interface = context.interfaces.declare(&module.name, interface)?;
-
         let output = interface_type(&interface);
+        
+        context.interfaces.resolve(&module.name, "")?.replace(interface);
 
         let eponymous_trait = Trait {
             full_name: module.name.clone(),
-            interface,
+            interface: context.interfaces.resolve(&module.name, "")?,
             inputs: vec![],
             output,
             default_definition: None,
@@ -97,6 +99,9 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             .resolve(&module.name, "")?
             .replace(eponymous_trait);
     }
+
+    // Add automatic definitions to traits.
+    // TODO
 
     // ==========================================================================================
     // STEP 2: Analyse trait, let and def *input and output types*.
@@ -138,7 +143,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             // Just the inputs and output of the constructor.
             let constructor = Let {
                 inputs: Struct::constructor_inputs(struct_statement),
-                output: interface_type(context.interfaces.resolve(&module.name, "")?.as_ref()),
+                output: interface_type(context.interfaces.resolve(&module.name, "")?.borrow().as_ref()),
                 evaluation: Evaluation::Zelf,
             };
 
@@ -149,7 +154,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             // Just the inputs and output of the constructor.
             let constructor = Let {
                 inputs: Class::constructor_inputs(module, &context)?,
-                output: interface_type(context.interfaces.resolve(&module.name, "")?.as_ref()),
+                output: interface_type(context.interfaces.resolve(&module.name, "")?.borrow().as_ref()),
                 evaluation: Evaluation::Zelf,
             };
 

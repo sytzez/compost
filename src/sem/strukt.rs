@@ -39,7 +39,7 @@ impl Struct {
             path,
             locals: HashMap::new(),
             zelf: Some(interface_type(
-                context.interfaces.resolve(path, "")?.as_ref(),
+                context.interfaces.resolve(path, "")?.borrow().as_ref(),
             )),
         };
 
@@ -63,7 +63,7 @@ impl Struct {
 
         // Add automatic definitions from other modules.
         for interface in used_interfaces.into_iter() {
-            for trayt in interface.iter() {
+            for trayt in interface.borrow().iter() {
                 // Skip if the trait has already been defined.
                 if definitions.iter().any(|(t, _)| t == trayt) {
                     continue;

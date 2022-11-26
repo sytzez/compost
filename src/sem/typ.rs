@@ -42,7 +42,7 @@ impl Type {
         let typ = match statement {
             TypeStatement::Name(name) => {
                 if let Ok(interface) = context.interfaces.resolve(name, path) {
-                    interface_type(interface.as_ref())
+                    interface_type(interface.borrow().as_ref())
                 } else if let Ok(trayt) = context.traits.resolve(name, path) {
                     Type::Trait(trayt)
                 } else {

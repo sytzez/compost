@@ -14,7 +14,7 @@ use crate::sem::typ::{combine_types, Type};
 #[derive(Clone)]
 pub struct Trait {
     pub full_name: String, // Used for raw operations and for equality checking
-    pub interface: Rc<Interface>, // Used to do automatic traits
+    pub interface: Rc<RefCell<Interface>>, // Used to do automatic traits
     pub inputs: Vec<(String, Type)>,
     pub output: Type,
     pub default_definition: Option<Evaluation>,
@@ -30,10 +30,10 @@ pub fn interface_type(interface: &Interface) -> Type {
 }
 
 impl Trait {
-    pub fn dummy() -> Self {
+    pub fn dummy(interface: &Rc<RefCell<Interface>>) -> Self {
         Trait {
             full_name: String::new(),
-            interface: Rc::new(vec![]),
+            interface: Rc::clone(interface),
             inputs: vec![],
             output: Type::Void,
             default_definition: None,
@@ -70,7 +70,7 @@ impl Trait {
                     path,
                     locals: inputs.iter().cloned().collect(),
                     zelf: Some(interface_type(
-                        context.interfaces.resolve(path, "")?.as_ref(),
+                        context.interfaces.resolve(path, "")?.borrow().as_ref(),
                     )),
                 };
 

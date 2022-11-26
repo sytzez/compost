@@ -46,7 +46,7 @@ impl Class {
             path,
             locals: HashMap::new(),
             zelf: Some(interface_type(
-                context.interfaces.resolve(path, "")?.as_ref(),
+                context.interfaces.resolve(path, "")?.borrow().as_ref(),
             )),
         };
 
@@ -56,7 +56,7 @@ impl Class {
         for def_statement in module_statement.defs.iter() {
             let trayt = context.traits.resolve(&def_statement.name, path)?;
 
-            used_interfaces.push(trayt.as_ref().borrow().interface.clone());
+            used_interfaces.push(trayt.borrow().interface.clone());
 
             scope.locals = [dependencies.clone(), trayt.borrow().inputs.clone()]
                 .concat()
@@ -70,7 +70,7 @@ impl Class {
 
         // Add automatic definitions from other modules.
         for interface in used_interfaces.into_iter() {
-            for trayt in interface.iter() {
+            for trayt in interface.borrow().iter() {
                 // Skip if the trait has already been defined.
                 if definitions.iter().any(|(t, _)| t == trayt) {
                     continue;
