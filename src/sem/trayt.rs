@@ -30,9 +30,9 @@ pub fn interface_type(interface: &Interface) -> Type {
 }
 
 impl Trait {
-    pub fn dummy(interface: &Rc<RefCell<Interface>>) -> Self {
+    pub fn dummy(full_name: &str, interface: &Rc<RefCell<Interface>>) -> Self {
         Trait {
-            full_name: String::new(),
+            full_name: full_name.to_string(),
             interface: Rc::clone(interface),
             inputs: vec![],
             output: Type::Void,

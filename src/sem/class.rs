@@ -68,6 +68,7 @@ impl Class {
             definitions.push((trayt, evaluation));
         }
 
+        // TODO: use interface instead of going through definitions and used interfaces
         // Add automatic definitions from other modules.
         for interface in used_interfaces.into_iter() {
             for trayt in interface.borrow().iter() {

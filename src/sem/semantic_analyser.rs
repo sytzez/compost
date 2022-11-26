@@ -9,6 +9,7 @@ use crate::sem::trayt::{interface_type, Interface, Trait};
 use crate::sem::typ::Type;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 /// All available symbols in a program
 pub struct SemanticContext {
@@ -52,13 +53,13 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
 
             context
                 .traits
-                .declare(&name, RefCell::new(Trait::dummy(&dummy_interface)))?;
+                .declare(&name, RefCell::new(Trait::dummy(&name, &dummy_interface)))?;
         }
 
         // Each module has an eponymous trait, which has the module interface as output type.
         context
             .traits
-            .declare(&module.name, RefCell::new(Trait::dummy(&dummy_interface)))?;
+            .declare(&module.name, RefCell::new(Trait::dummy(&module.name, &dummy_interface)))?;
     }
 
     // Fill module interfaces, made up of the module's own traits and def traits from other modules.
@@ -83,7 +84,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         }
 
         let output = interface_type(&interface);
-        
+
         context.interfaces.resolve(&module.name, "")?.replace(interface);
 
         let eponymous_trait = Trait {
@@ -100,8 +101,41 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             .replace(eponymous_trait);
     }
 
-    // Add automatic definitions to traits.
-    // TODO
+    // Add automatic definitions to interfaces. Repeat until stable.
+    loop {
+        let mut added_num_of_traits: usize = 0;
+
+        for module in ast.mods.iter() {
+            let own_interface = context.interfaces.resolve(&module.name, "")?;
+
+            let mut related_interfaces = vec![];
+
+            for def in module.defs.iter() {
+                let trayt = context.traits.resolve(&def.name, &module.name)?;
+
+                related_interfaces.push(Rc::clone(&trayt.borrow().interface));
+            }
+
+            for related_interface in related_interfaces.iter() {
+                for trayt in related_interface.borrow().iter() {
+                    if own_interface.borrow().iter().any(|t| t == trayt) {
+                        continue;
+                    }
+
+                    own_interface.replace_with(|old| {
+                        old.push(Rc::clone(trayt));
+                        old.clone()
+                    });
+
+                    added_num_of_traits += 1
+                }
+            }
+        }
+
+        if added_num_of_traits == 0 {
+            break
+        }
+    }
 
     // ==========================================================================================
     // STEP 2: Analyse trait, let and def *input and output types*.
