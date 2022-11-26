@@ -30,7 +30,7 @@ impl<T> Table<T> {
         for match_len in path.len()..=self.longest_path {
             for (item_path, item) in self.items.iter() {
                 if item_path.len() == match_len {
-                    let start = item_path.len() - match_len;
+                    let start = item_path.len() - path.len();
                     let shortened_item_path = &item_path[start..];
 
                     if shortened_item_path == path {
@@ -69,5 +69,21 @@ impl<T> Table<T> {
             .filter(|segment| !segment.is_empty())
             .map(|segment| segment.to_string())
             .collect()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::sem::table::Table;
+
+    #[test]
+    fn test() {
+        let mut table = Table::new("Integer");
+
+        table.declare("Mod\\Thing", 1).unwrap();
+        table.declare("Mod", 2).unwrap();
+
+        assert_eq!(table.resolve("Thing", "").unwrap().as_ref(), &1);
+        assert_eq!(table.resolve("Mod", "").unwrap().as_ref(), &2);
     }
 }

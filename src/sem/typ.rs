@@ -3,6 +3,7 @@ use crate::error::{error, CResult, ErrorMessage};
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::trayt::{interface_type, Trait};
 use std::cell::RefCell;
+use std::collections::{BTreeSet};
 use std::rc::Rc;
 
 #[derive(PartialEq, Clone, Debug)]
@@ -70,14 +71,16 @@ impl Type {
     }
 
     /// Outputs a list of traits that can be called on an instance of this type.
-    pub fn callable_traits(&self, scope: &SemanticScope) -> Vec<String> {
+    pub fn callable_traits(&self, scope: &SemanticScope) -> BTreeSet<String> {
         match self {
             Type::Void => [].into(),
             Type::Trait(trayt) => [trayt.borrow().full_name.clone()].into(),
-            Type::And(a, b) => [
-                a.callable_traits(scope),
-                b.callable_traits(scope),
-            ].concat(),
+            Type::And(a, b) => {
+                a.callable_traits(scope)
+                    .into_iter()
+                    .chain(b.callable_traits(scope).into_iter())
+                    .collect()
+            },
             Type::Zelf => match &scope.zelf {
                 None => [].into(),
                 Some(Type::Zelf) => panic!("Recursion!"),

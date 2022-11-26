@@ -11,6 +11,7 @@ use crate::sem::trayt::Trait;
 use crate::sem::typ::Type;
 use std::rc::Rc;
 use crate::error::ErrorMessage::NoResolution;
+use crate::sem::table::Table;
 
 /// A semantically analysed expression that can be evaluated.
 #[derive(Clone, Debug)]
@@ -70,18 +71,15 @@ impl Evaluation {
                 }
 
                 let subject = Evaluation::analyse(&call.subject, scope)?;
-                // TODO: Resolve only from set of possible traits. Allow short trait calls.
-                let trayt = scope.context.traits.resolve(&call.name, scope.path)?;
 
-                // Checks if the trait is callable on the type of the subject.
-                if !subject.typ(scope)?.callable_traits(scope).into_iter().any(|trayt_name| trayt_name == trayt.borrow().full_name) {
-                    dbg!(subject.typ(scope)?);
-                    for t in subject.typ(scope)?.callable_traits(scope) {
-                        println!("Possible trait: {}", t)
-                    }
-
-                    return error(ErrorMessage::UndefinedTrait(trayt.borrow().full_name.clone()))
+                // Make a temporary trait table using only traits defined on the subject.
+                let mut trait_name_table = Table::new("Trait");
+                for trait_name in subject.typ(scope)?.callable_traits(scope).into_iter() {
+                    trait_name_table.declare(&trait_name, trait_name.clone())?;
                 }
+                let trait_name = trait_name_table.resolve(&call.name, "")?;
+
+                let trayt = scope.context.traits.resolve(&trait_name, "")?;
 
                 // TODO: Check inputs match
                 Evaluation::Trait(TraitEvaluation {
