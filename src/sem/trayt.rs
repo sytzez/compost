@@ -73,7 +73,12 @@ impl Trait {
                     )),
                 };
 
-                Some(Evaluation::analyse(&def.expr, &scope)?)
+                match Evaluation::analyse(&def.expr, &scope) {
+                    Ok(eval) => Some(eval),
+                    // If the evaluation can't be analysed without the context of a struct or class,
+                    // then it isn't suitable as a default definition of the trait.
+                    Err(_) => None,
+                }
             } else {
                 None
             }

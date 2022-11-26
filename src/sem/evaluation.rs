@@ -10,6 +10,7 @@ use crate::sem::strukt::Struct;
 use crate::sem::trayt::Trait;
 use crate::sem::typ::Type;
 use std::rc::Rc;
+use crate::error::ErrorMessage::NoResolution;
 
 /// A semantically analysed expression that can be evaluated.
 #[derive(Clone)]
@@ -92,8 +93,23 @@ impl Evaluation {
                 })
             }
             Expression::Literal(value) => Evaluation::Literal(value),
-            Expression::Local(name) => Evaluation::Local(name),
-            Expression::FriendlyField(ff) => Evaluation::FriendlyField(ff),
+            Expression::Local(name) => {
+                if ! scope.locals.contains_key(&name) {
+                    return error(NoResolution("Local Variable", name));
+                }
+
+                Evaluation::Local(name)
+            },
+            Expression::FriendlyField(ff) => {
+                let _local = match scope.locals.get(&ff.local_name) {
+                    Some(local) => local,
+                    None => return error(NoResolution("Local Variable", ff.local_name)),
+                };
+
+                // TODO: check if locals is a struct, if it is of the same type as self, if it has the friendly field
+
+                Evaluation::FriendlyField(ff)
+            }
             Expression::Zelf => Evaluation::Zelf,
         };
 
