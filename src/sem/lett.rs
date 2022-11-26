@@ -6,6 +6,7 @@ use crate::sem::evaluation::Evaluation;
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 
 // A 'let' defines a constant instance or a function.
+#[derive(Debug)]
 pub struct Let {
     pub inputs: Vec<(String, Type)>,
     pub output: Type,

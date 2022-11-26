@@ -12,6 +12,7 @@ use std::rc::Rc;
 use std::string::String;
 
 // A class has a set of dependencies of certain types, and a set of trait definitions.
+#[derive(Debug)]
 pub struct Class {
     pub dependencies: Vec<(String, Type)>,
     pub definitions: Vec<(Rc<RefCell<Trait>>, Evaluation)>,

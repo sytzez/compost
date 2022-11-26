@@ -114,7 +114,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     }
 
     for module in ast.mods.iter() {
-        // Analyse trait input and output types.
+        // Analyse trait input and output types, and default definitions.
         for trait_statement in module.traits.iter() {
             let trayt = Trait::analyse(trait_statement, module, &context, false)?;
 

@@ -1,11 +1,11 @@
 use crate::ast::type_statement::{RawType, TypeStatement};
 use crate::error::{error, CResult, ErrorMessage};
-use crate::sem::semantic_analyser::SemanticContext;
+use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::trayt::{interface_type, Trait};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Type {
     Trait(Rc<RefCell<Trait>>),
     Raw(RawType),
@@ -64,7 +64,42 @@ impl Type {
         Ok(typ)
     }
 
+    /// If the current type is suitable to be used where the given type is required.
     pub fn fits(&self, _other: &Type) -> bool {
         todo!()
+    }
+
+    /// Outputs a list of traits that can be called on an instance of this type.
+    pub fn callable_traits(&self, scope: &SemanticScope) -> Vec<String> {
+        match self {
+            Type::Void => [].into(),
+            Type::Trait(trayt) => [trayt.borrow().full_name.clone()].into(),
+            Type::And(a, b) => [
+                a.callable_traits(scope),
+                b.callable_traits(scope),
+            ].concat(),
+            Type::Zelf => match &scope.zelf {
+                None => [].into(),
+                Some(Type::Zelf) => panic!("Recursion!"),
+                Some(zelf) => zelf.callable_traits(scope),
+            },
+            Type::Or(_a, _b) => todo!("Do union operation"),
+            Type::Raw(raw_type) => {
+                match raw_type {
+                    RawType::Int => [
+                        "Op\\Add",
+                        "Op\\Sub",
+                        "Op\\Mul",
+                        "Op\\Div",
+                        "Op\\Neg",
+                        "String",
+                    ].into_iter().map(|s| s.to_string()).collect(),
+                    RawType::String => [
+                        "Op\\Add",
+                        "String",
+                    ].into_iter().map(|s| s.to_string()).collect(),
+                }
+            },
+        }
     }
 }

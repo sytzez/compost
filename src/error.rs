@@ -36,6 +36,7 @@ pub enum ErrorMessage {
     DuplicateStruct(String),
     ClassAndStruct(String),
     UnknownRawType(String),
+    UndefinedTrait(String),
 }
 
 impl From<&ErrorMessage> for String {
@@ -64,6 +65,7 @@ impl From<&ErrorMessage> for String {
                 name
             ),
             ErrorMessage::UnknownRawType(typ) => format!("Unknown raw type '{}'", typ),
+            ErrorMessage::UndefinedTrait(trait_name) => format!("Trait '{}' is not available for this type", trait_name),
         }
     }
 }

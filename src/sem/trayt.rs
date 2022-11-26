@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::fmt::{Debug, Formatter, Pointer};
 use std::rc::Rc;
 
 use crate::ast::module_statement::ModuleStatement;
@@ -101,5 +102,13 @@ impl Trait {
 impl PartialEq for Trait {
     fn eq(&self, other: &Self) -> bool {
         self.full_name == other.full_name
+    }
+}
+
+impl Debug for Trait {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Trayt")
+            .field("full_name", &self.full_name)
+            .finish()
     }
 }

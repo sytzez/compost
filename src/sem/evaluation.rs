@@ -13,7 +13,7 @@ use std::rc::Rc;
 use crate::error::ErrorMessage::NoResolution;
 
 /// A semantically analysed expression that can be evaluated.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Evaluation {
     Let(LetEvaluation),
     Trait(TraitEvaluation),
@@ -26,13 +26,13 @@ pub enum Evaluation {
     StructConstructor(Rc<Struct>),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct LetEvaluation {
     pub lett: Rc<RefCell<Let>>,
     pub inputs: Vec<(String, Evaluation)>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TraitEvaluation {
     pub trayt: Rc<RefCell<Trait>>,
     pub subject: Box<Evaluation>,
@@ -69,12 +69,24 @@ impl Evaluation {
                     inputs.push((param_name, eval));
                 }
 
+                let subject = Evaluation::analyse(&call.subject, scope)?;
+                // TODO: Resolve only from set of possible traits. Allow short trait calls.
+                let trayt = scope.context.traits.resolve(&call.name, scope.path)?;
+
+                // Checks if the trait is callable on the type of the subject.
+                if !subject.typ(scope)?.callable_traits(scope).into_iter().any(|trayt_name| trayt_name == trayt.borrow().full_name) {
+                    dbg!(subject.typ(scope)?);
+                    for t in subject.typ(scope)?.callable_traits(scope) {
+                        println!("Possible trait: {}", t)
+                    }
+
+                    return error(ErrorMessage::UndefinedTrait(trayt.borrow().full_name.clone()))
+                }
+
                 // TODO: Check inputs match
-                // TODO: Resolve trait by checking subject output type traits!
-                println!("Doing def {} in scope {}", call.name, scope.path);
                 Evaluation::Trait(TraitEvaluation {
-                    trayt: scope.context.traits.resolve(&call.name, scope.path)?,
-                    subject: Box::new(Evaluation::analyse(&call.subject, scope)?),
+                    trayt,
+                    subject: Box::new(subject),
                     inputs,
                 })
             }

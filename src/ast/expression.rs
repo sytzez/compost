@@ -39,7 +39,7 @@ pub struct DefCall {
 }
 
 // A reference to the protected field of another instance of the self struct
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct FriendlyField {
     pub local_name: String,
     pub field_name: String,
