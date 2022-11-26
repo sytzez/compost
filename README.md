@@ -126,7 +126,7 @@ lets
             y: Int(value: 2)
 
     Main: Point
-        MyPoint.Point\Opposite
+        MyPoint.Opposite
 
 #> -1, -2
 ```
@@ -166,16 +166,16 @@ mod Rectangle
         # Some automatic definitions based on other traits we have.
         TopLeft
             Point
-                x: .BottomRight.Point\X - .Width
-                y: .BottomRight.Point\Y - .Height
+                x: .BottomRight.X - .Width
+                y: .BottomRight.Y - .Height
         BottomRight
             Point
-                x: .TopLeft.Point\X + .Width
-                y: .TopLeft.Point\Y + .Height
-        Width: .BottomRight.Point\X - .TopLeft.Point\X
-        Height: .BottomRight.Point\Y - .TopLeft.Point\Y
+                x: .TopLeft.X + .Width
+                y: .TopLeft.Y + .Height
+        Width: .BottomRight.X - .TopLeft.X
+        Height: .BottomRight.Y - .TopLeft.Y
 
-# A class that implements 'Rectangle', constructed using a point and a size.
+# A class that implements 'Rectangle', constructed using a point an size.
 mod RectangleBySize
     class
         topLeft: Point
@@ -221,20 +221,11 @@ lets
                     x: Int(value: 15)
                     y: Int(value: 15)
 
-    # The following Constants are calculated using the automatic definitions from the Rectangle module.
-    BottomRightOfA: Point
-        A.Rectangle\BottomRight
-
-    WidthOfB: Int
-        B.Rectangle\Width
-
-    HeightOfB: Int
-        B.Rectangle\Height
-
+    # The following values are calculated using automatic definitions from the Rectangle module.
     Main: String
-        String(value: 'BottomRight of A: ') + BottomRightOfA.String
-        + String(value: '. Width and Height of B: ') + WidthOfB.String
-        + String(value: ', ') + HeightOfB.String
+        String(value: 'BottomRight of A: ') + A.BottomRight.String
+        + String(value: '. Width and Height of B: ') + B.Width.String
+        + String(value: ', ') + B.Height.String
 
 #> BottomRight of A: 30, 15. Width and Height of B: 5, 10
 ```
@@ -277,7 +268,7 @@ lets
             x: 1
             y: 1
             size: 10
-        .Rectangle\Area
+        .Area
 
 #> 100
 ```

@@ -23,6 +23,6 @@ lets
             y: Int(value: 2)
 
     Main: Point
-        MyPoint.Point\Opposite
+        MyPoint.Opposite
 
 #> -1, -2
