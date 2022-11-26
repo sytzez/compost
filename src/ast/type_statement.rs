@@ -26,9 +26,16 @@ impl Parser for TypeStatement {
     }
 
     fn parse(tokens: &mut Tokens) -> CResult<Self> {
-        // TODO: actually implement
+        let typ = match tokens.token() {
+            Token::Kw(Kw::Zelf) => TypeStatement::Zelf,
+            Token::Global(name) => TypeStatement::Name(name.clone()),
+            _ => return tokens.unexpected_token_error(),
+        };
+
         tokens.step();
 
-        Ok(TypeStatement::Void)
+        // TODO: parse & and |
+
+        Ok(typ)
     }
 }
