@@ -3,7 +3,7 @@
 This is the compiler for my experimental programming language 'Compost'.
 The compiler itself is written in Rust.
 
-It currently doesn't actually compile a Compost program to a binary, but it **does** execute Compost code and show its output.
+It doesn't yet compile a Compost program to a binary, but it **does** analyse and execute Compost code and show its output.
 
 ## Playground
 
@@ -11,15 +11,28 @@ You can run Compost code from your browser at the [Compost Playground](http://co
 
 ## Usage
 
-You need to have the Rust compiler installed to run the Compost compiler or to build it into a binary.
+You need to have the Rust installed to run the Compost compiler or to build it into a binary.
 
 There are some code examples inside the `/examples` folder.
 
 To run a Compost source code file named `examples/functions_and_constants.compost`, run:
 
 ```bash
-cargo run --release examples/functions_and_constants.compost
+cargo run examples/functions_and_constants.compost
 ```
+
+## Related Blogs
+
+I've written a number of blogs before and during the implementation of Compost.
+
+- Sketch for a New Programming Language
+  - [Part 1](https://sytzez.com/blog/sketch-for-a-new-programming-language/)
+  - [Part 2](https://sytzez.com/blog/sketch-for-a-new-programming-language-2/)
+- Creating a Compiler for Compost using Rust
+  - [Part 1: Lexical Analysis](https://sytzez.com/blog/creating-a-compiler-for-compost-using-rust-part-1-lexical-analysis/)
+  - [Part 2: Syntactic Analysis](https://sytzez.com/blog/creating-a-compiler-for-compost-using-rust-part-2-syntactic-analysis/)
+  - [Part 3: Semantic Analysis](https://sytzez.com/blog/creating-a-compiler-for-compost-using-rust-part-3-semantic-analysis/)
+  - TBC...
 
 ## About the Programming Language
 
@@ -29,13 +42,7 @@ It is a functional, statically typed language. Types are purely based on the tra
 
 The language attempts to solve the problems associated with object oriented inheritance.
 
-For more information see my blogposts
-[Sketch for a new programming language](https://sytzez.com/blog/sketch-for-a-new-programming-language/)
-and
-[Sketch for a new programming language: Part 2](https://sytzez.com/blog/sketch-for-a-new-programming-language-2/)
-.
-
-See below an overview of its **currently implemented** featured. All of the code example work with the current compiler.
+See below an overview of its **currently implemented** features. All of the code example work with the current compiler.
 
 ### Functions and Constants
 
@@ -308,7 +315,9 @@ The compilation process is split up in a few modules:
 - Semantic analysis (`sem`) - Resolves abstract syntax tree into semantic objects such as modules, traits and classes.
 - Runtime (`runtime`) - Instantiates classes and calculates actual results.
 
-Ideally there will be modules to replace the runtime module which compile the code down into a binary file.
+In the future there will be modules to replace the runtime module, which compile the code down into a binary file.
+
+For more details about the implementation of this compiler see my [blog posts](#related-blogs).
 
 ## The Future of Compost
 

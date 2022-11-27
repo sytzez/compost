@@ -98,10 +98,12 @@ impl LevelStack {
         }
     }
 
+    /// Go deeper.
     fn push(&mut self, level: Level) {
         self.levels.push(level)
     }
 
+    /// Go up to a specific type of level.
     fn pop(&mut self, level: &Level) {
         if let Some(popped_level) = self.levels.pop() {
             match level {
@@ -121,10 +123,12 @@ impl LevelStack {
         }
     }
 
+    /// Add one indentation level.
     fn indent(&mut self) {
         self.indentation += 1
     }
 
+    /// Process a 'Next' token.
     fn next(&mut self, next: &Next) {
         match next {
             Next::Line => {
@@ -136,6 +140,7 @@ impl LevelStack {
         }
     }
 
+    /// Gets the current level.
     fn level(&self) -> usize {
         self.levels.len() + self.indentation
     }

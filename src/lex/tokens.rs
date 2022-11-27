@@ -2,14 +2,14 @@ use crate::error::{CResult, CompilationError, ErrorContext, ErrorMessage};
 use crate::lex::token::Token;
 use crate::lex::tokenizer::LeveledToken;
 
-/// Provides utility functions for traversing the tokens.
+/// Provides utility functions that help traversing the tokens.
 pub struct Tokens {
     tokens: Vec<LeveledToken>,
     position: usize,
 }
 
 impl Tokens {
-    /// Advance one step.
+    /// Advance to the next token.
     pub fn step(&mut self) {
         self.position += 1;
     }

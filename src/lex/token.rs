@@ -1,5 +1,6 @@
 use crate::error::ErrorMessage;
 
+/// Represents a single token.
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Token {
     Down(Level),
@@ -14,7 +15,7 @@ pub enum Token {
     Space,
 }
 
-// Keyword
+/// Keywords
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Kw {
     Mod,
@@ -26,7 +27,7 @@ pub enum Kw {
     Zelf,
 }
 
-// Operator
+/// Operators.
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Op {
     Dot,
@@ -39,19 +40,21 @@ pub enum Op {
     Gt,
 }
 
-// Literal
+/// Literals.
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Lit {
     String(String),
     Number(usize),
 }
 
+/// The type of level syntax.
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Level {
     Colon,
     Paren,
 }
 
+/// Used to separate levels.
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Next {
     Comma,
@@ -60,6 +63,7 @@ pub enum Next {
 
 type SizedToken = (Option<Token>, usize);
 
+/// Gets the next sized token at the beginning of the given code.
 pub fn next_token(code: &str) -> Result<SizedToken, ErrorMessage> {
     let char = match code.chars().next() {
         Some(c) => c,
