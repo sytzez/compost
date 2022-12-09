@@ -61,11 +61,8 @@ impl Parser for Expression {
     fn parse(tokens: &mut Tokens) -> CResult<Self> {
         let base_level = tokens.level();
 
-        // Needs cloning to prevent immutable borrow errors.
-        let token = tokens.token().clone();
-
         // Parse first token
-        let mut expr = match token {
+        let mut expr = match tokens.token().clone() {
             Token::Kw(Kw::Zelf) => {
                 tokens.step();
 
@@ -109,10 +106,7 @@ impl Parser for Expression {
 
         // Parse further operations
         while tokens.deeper_than_or_eq(base_level) {
-            // Needs cloning to prevent immutable borrow errors.
-            let token = tokens.token().clone();
-
-            expr = match token {
+            expr = match tokens.token().clone() {
                 Token::Op(op) => {
                     match op {
                         Op::Add | Op::Sub | Op::Mul | Op::Div => {

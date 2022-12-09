@@ -38,6 +38,9 @@ pub enum Op {
     Eq,
     Lt,
     Gt,
+    And,
+    Or,
+    Question,
 }
 
 /// Literals.
@@ -85,6 +88,9 @@ pub fn next_token(code: &str) -> Result<SizedToken, ErrorMessage> {
         '<' => (Some(Token::Op(Op::Lt)), 1),
         '>' => (Some(Token::Op(Op::Gt)), 1),
         '=' => (Some(Token::Op(Op::Eq)), 1),
+        '&' => (Some(Token::Op(Op::And)), 1),
+        '|' => (Some(Token::Op(Op::Or)), 1),
+        '?' => (Some(Token::Op(Op::Question)), 1),
         '.' => (Some(Token::Op(Op::Dot)), 1),
         'a'..='z' => next_local_token(code),
         'A'..='Z' | '\\' => next_global_token(code),
@@ -193,6 +199,9 @@ mod test {
         assert_eq!(next_token("< 1"), Ok((Some(Token::Op(Op::Lt)), 1)));
         assert_eq!(next_token("> 1"), Ok((Some(Token::Op(Op::Gt)), 1)));
         assert_eq!(next_token("= 1"), Ok((Some(Token::Op(Op::Eq)), 1)));
+        assert_eq!(next_token("& 1"), Ok((Some(Token::Op(Op::And)), 1)));
+        assert_eq!(next_token("| 1"), Ok((Some(Token::Op(Op::Or)), 1)));
+        assert_eq!(next_token("? 1"), Ok((Some(Token::Op(Op::Question)), 1)));
     }
 
     #[test]
