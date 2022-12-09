@@ -10,6 +10,7 @@ use crate::sem::typ::{combine_types, Type};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use crate::sem::type_checking::type_contains;
 
 /// A struct has a set of fields which are of raw types, and a set of trait definitions.
 #[derive(Debug)]
@@ -56,6 +57,24 @@ impl Struct {
                 .into_iter()
                 .collect();
 
+            // Add friendly fields to locals, by checking all locals that are of the Self type.
+            let mut friendly_locals = vec![];
+            for (local_name, typ) in scope.locals.iter() {
+                if type_contains(typ, &Type::Zelf) {
+                    for (field_name, field_type) in &struct_statement.fields {
+                        let friendly_field_name = format!("{}.{}", local_name, field_name);
+
+                        println!("Trayt {}", trayt.borrow().full_name);
+                        println!("Adding friendly field {}", friendly_field_name);
+
+                        friendly_locals.push((friendly_field_name, Type::Raw(*field_type)));
+                    }
+                }
+            }
+            for friendly_local in friendly_locals {
+                scope.locals.insert(friendly_local.0, friendly_local.1);
+            }
+
             let evaluation = Evaluation::analyse(&def_statement.expr, &scope)?;
 
             definitions.push((trayt, evaluation));
@@ -83,7 +102,7 @@ impl Struct {
         Ok(strukt)
     }
 
-    pub fn constructor(self) -> Let {
+    pub fn constructor(self: &Rc<Self>) -> Let {
         let inputs = self
             .fields
             .iter()
@@ -93,7 +112,7 @@ impl Struct {
         Let {
             inputs,
             output: self.interface(),
-            evaluation: Evaluation::StructConstructor(Rc::new(self)),
+            evaluation: Evaluation::StructConstructor(Rc::clone(self)),
         }
     }
 

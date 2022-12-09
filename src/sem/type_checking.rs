@@ -22,13 +22,15 @@ pub fn check_types(
 }
 
 /// Checks whether the given type is suitable to be used where the expected type is required.
-fn check_type_fits(given: &Type, expected: &Type, name: &str) -> CResult<()> {
+pub fn check_type_fits(given: &Type, expected: &Type, name: &str) -> CResult<()> {
     match expected {
         Type::Void => Ok(()),
         Type::Raw(_) | Type::Zelf | Type::Trait(_) => {
             if type_contains(given, expected) {
                 Ok(())
             } else {
+                dbg!(given);
+                dbg!(expected);
                 error(ErrorMessage::TypeMismatch(name.to_string()))
             }
         },
@@ -46,7 +48,7 @@ fn check_type_fits(given: &Type, expected: &Type, name: &str) -> CResult<()> {
 }
 
 /// Checks whether the given types contains a certain other type within an & chain.
-fn type_contains(given: &Type, contained: &Type) -> bool {
+pub fn type_contains(given: &Type, contained: &Type) -> bool {
     if given == contained || contained == &Type::Void {
         true
     } else {
@@ -117,25 +119,37 @@ mod test {
         assert_eq!(
             check_type_fits(&a, &a_and_b, ""),
             error(ErrorMessage::TypeMismatch("".to_string())),
-            "Trait A doesn't fit trait A and Trait B",
+            "Trait A doesn't fit Trait A and Trait B",
         );
 
         assert_eq!(
             check_type_fits(&a_and_b, &a, ""),
             Ok(()),
-            "Trait A and Trait B fits trait A",
+            "Trait A and Trait B fits Trait A",
         );
 
         assert_eq!(
             check_type_fits(&a_and_b, &b, ""),
             Ok(()),
-            "Trait A and Trait B fits trait B",
+            "Trait A and Trait B fits Trait B",
         );
 
         assert_eq!(
             check_type_fits(&a_and_b, &b_and_a, ""),
             Ok(()),
             "Trait A and Trait B fits Trait B and Trait A",
+        );
+
+        assert_eq!(
+            check_type_fits(&a_and_b, &a_or_b, ""),
+            Ok(()),
+            "Trait A and Trait B fits Trait A or Trait B",
+        );
+
+        assert_eq!(
+            check_type_fits(&a_or_b, &a_and_b, ""),
+            error(ErrorMessage::TypeMismatch("".to_string())),
+            "Trait A or Trait B doesn't fit Trait A and Trait B",
         );
     }
 }

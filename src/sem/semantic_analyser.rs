@@ -257,7 +257,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             context
                 .lets
                 .resolve(&module.name, "")?
-                .replace(strukt.constructor());
+                .replace(Rc::new(strukt).constructor());
         } else if module.class.is_some() {
             let class = Class::analyse(module, &context)?;
 
