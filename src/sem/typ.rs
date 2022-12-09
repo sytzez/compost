@@ -85,7 +85,11 @@ impl Type {
                 Some(Type::Zelf) => panic!("Recursion!"),
                 Some(zelf) => zelf.callable_traits(scope),
             },
-            Type::Or(_a, _b) => todo!("Do union operation"),
+            Type::Or(a, b) => a
+                .callable_traits(scope)
+                .union(&b.callable_traits(scope))
+                .cloned()
+                .collect(),
             Type::Raw(raw_type) => match raw_type {
                 RawType::Int => [
                     "Op\\Add", "Op\\Sub", "Op\\Mul", "Op\\Div", "Op\\Neg", "String",

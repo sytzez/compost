@@ -3,6 +3,7 @@ use crate::sem::class::Class;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+#[derive(Debug)]
 pub struct ClassInstance {
     class: Rc<Class>,
     dependencies: HashMap<String, Rc<Instance>>,

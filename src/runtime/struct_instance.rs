@@ -4,6 +4,7 @@ use crate::sem::strukt::Struct;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+#[derive(Debug)]
 pub struct StructInstance {
     strukt: Rc<Struct>,
     fields: HashMap<String, RawValue>,

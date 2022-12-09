@@ -1,5 +1,5 @@
 mod Name
-    struct(value: string)
+    class(value: String)
     defs(String: value)
 
 mod Human
@@ -15,10 +15,10 @@ lets
         String(value: 'Hello, ') + greeted.Name.String
 
     Bob: Human
-        Human(name: Name(value: 'Bob'))
+        Human(name: Name(value: String(value: 'Bob')))
 
     Fifi: Animal
-        Animal(name: Name(value: 'Fifi'))
+        Animal(name: Name(value: String(value: 'Fifi')))
 
     Main: String
         Greeting(greeted: Bob)

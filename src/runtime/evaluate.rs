@@ -36,6 +36,7 @@ pub fn evaluate(
 
                 Rc::new(Instance::Raw(value.clone()))
             } else {
+                dbg!(instance);
                 unreachable!("{}.{}", ff.local_name, ff.field_name)
             }
         }

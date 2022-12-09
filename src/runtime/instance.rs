@@ -13,6 +13,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 /// An instantiated class or struct, or a raw value.
+#[derive(Debug)]
 pub enum Instance {
     Class(ClassInstance),
     Struct(StructInstance),
