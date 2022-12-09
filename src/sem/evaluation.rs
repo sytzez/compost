@@ -13,8 +13,8 @@ use crate::sem::table::Table;
 use crate::sem::trayt::Trait;
 use crate::sem::typ::Type;
 use crate::sem::type_checking::check_types;
+use crate::sem::type_coercion::{coerce_type, coerce_types};
 use std::rc::Rc;
-use crate::sem::type_coercion::coerce_types;
 
 /// A semantically analysed expression that can be evaluated.
 #[derive(Clone, Debug)]
@@ -55,17 +55,29 @@ impl Evaluation {
                 };
                 let trayt = scope.context.traits.resolve(trait_path, "")?;
 
-                let subject = Box::new(Evaluation::analyse(&call.lhs, scope)?);
+                let mut lhs = Evaluation::analyse(&call.lhs, scope)?;
+                let mut rhs = Evaluation::analyse(&call.rhs, scope)?;
 
-                let inputs = vec![("rhs".into(), Evaluation::analyse(&call.rhs, scope)?)];
+                let left_type = lhs.typ(scope)?;
+                let right_type = rhs.typ(scope)?;
 
-                // TODO: if subject is a raw literal, check if rhs is a literal of the same type.
-                // TODO: OR, if one is a String or Int and other is string or int, do type coercion.
+                let left_is_raw = matches!(left_type, Type::Raw(_));
+                let right_is_raw = matches!(right_type, Type::Raw(_));
+
+                // If one is raw and the other is not, coerce one side into a struct.
+                if left_is_raw && !right_is_raw {
+                    coerce_type(&right_type, &mut lhs, "", scope)?;
+                } else if right_is_raw && !left_is_raw {
+                    coerce_type(&left_type, &mut rhs, "", scope)?;
+                }
+
+                let inputs = vec![("rhs".into(), rhs)];
+
                 // check_types(&trayt.borrow().inputs, &inputs, scope)?;
 
                 Evaluation::Trait(TraitEvaluation {
                     trayt,
-                    subject,
+                    subject: Box::new(lhs),
                     inputs,
                 })
             }

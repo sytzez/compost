@@ -36,14 +36,18 @@ pub fn coerce_type(
         return Ok(());
     } else if let Type::Raw(raw_type) = eval_type {
         // If the type is raw, turn int into a struct constructor.
-        let new_eval = struct_from_raw(&raw_type, eval, scope)?;
+        let new_eval = coerce_raw_to_struct(&raw_type, eval, scope)?;
         let _ = std::mem::replace(eval, new_eval);
     }
 
     Ok(())
 }
 
-fn struct_from_raw(raw_type: &RawType, eval: &Evaluation, scope: &SemanticScope) -> CResult<Evaluation> {
+fn coerce_raw_to_struct(
+    raw_type: &RawType,
+    eval: &Evaluation,
+    scope: &SemanticScope,
+) -> CResult<Evaluation> {
     let lett_name = match raw_type {
         RawType::Int => "Int",
         RawType::String => "String",

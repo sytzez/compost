@@ -51,13 +51,13 @@ Functions and constants are defined using the `lets` keyword. A constant is just
 ```
 lets
     MyConstant: Int
-        Int(value: 42)
+        42
         
     MyFunction: (a: Int, b: Int) -> Int
         a + b
         
     Main: Int
-        MyFunction(a: MyConstant, b: Int(value: 10))
+        MyFunction(a: MyConstant, b: 10)
         
 #> 52
 ```
@@ -95,7 +95,7 @@ lets
         10
         
     Main: String
-        String(value: 'See the example below for Point output')
+        'See the example below for Point output'
 
 #> See the example below for Point output
 ```
@@ -125,7 +125,7 @@ mod Point
                 x: -.X # .X is a shorthand for Self.X.
                 y: -.Y
         # The String definition allows the Point to be an output of Main.
-        String: .X.String + String(value: ', ') + .Y.String
+        String: .X.String + ', ' + .Y.String
 
 lets
     MyPoint: Point
@@ -174,34 +174,28 @@ lets
     # Takes anything that implements the Human or Animal module.
     Greeting: (greeted: Human | Animal) -> String
         # We can call the Name trait because it exists on both Human and Animal
-        String(value: 'Hello, ') + greeted.Name.String
+        'Hello, ' + greeted.Name.String
 
     # Takes anything that defines the Name and Age traits on it.
     # We need to use the @ symbol, otherwise this means something that implements both the
     # Name and Age module itself!
     NameAndAge: (subject: @Name & @Age) -> String
-        subject.Name.String
-        + String(value: ' (')
-        + subject.Age.String
-        + String(value: ')')
+        subject.Name.String + ' (' + subject.Age.String + ')'
 
     Bob: Human
         Human
-            name: Name(value: String(value: 'Bob'))
-            age: Age(value: Int(value: 20))
+            name: Name(value: 'Bob')
+            age: Age(value: 20)
 
     Fifi: Animal
         Animal
-            name: Name(value: String(value: 'Fifi'))
-            age: Age(value: Int(value: 3))
+            name: Name(value: 'Fifi')
+            age: Age(value: 3)
 
     Main: String
-        Greeting(greeted: Bob)
-        + String(value: '. ')
-        + Greeting(greeted: Fifi)
-        + String(value: '. ')
-        + NameAndAge(subject: Bob)
-        + String(value: '. ')
+        Greeting(greeted: Bob) + '. '
+        + Greeting(greeted: Fifi) + '. '
+        + NameAndAge(subject: Bob) + '. '
         + NameAndAge(subject: Fifi)
 
 #> Hello, Bob. Hello, Fifi. Bob (20). Fifi (3)
@@ -223,7 +217,7 @@ mod Point
     defs
         X: x
         Y: y
-        String: .X.String + String(value: ', ') + .Y.String
+        String: .X.String + ', ' + .Y.String
 
 mod Rectangle
     traits
@@ -293,9 +287,9 @@ lets
 
     # The following values are calculated using automatic definitions from the Rectangle module.
     Main: String
-        String(value: 'BottomRight of A: ') + A.BottomRight.String
-        + String(value: '. Width and Height of B: ') + B.Width.String
-        + String(value: ', ') + B.Height.String
+        'BottomRight of A: ' + A.BottomRight.String
+        + '. Width and Height of B: ' + B.Width.String
+        + ', ' + B.Height.String
 
 #> BottomRight of A: 30, 15. Width and Height of B: 5, 10
 ```

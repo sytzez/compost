@@ -15,6 +15,6 @@ lets
         10
 
     Main: String
-        String(value: 'There is no way to output this point')
+        'There is no way to output this point'
 
 #> There is no way to output this point

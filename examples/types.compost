@@ -18,34 +18,28 @@ lets
     # Takes anything that implements the Human or Animal module.
     Greeting: (greeted: Human | Animal) -> String
         # We can call the Name trait because it exists on both Human and Animal
-        String(value: 'Hello, ') + greeted.Name.String
+        'Hello, ' + greeted.Name.String
 
     # Takes anything that defines the Name and Age traits on it.
     # We need to use the @ symbol, otherwise this means something that implements both the
     # Name and Age module itself!
     NameAndAge: (subject: @Name & @Age) -> String
-        subject.Name.String
-        + String(value: ' (')
-        + subject.Age.String
-        + String(value: ')')
+        subject.Name.String + ' (' + subject.Age.String + ')'
 
     Bob: Human
         Human
-            name: Name(value: String(value: 'Bob'))
-            age: Age(value: Int(value: 20))
+            name: Name(value: 'Bob')
+            age: Age(value: 20)
 
     Fifi: Animal
         Animal
-            name: Name(value: String(value: 'Fifi'))
-            age: Age(value: Int(value: 3))
+            name: Name(value: 'Fifi')
+            age: Age(value: 3)
 
     Main: String
-        Greeting(greeted: Bob)
-        + String(value: '. ')
-        + Greeting(greeted: Fifi)
-        + String(value: '. ')
-        + NameAndAge(subject: Bob)
-        + String(value: '. ')
+        Greeting(greeted: Bob) + '. '
+        + Greeting(greeted: Fifi) + '. '
+        + NameAndAge(subject: Bob) + '. '
         + NameAndAge(subject: Fifi)
 
 #> Hello, Bob. Hello, Fifi. Bob (20). Fifi (3)

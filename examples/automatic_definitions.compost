@@ -8,7 +8,7 @@ mod Point
     defs
         X: x
         Y: y
-        String: .X.String + String(value: ', ') + .Y.String
+        String: .X.String + ', ' + .Y.String
 
 mod Rectangle
     traits
@@ -78,8 +78,8 @@ lets
 
     # The following values are calculated using automatic definitions from the Rectangle module.
     Main: String
-        String(value: 'BottomRight of A: ') + A.BottomRight.String
-        + String(value: '. Width and Height of B: ') + B.Width.String
-        + String(value: ', ') + B.Height.String
+        'BottomRight of A: ' + A.BottomRight.String
+        + '. Width and Height of B: ' + B.Width.String
+        + ', ' + B.Height.String
 
 #> BottomRight of A: 30, 15. Width and Height of B: 5, 10
