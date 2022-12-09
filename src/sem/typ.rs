@@ -65,11 +65,6 @@ impl Type {
         Ok(typ)
     }
 
-    /// If the current type is suitable to be used where the given type is required.
-    pub fn fits(&self, _other: &Type) -> bool {
-        todo!()
-    }
-
     /// Outputs a list of traits that can be called on an instance of this type.
     pub fn callable_traits(&self, scope: &SemanticScope) -> BTreeSet<String> {
         match self {
