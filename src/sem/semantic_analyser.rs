@@ -46,7 +46,9 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
 
     // Populate trait and interface identifiers.
     for module in ast.mods.iter() {
-        let dummy_interface = context.interfaces.declare(&module.name, RefCell::new(vec![]))?;
+        let dummy_interface = context
+            .interfaces
+            .declare(&module.name, RefCell::new(vec![]))?;
 
         for trait_statement in module.traits.iter() {
             let name = format!("{}\\{}", module.name, trait_statement.name);
@@ -57,9 +59,10 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         }
 
         // Each module has an eponymous trait, which has the module interface as output type.
-        context
-            .traits
-            .declare(&module.name, RefCell::new(Trait::dummy(&module.name, &dummy_interface)))?;
+        context.traits.declare(
+            &module.name,
+            RefCell::new(Trait::dummy(&module.name, &dummy_interface)),
+        )?;
     }
 
     // Fill module interfaces, made up of the module's own traits and def traits from other modules.
@@ -85,7 +88,10 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
 
         let output = interface_type(&interface);
 
-        context.interfaces.resolve(&module.name, "")?.replace(interface);
+        context
+            .interfaces
+            .resolve(&module.name, "")?
+            .replace(interface);
 
         let eponymous_trait = Trait {
             full_name: module.name.clone(),
@@ -133,7 +139,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         }
 
         if added_num_of_traits == 0 {
-            break
+            break;
         }
     }
 
@@ -177,7 +183,13 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             // Just the inputs and output of the constructor.
             let constructor = Let {
                 inputs: Struct::constructor_inputs(struct_statement),
-                output: interface_type(context.interfaces.resolve(&module.name, "")?.borrow().as_ref()),
+                output: interface_type(
+                    context
+                        .interfaces
+                        .resolve(&module.name, "")?
+                        .borrow()
+                        .as_ref(),
+                ),
                 evaluation: Evaluation::Zelf,
             };
 
@@ -188,7 +200,13 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             // Just the inputs and output of the constructor.
             let constructor = Let {
                 inputs: Class::constructor_inputs(module, &context)?,
-                output: interface_type(context.interfaces.resolve(&module.name, "")?.borrow().as_ref()),
+                output: interface_type(
+                    context
+                        .interfaces
+                        .resolve(&module.name, "")?
+                        .borrow()
+                        .as_ref(),
+                ),
                 evaluation: Evaluation::Zelf,
             };
 

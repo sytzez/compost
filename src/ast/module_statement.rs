@@ -6,7 +6,7 @@ use crate::ast::struct_statement::StructStatement;
 use crate::ast::trait_statement::{TraitStatement, TraitsStatement};
 use crate::error::{CResult, ErrorMessage};
 use crate::lex::token::{Kw, Token};
-use crate::lex::tokenizer::LeveledToken;
+
 use crate::lex::tokens::Tokens;
 
 /// A whole module.
@@ -33,8 +33,8 @@ impl ModuleStatement {
 }
 
 impl Parser for ModuleStatement {
-    fn matches(tokens: &[LeveledToken]) -> bool {
-        matches!(tokens[0].0, Token::Kw(Kw::Mod))
+    fn matches(tokens: &Tokens) -> bool {
+        matches!(tokens.token(), Token::Kw(Kw::Mod))
     }
 
     fn parse(tokens: &mut Tokens) -> CResult<Self> {

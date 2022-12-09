@@ -2,7 +2,7 @@ use crate::ast::parser::{parse_local, Parser};
 use crate::ast::type_statement::RawType;
 use crate::error::{CResult, ErrorMessage};
 use crate::lex::token::{Kw, Token};
-use crate::lex::tokenizer::LeveledToken;
+
 use crate::lex::tokens::Tokens;
 use std::borrow::Borrow;
 
@@ -18,8 +18,8 @@ impl StructStatement {
 }
 
 impl Parser for StructStatement {
-    fn matches(tokens: &[LeveledToken]) -> bool {
-        matches!(tokens[0].0, Token::Kw(Kw::Struct))
+    fn matches(tokens: &Tokens) -> bool {
+        matches!(tokens.token(), Token::Kw(Kw::Struct))
     }
 
     fn parse(tokens: &mut Tokens) -> CResult<Self> {

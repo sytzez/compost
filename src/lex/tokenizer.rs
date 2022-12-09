@@ -72,9 +72,7 @@ pub fn get_position_of_token(code: &str, token_number: usize) -> usize {
 
             match token {
                 Token::Next(Next::Line) => is_beginning_of_line = true,
-                Token::Space | Token::Down(_) | Token::Up(_) | Token::Next(_) => {
-
-                },
+                Token::Space | Token::Down(_) | Token::Up(_) | Token::Next(_) => {}
                 _ => leveled_tokens += 1,
             }
         }

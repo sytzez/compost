@@ -3,7 +3,6 @@ use crate::ast::module_statement::ModuleStatement;
 use crate::ast::parser::Parser;
 use crate::error::CResult;
 use crate::lex::token::Token;
-use crate::lex::tokenizer::LeveledToken;
 use crate::lex::tokens::Tokens;
 
 /// The abstract syntax tree of a whole program, containing all statements and expressions.
@@ -22,7 +21,7 @@ impl AbstractSyntaxTree {
 }
 
 impl Parser for AbstractSyntaxTree {
-    fn matches(_tokens: &[LeveledToken]) -> bool {
+    fn matches(_tokens: &Tokens) -> bool {
         true
     }
 

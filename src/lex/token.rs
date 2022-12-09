@@ -180,7 +180,7 @@ fn next_string_token(code: &str) -> SizedToken {
 
 #[cfg(test)]
 mod test {
-    use crate::error::{CompilationError, ErrorMessage};
+    use crate::error::ErrorMessage;
     use crate::lex::token::{next_token, Kw, Level, Lit, Next, Op, Token};
 
     #[test]

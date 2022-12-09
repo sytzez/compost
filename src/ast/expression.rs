@@ -2,7 +2,7 @@ use crate::ast::parser::{parse_global, Parser};
 use crate::ast::raw_value::RawValue;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Lit, Op, Token};
-use crate::lex::tokenizer::LeveledToken;
+
 use crate::lex::tokens::Tokens;
 use std::collections::HashMap;
 
@@ -54,7 +54,7 @@ pub enum BinaryOp {
 }
 
 impl Parser for Expression {
-    fn matches(_tokens: &[LeveledToken]) -> bool {
+    fn matches(_tokens: &Tokens) -> bool {
         true
     }
 

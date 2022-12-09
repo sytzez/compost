@@ -2,16 +2,16 @@ use std::cell::RefCell;
 
 use crate::ast::expression::{BinaryOp, Expression, FriendlyField};
 use crate::ast::raw_value::RawValue;
+use crate::error::ErrorMessage::NoResolution;
 use crate::error::{error, CResult, ErrorMessage};
 use crate::sem::class::Class;
 use crate::sem::lett::Let;
 use crate::sem::semantic_analyser::SemanticScope;
 use crate::sem::strukt::Struct;
+use crate::sem::table::Table;
 use crate::sem::trayt::Trait;
 use crate::sem::typ::Type;
 use std::rc::Rc;
-use crate::error::ErrorMessage::NoResolution;
-use crate::sem::table::Table;
 
 /// A semantically analysed expression that can be evaluated.
 #[derive(Clone, Debug)]
@@ -104,12 +104,12 @@ impl Evaluation {
             }
             Expression::Literal(value) => Evaluation::Literal(value),
             Expression::Local(name) => {
-                if ! scope.locals.contains_key(&name) {
+                if !scope.locals.contains_key(&name) {
                     return error(NoResolution("Local Variable", name));
                 }
 
                 Evaluation::Local(name)
-            },
+            }
             Expression::FriendlyField(ff) => {
                 let _local = match scope.locals.get(&ff.local_name) {
                     Some(local) => local,

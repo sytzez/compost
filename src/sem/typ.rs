@@ -3,7 +3,7 @@ use crate::error::{error, CResult, ErrorMessage};
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::trayt::{interface_type, Trait};
 use std::cell::RefCell;
-use std::collections::{BTreeSet};
+use std::collections::BTreeSet;
 use std::rc::Rc;
 
 #[derive(PartialEq, Clone, Debug)]
@@ -75,33 +75,28 @@ impl Type {
         match self {
             Type::Void => [].into(),
             Type::Trait(trayt) => [trayt.borrow().full_name.clone()].into(),
-            Type::And(a, b) => {
-                a.callable_traits(scope)
-                    .into_iter()
-                    .chain(b.callable_traits(scope).into_iter())
-                    .collect()
-            },
+            Type::And(a, b) => a
+                .callable_traits(scope)
+                .into_iter()
+                .chain(b.callable_traits(scope).into_iter())
+                .collect(),
             Type::Zelf => match &scope.zelf {
                 None => [].into(),
                 Some(Type::Zelf) => panic!("Recursion!"),
                 Some(zelf) => zelf.callable_traits(scope),
             },
             Type::Or(_a, _b) => todo!("Do union operation"),
-            Type::Raw(raw_type) => {
-                match raw_type {
-                    RawType::Int => [
-                        "Op\\Add",
-                        "Op\\Sub",
-                        "Op\\Mul",
-                        "Op\\Div",
-                        "Op\\Neg",
-                        "String",
-                    ].into_iter().map(|s| s.to_string()).collect(),
-                    RawType::String => [
-                        "Op\\Add",
-                        "String",
-                    ].into_iter().map(|s| s.to_string()).collect(),
-                }
+            Type::Raw(raw_type) => match raw_type {
+                RawType::Int => [
+                    "Op\\Add", "Op\\Sub", "Op\\Mul", "Op\\Div", "Op\\Neg", "String",
+                ]
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect(),
+                RawType::String => ["Op\\Add", "String"]
+                    .into_iter()
+                    .map(|s| s.to_string())
+                    .collect(),
             },
         }
     }

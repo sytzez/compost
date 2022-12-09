@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::fmt::{Debug, Formatter, Pointer};
+use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 
 use crate::ast::module_statement::ModuleStatement;

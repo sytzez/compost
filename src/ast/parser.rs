@@ -2,7 +2,6 @@ use crate::ast::type_statement::TypeStatement;
 
 use crate::error::CResult;
 use crate::lex::token::{Op, Token};
-use crate::lex::tokenizer::LeveledToken;
 use crate::lex::tokens::Tokens;
 
 /// Something that can be created by parsing tokens.
@@ -11,14 +10,14 @@ where
     Self: Sized,
 {
     /// Whether the upcoming tokens match this type of parser.
-    fn matches(tokens: &[LeveledToken]) -> bool;
+    fn matches(tokens: &Tokens) -> bool;
 
     /// Parse the tokens into a statement for the abstract syntax tree.
     fn parse(tokens: &mut Tokens) -> CResult<Self>;
 
     /// Parse tokens if they match this parser, otherwise do nothing.
     fn maybe_parse(tokens: &mut Tokens) -> CResult<Option<Self>> {
-        if Self::matches(tokens.remaining()) {
+        if Self::matches(tokens) {
             Ok(Some(Self::parse(tokens)?))
         } else {
             Ok(None)

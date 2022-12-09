@@ -3,7 +3,7 @@ use crate::ast::parser::{parse_global, parse_in_out_types, Parser};
 use crate::ast::type_statement::TypeStatement;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
-use crate::lex::tokenizer::LeveledToken;
+
 use crate::lex::tokens::Tokens;
 
 /// A single let which is made up of a name, optional parameters, an output type and the expression.
@@ -26,8 +26,8 @@ impl LetsStatement {
 }
 
 impl Parser for LetsStatement {
-    fn matches(tokens: &[LeveledToken]) -> bool {
-        matches!(tokens[0].0, Token::Kw(Kw::Lets))
+    fn matches(tokens: &Tokens) -> bool {
+        matches!(tokens.token(), Token::Kw(Kw::Lets))
     }
 
     fn parse(tokens: &mut Tokens) -> CResult<Self> {

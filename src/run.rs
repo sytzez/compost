@@ -12,10 +12,9 @@ pub fn run_file(file_path: &str) -> String {
     run_code(&code)
 }
 
-
 pub fn run_code(code: &str) -> String {
     let std_code = include_str!("resources/lib/std.compost");
-    let all_code  = std_code.to_string() + code;
+    let all_code = std_code.to_string() + code;
 
     match run(&all_code) {
         Ok(result) => result,

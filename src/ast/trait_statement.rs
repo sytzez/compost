@@ -2,7 +2,7 @@ use crate::ast::parser::{parse_global, parse_in_out_types, Parser};
 use crate::ast::type_statement::TypeStatement;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
-use crate::lex::tokenizer::LeveledToken;
+
 use crate::lex::tokens::Tokens;
 
 /// A single trait.
@@ -24,8 +24,8 @@ impl TraitsStatement {
 }
 
 impl Parser for TraitsStatement {
-    fn matches(tokens: &[LeveledToken]) -> bool {
-        matches!(tokens[0].0, Token::Kw(Kw::Traits))
+    fn matches(tokens: &Tokens) -> bool {
+        matches!(tokens.token(), Token::Kw(Kw::Traits))
     }
 
     fn parse(tokens: &mut Tokens) -> CResult<Self> {

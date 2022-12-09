@@ -3,7 +3,7 @@ use crate::ast::type_statement::TypeStatement;
 
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
-use crate::lex::tokenizer::LeveledToken;
+
 use crate::lex::tokens::Tokens;
 
 /// The class keyword and its dependencies.
@@ -12,8 +12,8 @@ pub struct ClassStatement {
 }
 
 impl Parser for ClassStatement {
-    fn matches(tokens: &[LeveledToken]) -> bool {
-        matches!(tokens[0].0, Token::Kw(Kw::Class))
+    fn matches(tokens: &Tokens) -> bool {
+        matches!(tokens.token(), Token::Kw(Kw::Class))
     }
 
     fn parse(tokens: &mut Tokens) -> CResult<Self> {

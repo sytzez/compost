@@ -65,7 +65,9 @@ impl From<&ErrorMessage> for String {
                 name
             ),
             ErrorMessage::UnknownRawType(typ) => format!("Unknown raw type '{}'", typ),
-            ErrorMessage::UndefinedTrait(trait_name) => format!("Trait '{}' is not available for this type", trait_name),
+            ErrorMessage::UndefinedTrait(trait_name) => {
+                format!("Trait '{}' is not available for this type", trait_name)
+            }
         }
     }
 }
