@@ -21,6 +21,18 @@ To run a Compost source code file named `examples/functions_and_constants.compos
 cargo run examples/functions_and_constants.compost
 ```
 
+## Features
+
+- Functions and constants
+- Int and String literals
+- Classes and structs
+- Full encapsulation of implementation details behind 'traits'
+- Automatic trait implementations
+- Polymorphism based on having the same traits implemented
+- Complex types using `&` and `|`
+- Static type checking
+- Type coercion from literals to stdlib structs
+
 ## Related Blogs
 
 I've written a number of blogs before and during the implementation of Compost.
