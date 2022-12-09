@@ -38,6 +38,6 @@ fn test_traits_and_definitions() {
 fn test_types() {
     assert_eq!(
         run_file("examples/types.compost"),
-        "Hello, Bob. Hello, Fifi",
+        "Hello, Bob. Hello, Fifi. Bob (20). Fifi (3)",
     )
 }

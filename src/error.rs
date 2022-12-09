@@ -32,6 +32,7 @@ pub enum ErrorMessage {
     NoResolution(&'static str, String),
     DoubleDeclaration(&'static str, String),
     NoModuleOrTrait(String),
+    NoTrait(String),
     DuplicateClass(String),
     DuplicateStruct(String),
     ClassAndStruct(String),
@@ -54,6 +55,7 @@ impl From<&ErrorMessage> for String {
                 format!("{} '{}' was declared twice", typ, name)
             }
             ErrorMessage::NoModuleOrTrait(name) => format!("'{}' is not a module or a trait", name),
+            ErrorMessage::NoTrait(name) => format!("'{}' is not a trait", name),
             ErrorMessage::DuplicateClass(name) => format!(
                 "Unexpected class in module '{}' which already has a class",
                 name

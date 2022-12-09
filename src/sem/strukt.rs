@@ -64,9 +64,6 @@ impl Struct {
                     for (field_name, field_type) in &struct_statement.fields {
                         let friendly_field_name = format!("{}.{}", local_name, field_name);
 
-                        println!("Trayt {}", trayt.borrow().full_name);
-                        println!("Adding friendly field {}", friendly_field_name);
-
                         friendly_locals.push((friendly_field_name, Type::Raw(*field_type)));
                     }
                 }

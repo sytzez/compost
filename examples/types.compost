@@ -2,27 +2,50 @@ mod Name
     class(value: String)
     defs(String: value)
 
+mod Age
+    class(value: Int)
+    defs(Int: value, String: value.String)
+
 mod Human
-    class(name: Name)
-    defs(Name: name)
+    class(name: Name, age: Age)
+    defs(Name: name, Age: age)
 
 mod Animal
-    class(name: Name)
-    defs(Name: name)
+    class(name: Name, age: Age)
+    defs(Name: name, Age: age)
 
 lets
+    # Takes anything that implements the Human or Animal module.
     Greeting: (greeted: Human | Animal) -> String
+        # We can call the Name trait because it exists on both Human and Animal
         String(value: 'Hello, ') + greeted.Name.String
 
+    # Takes anything that defines the Name and Age traits on it.
+    # We need to use the @ symbol, otherwise this means something that implements both the
+    # Name and Age module itself!
+    NameAndAge: (subject: @Name & @Age) -> String
+        subject.Name.String
+        + String(value: ' (')
+        + subject.Age.String
+        + String(value: ')')
+
     Bob: Human
-        Human(name: Name(value: String(value: 'Bob')))
+        Human
+            name: Name(value: String(value: 'Bob'))
+            age: Age(value: Int(value: 20))
 
     Fifi: Animal
-        Animal(name: Name(value: String(value: 'Fifi')))
+        Animal
+            name: Name(value: String(value: 'Fifi'))
+            age: Age(value: Int(value: 3))
 
     Main: String
         Greeting(greeted: Bob)
         + String(value: '. ')
         + Greeting(greeted: Fifi)
+        + String(value: '. ')
+        + NameAndAge(subject: Bob)
+        + String(value: '. ')
+        + NameAndAge(subject: Fifi)
 
-#> Hello, Bob. Hello, Fifi
+#> Hello, Bob. Hello, Fifi. Bob (20). Fifi (3)

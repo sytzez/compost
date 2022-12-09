@@ -41,6 +41,7 @@ pub enum Op {
     And,
     Or,
     Question,
+    At,
 }
 
 /// Literals.
@@ -92,6 +93,7 @@ pub fn next_token(code: &str) -> Result<SizedToken, ErrorMessage> {
         '|' => (Some(Token::Op(Op::Or)), 1),
         '?' => (Some(Token::Op(Op::Question)), 1),
         '.' => (Some(Token::Op(Op::Dot)), 1),
+        '@' => (Some(Token::Op(Op::At)), 1),
         'a'..='z' => next_local_token(code),
         'A'..='Z' | '\\' => next_global_token(code),
         '0'..='9' => next_number_token(code),

@@ -50,6 +50,13 @@ impl Type {
                     return error(ErrorMessage::NoModuleOrTrait(name.clone()));
                 }
             }
+            TypeStatement::AtName(name) => {
+                if let Ok(trayt) = context.traits.resolve(name, path) {
+                    Type::Trait(trayt)
+                } else {
+                    return error(ErrorMessage::NoTrait(name.clone()));
+                }
+            }
             TypeStatement::And(a, b) => Type::And(
                 Box::new(Type::analyse(a, context, path)?),
                 Box::new(Type::analyse(b, context, path)?),

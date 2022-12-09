@@ -38,6 +38,12 @@ impl Tokens {
         &self.tokens[self.position].0
     }
 
+    /// Returns the current token and step to the next.
+    pub fn token_and_step(&mut self) -> &Token {
+        self.position += 1;
+        &self.tokens[self.position - 1].0
+    }
+
     /// The current level.
     pub fn level(&self) -> usize {
         self.tokens[self.position].1

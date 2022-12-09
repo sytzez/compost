@@ -1,4 +1,4 @@
-use crate::ast::parser::Parser;
+use crate::ast::parser::{parse_global, Parser};
 use crate::ast::raw_value::RawValue;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Op, Token};
@@ -7,6 +7,7 @@ use crate::lex::tokens::Tokens;
 
 pub enum TypeStatement {
     Name(String),
+    AtName(String),
     And(Box<TypeStatement>, Box<TypeStatement>),
     Or(Box<TypeStatement>, Box<TypeStatement>),
     // Self, the class or struct the trait is defined on
@@ -23,18 +24,17 @@ pub enum RawType {
 
 impl Parser for TypeStatement {
     fn matches(tokens: &Tokens) -> bool {
-        matches!(tokens.token(), Token::Global(_) | Token::Kw(Kw::Zelf))
+        matches!(tokens.token(), Token::Global(_) | Token::Kw(Kw::Zelf) | Token::Op(Op::At | Op::Question))
     }
 
     fn parse(tokens: &mut Tokens) -> CResult<Self> {
-        let typ = match tokens.token() {
+        let typ = match tokens.token_and_step() {
             Token::Kw(Kw::Zelf) => TypeStatement::Zelf,
             Token::Global(name) => TypeStatement::Name(name.clone()),
             Token::Op(Op::Question) => TypeStatement::Void,
+            Token::Op(Op::At) => TypeStatement::AtName(parse_global(tokens)?),
             _ => return tokens.unexpected_token_error(),
         };
-
-        tokens.step();
 
         let typ = match tokens.token().clone() {
             Token::Op(op @ (Op::And | Op::Or)) => {
