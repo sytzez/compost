@@ -12,6 +12,7 @@ use crate::sem::table::Table;
 use crate::sem::trayt::Trait;
 use crate::sem::typ::Type;
 use std::rc::Rc;
+use crate::sem::type_checking::check_types;
 
 /// A semantically analysed expression that can be evaluated.
 #[derive(Clone, Debug)]
@@ -50,26 +51,17 @@ impl Evaluation {
                     BinaryOp::Mul => "Op\\Mul",
                     BinaryOp::Div => "Op\\Div",
                 };
+                let trayt = scope.context.traits.resolve(trait_path, "")?;
 
                 let subject = Box::new(Evaluation::analyse(&call.lhs, scope)?);
 
-                let inputs = [("rhs".into(), Evaluation::analyse(&call.rhs, scope)?)].into();
+                let inputs = vec![("rhs".into(), Evaluation::analyse(&call.rhs, scope)?)];
 
-                // TODO: check lhs and rhs types.
-                Evaluation::Trait(TraitEvaluation {
-                    trayt: scope.context.traits.resolve(trait_path, "")?,
-                    subject,
-                    inputs,
-                })
+                check_types(&trayt.borrow().inputs, &inputs, scope)?;
+
+                Evaluation::Trait(TraitEvaluation { trayt, subject, inputs })
             }
             Expression::Def(call) => {
-                let mut inputs = vec![];
-                for (param_name, expr) in call.inputs.into_iter() {
-                    let eval = Evaluation::analyse(&expr, scope)?;
-
-                    inputs.push((param_name, eval));
-                }
-
                 let subject = Evaluation::analyse(&call.subject, scope)?;
 
                 // Make a temporary trait table using only traits defined on the subject.
@@ -81,14 +73,6 @@ impl Evaluation {
 
                 let trayt = scope.context.traits.resolve(&trait_name, "")?;
 
-                // TODO: Check inputs match
-                Evaluation::Trait(TraitEvaluation {
-                    trayt,
-                    subject: Box::new(subject),
-                    inputs,
-                })
-            }
-            Expression::Let(call) => {
                 let mut inputs = vec![];
                 for (param_name, expr) in call.inputs.into_iter() {
                     let eval = Evaluation::analyse(&expr, scope)?;
@@ -96,11 +80,27 @@ impl Evaluation {
                     inputs.push((param_name, eval));
                 }
 
-                // TODO: check inputs match
-                Evaluation::Let(LetEvaluation {
-                    lett: scope.context.lets.resolve(&call.name, scope.path)?,
+                check_types(&trayt.borrow().inputs, &inputs, scope)?;
+
+                Evaluation::Trait(TraitEvaluation {
+                    trayt,
+                    subject: Box::new(subject),
                     inputs,
                 })
+            }
+            Expression::Let(call) => {
+                let lett = scope.context.lets.resolve(&call.name, scope.path)?;
+
+                let mut inputs = vec![];
+                for (param_name, expr) in call.inputs.into_iter() {
+                    let eval = Evaluation::analyse(&expr, scope)?;
+
+                    inputs.push((param_name, eval));
+                }
+
+                check_types(&lett.borrow().inputs, &inputs, scope)?;
+
+                Evaluation::Let(LetEvaluation { lett, inputs })
             }
             Expression::Literal(value) => Evaluation::Literal(value),
             Expression::Local(name) => {

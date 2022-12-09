@@ -13,15 +13,6 @@ pub struct Let {
     pub evaluation: Evaluation,
 }
 
-// TODO: this should go somewhere in the runtime module.
-// impl Let {
-//     pub fn resolve(&self, inputs: HashMap<String, Rc<Instance>>, scope: &Scope) -> Rc<Instance> {
-//         let local_scope = scope.local_scope(None, inputs);
-//
-//         self.expression.resolve(&local_scope)
-//     }
-// }
-
 impl Let {
     /// An earlier stage analysis that analyses only the inputs and output.
     pub fn analyse_just_types(

@@ -37,6 +37,8 @@ pub enum ErrorMessage {
     ClassAndStruct(String),
     UnknownRawType(String),
     UndefinedTrait(String),
+    MissingInput(String),
+    TypeMismatch(String),
 }
 
 impl From<&ErrorMessage> for String {
@@ -68,6 +70,8 @@ impl From<&ErrorMessage> for String {
             ErrorMessage::UndefinedTrait(trait_name) => {
                 format!("Trait '{}' is not available for this type", trait_name)
             }
+            ErrorMessage::MissingInput(name) => format!("Missing input for '{}'", name),
+            ErrorMessage::TypeMismatch(name) => format!("Type mismatch for '{}'", name),
         }
     }
 }
