@@ -1,6 +1,3 @@
-- Shorter trait *calls*
-- Parsing complex types
-- Compile time type checking
 - Add context to tokens to provide better errors
 - Control flow keywords
 - Array types

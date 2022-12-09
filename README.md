@@ -144,6 +144,68 @@ For example, defining the `String` trait on a class provides a way to convert th
 
 The output of the `Main` function *must* define the `String` trait or be instance of the `String` class.
 
+### Complex Types
+
+Complex types can be created by combining traits and modules with `|` and `&`.
+The compiler will figure out which traits you can call on such a type.
+If you want to specifically use the Trait rather than the Interface of a certain name,
+use `@` in front of the name. For example, `String` refers to something that defines the whole `String` module,
+while `@String` refers to something that defines the `String` trait to allow it to be transformed into a `String`.
+
+```
+mod Name
+    class(value: String)
+    defs(String: value)
+
+mod Age
+    class(value: Int)
+    defs(Int: value, String: value.String)
+
+mod Human
+    class(name: Name, age: Age)
+    defs(Name: name, Age: age)
+
+mod Animal
+    class(name: Name, age: Age)
+    defs(Name: name, Age: age)
+
+lets
+    # Takes anything that implements the Human or Animal module.
+    Greeting: (greeted: Human | Animal) -> String
+        # We can call the Name trait because it exists on both Human and Animal
+        String(value: 'Hello, ') + greeted.Name.String
+
+    # Takes anything that defines the Name and Age traits on it.
+    # We need to use the @ symbol, otherwise this means something that implements both the
+    # Name and Age module itself!
+    NameAndAge: (subject: @Name & @Age) -> String
+        subject.Name.String
+        + String(value: ' (')
+        + subject.Age.String
+        + String(value: ')')
+
+    Bob: Human
+        Human
+            name: Name(value: String(value: 'Bob'))
+            age: Age(value: Int(value: 20))
+
+    Fifi: Animal
+        Animal
+            name: Name(value: String(value: 'Fifi'))
+            age: Age(value: Int(value: 3))
+
+    Main: String
+        Greeting(greeted: Bob)
+        + String(value: '. ')
+        + Greeting(greeted: Fifi)
+        + String(value: '. ')
+        + NameAndAge(subject: Bob)
+        + String(value: '. ')
+        + NameAndAge(subject: Fifi)
+
+#> Hello, Bob. Hello, Fifi. Bob (20). Fifi (3)
+```
+
 ### Automatic Definitions
 
 Traits can be declared on a module with no class. 
@@ -326,7 +388,6 @@ There are many features of Compost that I have designed but haven't had the time
 - Automatically resolving `string` and `int` literals to `String` and `Int` structs, so we can do
   `MyPoint.String + '!'` instead of `MyPoint.String + String(value: '!')`.
 - Operator precedence.
-- More advanced types such as `Op/Add & Op/Sub`.
 - Enum types.
 - Array types.
 - Control flow keywords such as `if` and `for`.
