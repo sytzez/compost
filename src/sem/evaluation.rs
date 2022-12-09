@@ -143,7 +143,14 @@ impl Evaluation {
                     }
 
                 } else {
-                    call.trayt.borrow().output.clone()
+                    let output = &call.trayt.borrow().output;
+
+                    if matches!(output, Type::Zelf) {
+                        // If the trait returns a Self type, the output type is identical to the subject's type.
+                        call.subject.typ(scope)?
+                    } else {
+                        output.clone()
+                    }
                 }
             },
             Evaluation::Literal(raw_value) => Type::Raw(raw_value.into()),
