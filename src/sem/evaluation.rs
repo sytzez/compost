@@ -2,6 +2,7 @@ use std::cell::RefCell;
 
 use crate::ast::expression::{BinaryOp, Expression, FriendlyField};
 use crate::ast::raw_value::RawValue;
+use crate::ast::type_statement::RawType;
 use crate::error::ErrorMessage::NoResolution;
 use crate::error::{error, CResult, ErrorMessage};
 use crate::sem::class::Class;
@@ -11,9 +12,8 @@ use crate::sem::strukt::Struct;
 use crate::sem::table::Table;
 use crate::sem::trayt::Trait;
 use crate::sem::typ::Type;
-use std::rc::Rc;
-use crate::ast::type_statement::RawType;
 use crate::sem::type_checking::check_types;
+use std::rc::Rc;
 
 /// A semantically analysed expression that can be evaluated.
 #[derive(Clone, Debug)]
@@ -62,7 +62,11 @@ impl Evaluation {
                 // TODO: OR, if one is a String or Int and other is string or int, do type coercion.
                 // check_types(&trayt.borrow().inputs, &inputs, scope)?;
 
-                Evaluation::Trait(TraitEvaluation { trayt, subject, inputs })
+                Evaluation::Trait(TraitEvaluation {
+                    trayt,
+                    subject,
+                    inputs,
+                })
             }
             Expression::Def(call) => {
                 let subject = Evaluation::analyse(&call.subject, scope)?;
@@ -141,7 +145,6 @@ impl Evaluation {
                         // If this is an operation on a raw type, the return type is the same raw type.
                         Type::Raw(raw_type)
                     }
-
                 } else {
                     let output = &call.trayt.borrow().output;
 
@@ -152,10 +155,11 @@ impl Evaluation {
                         output.clone()
                     }
                 }
-            },
+            }
             Evaluation::Literal(raw_value) => Type::Raw(raw_value.into()),
             Evaluation::Local(name) => scope.locals.get(name).unwrap().clone(),
-            Evaluation::FriendlyField(ff) => scope.locals
+            Evaluation::FriendlyField(ff) => scope
+                .locals
                 .get(&format!("{}.{}", ff.local_name, ff.field_name))
                 .unwrap()
                 .clone(),

@@ -33,12 +33,10 @@ pub fn check_type_fits(given: &Type, expected: &Type, name: &str) -> CResult<()>
                 dbg!(expected);
                 error(ErrorMessage::TypeMismatch(name.to_string()))
             }
-        },
-        Type::Or(a, b) => {
-            match check_type_fits(given, a, name) {
-                Ok(()) => Ok(()),
-                Err(_) => check_type_fits(given, b, name),
-            }
+        }
+        Type::Or(a, b) => match check_type_fits(given, a, name) {
+            Ok(()) => Ok(()),
+            Err(_) => check_type_fits(given, b, name),
         },
         Type::And(a, b) => {
             check_type_fits(given, a, name)?;
@@ -60,9 +58,7 @@ pub fn type_contains(given: &Type, contained: &Type) -> bool {
                     false
                 }
             }
-            Type::And(a, b) => {
-                type_contains(a, contained) || type_contains(b, contained)
-            }
+            Type::And(a, b) => type_contains(a, contained) || type_contains(b, contained),
             _ => false,
         }
     }
@@ -70,12 +66,12 @@ pub fn type_contains(given: &Type, contained: &Type) -> bool {
 
 #[cfg(test)]
 mod test {
-    use std::cell::RefCell;
-    use std::rc::Rc;
     use crate::error::{error, ErrorMessage};
     use crate::sem::trayt::Trait;
     use crate::sem::typ::Type;
     use crate::sem::type_checking::check_type_fits;
+    use std::cell::RefCell;
+    use std::rc::Rc;
 
     #[test]
     fn test_fits() {
@@ -98,11 +94,7 @@ mod test {
             Box::new(Type::Trait(trait_b.clone())),
         );
 
-        assert_eq!(
-            check_type_fits(&a, &a, ""),
-            Ok(()),
-            "Trait A fits Trait A",
-        );
+        assert_eq!(check_type_fits(&a, &a, ""), Ok(()), "Trait A fits Trait A",);
 
         assert_eq!(
             check_type_fits(&a, &b, ""),

@@ -7,10 +7,10 @@ use crate::sem::lett::Let;
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::trayt::{interface_type, Trait};
 use crate::sem::typ::{combine_types, Type};
+use crate::sem::type_checking::type_contains;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::sem::type_checking::type_contains;
 
 /// A struct has a set of fields which are of raw types, and a set of trait definitions.
 #[derive(Debug)]

@@ -24,7 +24,10 @@ pub enum RawType {
 
 impl Parser for TypeStatement {
     fn matches(tokens: &Tokens) -> bool {
-        matches!(tokens.token(), Token::Global(_) | Token::Kw(Kw::Zelf) | Token::Op(Op::At | Op::Question))
+        matches!(
+            tokens.token(),
+            Token::Global(_) | Token::Kw(Kw::Zelf) | Token::Op(Op::At | Op::Question)
+        )
     }
 
     fn parse(tokens: &mut Tokens) -> CResult<Self> {
