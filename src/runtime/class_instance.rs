@@ -21,12 +21,6 @@ impl ClassInstance {
         &self.class
     }
 
-    pub fn dependency(&self, name: &str) -> &Rc<Instance> {
-        self.dependencies
-            .get(name)
-            .unwrap_or_else(|| panic!("Dependency {} does not exist", name))
-    }
-
     pub fn dependencies(&self) -> HashMap<String, Rc<Instance>> {
         self.dependencies.clone()
     }

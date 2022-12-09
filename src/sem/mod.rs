@@ -8,3 +8,4 @@ pub(crate) mod table;
 pub(crate) mod trayt;
 pub(crate) mod typ;
 pub(crate) mod type_checking;
+pub(crate) mod type_coercion;

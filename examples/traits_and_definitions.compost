@@ -19,8 +19,8 @@ mod Point
 lets
     MyPoint: Point
         Point
-            x: Int(value: 1)
-            y: Int(value: 2)
+            x: 1
+            y: 2
 
     Main: Point
         MyPoint.Opposite

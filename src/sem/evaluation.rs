@@ -14,6 +14,7 @@ use crate::sem::trayt::Trait;
 use crate::sem::typ::Type;
 use crate::sem::type_checking::check_types;
 use std::rc::Rc;
+use crate::sem::type_coercion::coerce_types;
 
 /// A semantically analysed expression that can be evaluated.
 #[derive(Clone, Debug)]
@@ -87,6 +88,7 @@ impl Evaluation {
                     inputs.push((param_name, eval));
                 }
 
+                coerce_types(&trayt.borrow().inputs, &mut inputs, scope)?;
                 check_types(&trayt.borrow().inputs, &inputs, scope)?;
 
                 Evaluation::Trait(TraitEvaluation {
@@ -105,6 +107,7 @@ impl Evaluation {
                     inputs.push((param_name, eval));
                 }
 
+                coerce_types(&lett.borrow().inputs, &mut inputs, scope)?;
                 check_types(&lett.borrow().inputs, &inputs, scope)?;
 
                 Evaluation::Let(LetEvaluation { lett, inputs })

@@ -59,22 +59,22 @@ lets
         RectangleBySize
             topLeft
                 Point
-                    x: Int(value: 10)
-                    y: Int(value: 5)
-            width: Int(value: 20)
-            height: Int(value: 10)
+                    x: 10
+                    y: 5
+            width: 20
+            height: 10
 
     # RectangleByPoints implements the Rectangle type because it defines all traits of Rectangle.
     B: Rectangle
         RectangleByPoints
             topLeft
                 Point
-                    x: Int(value: 10)
-                    y: Int(value: 5)
+                    x: 10
+                    y: 5
             bottomRight
                 Point
-                    x: Int(value: 15)
-                    y: Int(value: 15)
+                    x: 15
+                    y: 15
 
     # The following values are calculated using automatic definitions from the Rectangle module.
     Main: String

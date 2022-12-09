@@ -1,11 +1,11 @@
 lets
     MyConstant: Int
-        Int(value: 42)
+        42
 
     MyFunction: (a: Int, b: Int) -> Int
         a + b
 
     Main: Int
-        MyFunction(a: MyConstant, b: Int(value: 10))
+        MyFunction(a: MyConstant, b: 10)
 
 #> 52

@@ -85,13 +85,14 @@ mod Point
 lets
     # This constant is of the Point type. It be anything that implements the classes traits.
     MyPoint: Point
-        Point # This is a call to the Point constructor function.
-            x: Int(value: 1)
-            y: Int(value: 2)
+        # This is a call to the Point constructor function.
+        Point 
+            x: 1
+            y: 2
     
     # Since the Point type currently doesn't implement any traits, *anything* can be a Point.
     OtherPoint: Point
-        Int(value: 10)
+        10
         
     Main: String
         String(value: 'See the example below for Point output')
@@ -129,8 +130,8 @@ mod Point
 lets
     MyPoint: Point
         Point 
-            x: Int(value: 1)
-            y: Int(value: 2)
+            x: 1
+            y: 2
 
     Main: Point
         MyPoint.Opposite
@@ -273,22 +274,22 @@ lets
         RectangleBySize
             topLeft
                 Point
-                    x: Int(value: 10)
-                    y: Int(value: 5)
-            width: Int(value: 20)
-            height: Int(value: 10)
+                    x: 10
+                    y: 5
+            width: 20
+            height: 10
 
     # RectangleByPoints implements the Rectangle type because it defines all traits of Rectangle.
     B: Rectangle
         RectangleByPoints
             topLeft
                 Point
-                    x: Int(value: 10)
-                    y: Int(value: 5)
+                    x: 10
+                    y: 5
             bottomRight
                 Point
-                    x: Int(value: 15)
-                    y: Int(value: 15)
+                    x: 15
+                    y: 15
 
     # The following values are calculated using automatic definitions from the Rectangle module.
     Main: String
@@ -334,9 +335,9 @@ mod Square
 lets
     Main: Int
         Square
-            x: Int(value: 1)
-            y: Int(value: 1)
-            size: Int(value: 10)
+            x: 1
+            y: 1
+            size: 10
         .Area
 
 #> 100
@@ -385,8 +386,6 @@ For more details about the implementation of this compiler see my [blog posts](#
 
 There are many features of Compost that I have designed but haven't had the time to implement yet, such as:
 - Functions and constants within modules.
-- Automatically resolving `string` and `int` literals to `String` and `Int` structs, so we can do
-  `MyPoint.String + '!'` instead of `MyPoint.String + String(value: '!')`.
 - Operator precedence.
 - Enum types.
 - Array types.
