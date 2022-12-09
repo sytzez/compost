@@ -1,4 +1,5 @@
 use crate::ast::parser::Parser;
+use crate::ast::raw_value::RawValue;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Op, Token};
 
@@ -52,5 +53,14 @@ impl Parser for TypeStatement {
         };
 
         Ok(typ)
+    }
+}
+
+impl From<&RawValue> for RawType {
+    fn from(value: &RawValue) -> Self {
+        match value {
+            RawValue::String(_) => RawType::String,
+            RawValue::Int(_) => RawType::Int,
+        }
     }
 }

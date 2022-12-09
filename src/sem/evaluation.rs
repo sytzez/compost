@@ -12,6 +12,7 @@ use crate::sem::table::Table;
 use crate::sem::trayt::Trait;
 use crate::sem::typ::Type;
 use std::rc::Rc;
+use crate::ast::type_statement::RawType;
 use crate::sem::type_checking::check_types;
 
 /// A semantically analysed expression that can be evaluated.
@@ -130,7 +131,7 @@ impl Evaluation {
         let typ = match self {
             Evaluation::Let(call) => call.lett.borrow().output.clone(),
             Evaluation::Trait(call) => call.trayt.borrow().output.clone(),
-            Evaluation::Literal(_raw_value) => todo!(),
+            Evaluation::Literal(raw_value) => Type::Raw(raw_value.into()),
             Evaluation::Local(name) => scope.locals.get(name).unwrap().clone(),
             Evaluation::FriendlyField(_ff) => todo!(),
             Evaluation::Zelf => match &scope.zelf {
