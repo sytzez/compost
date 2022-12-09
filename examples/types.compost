@@ -1,0 +1,28 @@
+mod Name
+    struct(value: string)
+    defs(String: value)
+
+mod Human
+    class(name: Name)
+    defs(Name: name)
+
+mod Animal
+    class(name: Name)
+    defs(Name: name)
+
+lets
+    Greeting: (greeted: Human | Animal) -> String
+        String(value: 'Hello, ') + greeted.Name.String
+
+    Bob: Human
+        Human(name: Name(value: 'Bob'))
+
+    Fifi: Animal
+        Animal(name: Name(value: 'Fifi'))
+
+    Main: String
+        Greeting(greeted: Bob)
+        + String(value: '. ')
+        + Greeting(greeted: Fifi)
+
+#> Hello, Bob. Hello, Fifi

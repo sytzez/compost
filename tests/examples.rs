@@ -33,3 +33,11 @@ fn test_traits_and_definitions() {
         "-1, -2",
     )
 }
+
+#[test]
+fn test_types() {
+    assert_eq!(
+        run_file("examples/types.compost"),
+        "Hello, Bob. Hello, Fifi",
+    )
+}
