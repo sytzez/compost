@@ -19,6 +19,7 @@ pub enum Instance {
     Class(ClassInstance),
     Struct(StructInstance),
     Raw(RawValue),
+    Void,
 }
 
 impl Instance {
@@ -35,6 +36,7 @@ impl Instance {
 
                 return Rc::new(Instance::Raw(result));
             }
+            Instance::Void => panic!("Can't call trait on void"),
         };
 
         let evaluation = &definitions.iter().find(|(t, _)| t == &trayt).unwrap().1;
@@ -48,7 +50,7 @@ impl Instance {
         match self {
             Instance::Struct(instance) => instance.fields(),
             Instance::Class(instance) => instance.dependencies(),
-            Instance::Raw(_) => unreachable!(),
+            _ => unreachable!(),
         }
     }
 
@@ -70,7 +72,7 @@ impl Instance {
                             .iter()
                             .any(|(trayt, _)| &trayt.as_ref().borrow().full_name == trayt_name)
                     },
-                    Instance::Raw(_) => false,
+                    _ => false,
                 }
             },
             Type::Raw(raw_type) => {

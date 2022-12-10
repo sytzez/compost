@@ -60,6 +60,7 @@ pub fn evaluate(
             evaluate(branch, locals, zelf)
         }
         Evaluation::Zelf => Rc::clone(&zelf.unwrap()),
+        Evaluation::Void => Rc::new(Instance::Void),
         Evaluation::ClassConstructor(class) => {
             let instance = ClassInstance::new(class, locals);
 

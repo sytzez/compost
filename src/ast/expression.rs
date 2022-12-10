@@ -19,6 +19,7 @@ pub enum Expression {
     FriendlyField(FriendlyField),
     Match(MatchCall),
     Zelf,
+    Void,
 }
 
 #[derive(Clone, Debug)]
@@ -106,6 +107,10 @@ impl Parser for Expression {
             }
             Token::Kw(Kw::Match) => {
                 Expression::Match(MatchCall::parse(tokens)?)
+            }
+            Token::Op(Op::Question) => {
+                tokens.step();
+                return Ok(Expression::Void);
             }
             _ => return tokens.unexpected_token_error(),
         };

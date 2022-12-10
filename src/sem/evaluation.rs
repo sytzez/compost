@@ -26,6 +26,7 @@ pub enum Evaluation {
     FriendlyField(FriendlyField),
     Match(MatchEvaluation),
     Zelf,
+    Void,
     // only for internal use
     ClassConstructor(Rc<Class>),
     StructConstructor(Rc<Struct>),
@@ -176,6 +177,7 @@ impl Evaluation {
                 Evaluation::Match(match_eval)
             }
             Expression::Zelf => Evaluation::Zelf,
+            Expression::Void => Evaluation::Void,
         };
 
         Ok(eval)
@@ -229,6 +231,7 @@ impl Evaluation {
                 Some(typ) => typ.clone(),
                 None => return error(ErrorMessage::NoSelf),
             },
+            Evaluation::Void => Type::Void,
             Evaluation::ClassConstructor(class) => class.interface(),
             Evaluation::StructConstructor(strukt) => strukt.interface(),
         };
