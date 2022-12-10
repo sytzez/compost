@@ -42,7 +42,12 @@ pub fn evaluate(
         }
         Evaluation::Match(call) => {
             let subject = evaluate(&call.subject, locals.clone(), zelf.clone());
-            let is_self = matches!(*call.subject, Evaluation::Zelf);
+
+            // Check if the subject is of the same type as 'self' in this scope
+            let is_self = match &zelf {
+                Some(zelf) => zelf.is_of_same_type(&subject),
+                None => false,
+            };
 
             // Find the matching branch.
             let branch = call

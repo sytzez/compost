@@ -10,12 +10,16 @@ use crate::sem::trayt::{interface_type, Trait};
 use crate::sem::typ::{combine_types, Type};
 use std::rc::Rc;
 use std::string::String;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+static ID: AtomicUsize = AtomicUsize::new(0);
 
 // A class has a set of dependencies of certain types, and a set of trait definitions.
 #[derive(Debug)]
 pub struct Class {
     pub dependencies: Vec<(String, Type)>,
     pub definitions: Vec<(Rc<RefCell<Trait>>, Evaluation)>,
+    id: usize,
 }
 
 impl Class {
@@ -86,6 +90,7 @@ impl Class {
         let class = Class {
             dependencies,
             definitions,
+            id: ID.fetch_add(1, Ordering::SeqCst),
         };
 
         Ok(class)
@@ -107,5 +112,11 @@ impl Class {
             .collect::<Vec<_>>();
 
         combine_types(types)
+    }
+}
+
+impl PartialEq for Class {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
     }
 }

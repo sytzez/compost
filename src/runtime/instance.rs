@@ -100,6 +100,38 @@ impl Instance {
         }
     }
 
+    /// Whether the current instance is of the same type as the given instance.
+    /// This is used to match the 'Self' type in match statements during runtime.
+    pub fn is_of_same_type(&self, other: &Self) -> bool {
+        match self {
+            Instance::Class(klass) => {
+                if let Instance::Class(other) = other {
+                    klass.class() == other.class()
+                } else {
+                    false
+                }
+            }
+            Instance::Struct(strukt) => {
+                if let Instance::Struct(other) = other {
+                    strukt.strukt() == other.strukt()
+                } else {
+                    false
+                }
+            }
+            Instance::Raw(raw_value) => {
+                if let Instance::Raw(other) = other {
+                    match raw_value {
+                        RawValue::Int(_) => matches!(other, RawValue::Int(_)),
+                        RawValue::String(_) => matches!(other, RawValue::String(_)),
+                    }
+                } else {
+                    false
+                }
+            }
+            Instance::Void => matches!(other, Instance::Void)
+        }
+    }
+
     pub fn to_string(self: &Rc<Self>, context: &SemanticContext) -> CResult<String> {
         if let Instance::Raw(raw_value) = self.borrow() {
             let result = match raw_value {

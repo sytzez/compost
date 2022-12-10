@@ -11,12 +11,16 @@ use crate::sem::type_checking::type_contains;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+static ID: AtomicUsize = AtomicUsize::new(0);
 
 /// A struct has a set of fields which are of raw types, and a set of trait definitions.
 #[derive(Debug)]
 pub struct Struct {
     pub fields: Vec<(String, RawType)>,
     pub definitions: Vec<(Rc<RefCell<Trait>>, Evaluation)>,
+    id: usize,
 }
 
 impl Struct {
@@ -94,6 +98,7 @@ impl Struct {
         let strukt = Struct {
             fields: struct_statement.fields.clone(),
             definitions,
+            id: ID.fetch_add(1, Ordering::SeqCst),
         };
 
         Ok(strukt)
@@ -121,5 +126,11 @@ impl Struct {
             .collect();
 
         combine_types(types)
+    }
+}
+
+impl PartialEq for Struct {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
     }
 }
