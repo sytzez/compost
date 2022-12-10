@@ -5,6 +5,7 @@ use crate::lex::token::{Kw, Op, Token};
 
 use crate::lex::tokens::Tokens;
 
+#[derive(Clone, Debug)]
 pub enum TypeStatement {
     Name(String),
     AtName(String),

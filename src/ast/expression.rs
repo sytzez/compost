@@ -5,9 +5,11 @@ use crate::lex::token::{Kw, Lit, Op, Token};
 
 use crate::lex::tokens::Tokens;
 use std::collections::HashMap;
+use crate::ast::expr::match_call::MatchCall;
+use crate::ast::type_statement::TypeStatement;
 
 /// An expression within the abstract syntax tree.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Expression {
     Binary(BinaryCall),
     Let(LetCall),
@@ -15,23 +17,24 @@ pub enum Expression {
     Literal(RawValue),
     Local(String),
     FriendlyField(FriendlyField),
+    Match(MatchCall),
     Zelf,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BinaryCall {
     pub op: BinaryOp,
     pub lhs: Box<Expression>,
     pub rhs: Box<Expression>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct LetCall {
     pub name: String,
     pub inputs: HashMap<String, Expression>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DefCall {
     pub name: String,
     pub subject: Box<Expression>,
@@ -45,7 +48,7 @@ pub struct FriendlyField {
     pub field_name: String,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum BinaryOp {
     Add,
     Sub,
@@ -100,6 +103,9 @@ impl Parser for Expression {
                     subject: Box::new(expr),
                     inputs: [].into(),
                 })
+            }
+            Token::Kw(Kw::Match) => {
+                Expression::Match(MatchCall::parse(tokens)?)
             }
             _ => return tokens.unexpected_token_error(),
         };

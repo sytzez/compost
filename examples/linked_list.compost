@@ -33,7 +33,7 @@ mod NumberList
     defs
         Value: value
         Sum
-            match next .Next
+            match next: .Next
                 Self: next.Sum + .Value
                 ?: .Value
         LinkedList\Next: next
