@@ -1,53 +1,54 @@
 mod LinkedList
     class
-        next: Self | ?
+        prev: Self | ?
     traits
-        Next: Self
+        Prev: Self
         First: Self
         Last: Self
         Length: Int
         NodeString: String # A representation of the current node as a string.
         Reverse: Self # TODO: implement
     defs
-        First: Self
-        Last
-            match next: .Next
-                Self: next.Last
+        Last: Self
+        First
+            match prev: .Prev
+                Self: prev.Last
                 ?: Self
         Length
-            match next: .Next
-                Self: next.Length + 1
+            match prev: .Prev
+                Self: prev.Length + 1
                 ?: 1
         String:
-            match next .Next
-                Self: .NodeString + ', ' + next.String
+            match prev .Prev
+                Self: prev.String + ', ' + .NodeString
                 ?: .NodeString
 
 mod NumberList
     class
         value: Int
-        next: Self | ?
+        prev: Self | ?
     traits
         Value: Int
+        Push: (pushed: Int) -> Self
         Sum: Int
     defs
         Value: value
+        Push
+            NumberList
+                value: pushed
+                prev: Self
         Sum
-            match next: .Next
-                Self: next.Sum + .Value
+            match prev: .Prev
+                Self: prev.Sum + .Value
                 ?: .Value
-        LinkedList\Next: next
+        LinkedList\Prev: prev
         LinkedList\NodeString: .Value.String
 
 lets
     MyNumberList: NumberList
-        NumberList
-            value: 1
-            next: NumberList
-                value: 2
-                next: NumberList
-                    value: 3
-                    next: ?
+        NumberList(value: 1, prev: ?)
+        .Push(pushed: 2)
+        .Push(pushed: 3)
 
     Main: Int
         ' (total: ' + MyNumberList.Sum.String + ')'
