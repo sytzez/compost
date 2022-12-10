@@ -39,7 +39,11 @@ impl Instance {
             Instance::Void => panic!("Can't call trait on void"),
         };
 
-        let evaluation = &definitions.iter().find(|(t, _)| t == &trayt).unwrap().1;
+        let evaluation = &definitions
+            .iter()
+            .find(|(t, _)| t == &trayt)
+            .map(|(_, eval)| eval)
+            .unwrap_or_else(|| panic!("Couldn't find trait {} on instance", trayt.as_ref().borrow().full_name));
 
         inputs.extend(self.locals());
 

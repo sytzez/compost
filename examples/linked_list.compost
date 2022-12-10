@@ -9,11 +9,11 @@ mod LinkedList
         NodeString: String # A representation of the current node as a string.
         Reverse: Self # TODO: implement
     defs
-        First: self
+        First: Self
         Last
             match next: .Next
                 Self: next.Last
-                ?: self
+                ?: Self
         Length
             match next: .Next
                 Self: next.Length + 1
@@ -40,16 +40,16 @@ mod NumberList
         LinkedList\NodeString: .Value.String
 
 lets
-    MyNumberedList: NumberedList
-        NumberedList
+    MyNumberList: NumberList
+        NumberList
             value: 1
-            next: NumberedList
+            next: NumberList
                 value: 2
-                next: NumberedList
+                next: NumberList
                     value: 3
                     next: ?
 
     Main: Int
-        MyNumberedList.String + ' (total: ' + MyNumberedList.Sum + ')'
+        MyNumberList.String + ' (total: ' + MyNumberList.Sum + ')'
 
 #> 1, 2, 3 (total: 6)
