@@ -46,6 +46,6 @@ fn test_types() {
 fn test_linked_list() {
     assert_eq!(
         run_file("examples/linked_list.compost"),
-        "1, 2, 3, 4 (total: 10). Reversed: 4, 3, 2, 1 (total: 10)",
+        "1, 2, 3, 4 (total: 10). Reversed: 4, 3, 2, 1 (total: 10). Together: 1, 2, 3, 4, 4, 3, 2, 1 (total: 20)",
     )
 }
