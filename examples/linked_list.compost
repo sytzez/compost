@@ -7,20 +7,21 @@ mod LinkedList
         Last: Self
         Length: Int
         NodeString: String # A representation of the current node as a string.
-        Reverse: Self # TODO: implement
+        Reverse: Self
+        Unshift: Self
         Print: String
     defs
         Last: Self
         First
             match prev: .Prev
-                Self: prev.Last
+                Self: prev.First
                 ?: Self
         Length
             match prev: .Prev
                 Self: prev.Length + 1
                 ?: 1
-        Print:
-            match prev .Prev
+        Print
+            match prev: .Prev
                 Self: prev.Print + ', ' + .NodeString
                 ?: .NodeString
 
@@ -44,14 +45,43 @@ mod NumberList
                 ?: .Value
         LinkedList\Prev: prev
         LinkedList\NodeString: .Value.String
+        LinkedList\Unshift
+            match prev: .Prev
+                Self
+                    match prevPrev: prev.Prev
+                        Self
+                            NumberList
+                                value: .Value
+                                prev: .Prev.Unshift
+                        ?
+                            NumberList
+                                value: .Value
+                                prev: ?
+                ?
+                    NumberList
+                        value: .Value
+                        prev: ?
+        LinkedList\Reverse
+            match prev: .Prev
+                Self
+                    NumberList
+                        value: .First.Value
+                        prev: .Unshift.Reverse
+                ?
+                    Self
+
 
 lets
     MyNumberList: NumberList
         NumberList(value: 1, prev: ?)
         .Push(pushed: 2)
         .Push(pushed: 3)
+        .Push(pushed: 4)
 
-    Main: Int
-        MyNumberList.Print + ' (total: ' + MyNumberList.Sum.String + ')'
+    Main: String
+        MyNumberList.Print
+        + ' (total: ' + MyNumberList.Sum.String + ')'
+        + '. Reversed: ' + MyNumberList.Reverse.Print
+        + ' (total: ' + MyNumberList.Reverse.Sum.String + ')'
 
-#> 1, 2, 3 (total: 6)
+#> 1, 2, 3, 4 (total: 10). Reversed: 4, 3, 2, 1 (total: 10)

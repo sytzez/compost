@@ -28,10 +28,11 @@ cargo run examples/functions_and_constants.compost
 - Classes and structs
 - Full encapsulation of implementation details behind 'traits'
 - Automatic trait implementations
-- Polymorphism based on having the same traits implemented
+- Polymorphism
 - Complex types using `&` and `|`
 - Static type checking
-- Type coercion from literals to stdlib structs
+- Type coercion
+- Matching based on types
 
 ## Related Blogs
 
