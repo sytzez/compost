@@ -4,6 +4,7 @@ use crate::ast::let_statement::LetStatement;
 use crate::error::CResult;
 use crate::sem::evaluation::Evaluation;
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
+use crate::sem::type_checking::{check_type_fits, check_types};
 use crate::sem::type_coercion::coerce_type;
 
 // A 'let' defines a constant instance or a function.
@@ -56,8 +57,8 @@ impl Let {
 
         let mut evaluation = Evaluation::analyse(&statement.expr, &scope)?;
         coerce_type(&lett.output, &mut evaluation, &statement.name, &scope)?;
+        // check_type_fits(&evaluation.typ(&scope)?, &lett.output, &statement.name)?;
 
-        // TODO: check if output type fits evaluation output type
         let lett = Let {
             inputs: lett.inputs,
             output: lett.output,

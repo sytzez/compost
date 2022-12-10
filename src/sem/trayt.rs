@@ -9,6 +9,8 @@ use crate::sem::evaluation::Evaluation;
 
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::typ::{combine_types, Type};
+use crate::sem::type_checking::check_type_fits;
+use crate::sem::type_coercion::coerce_type;
 
 /// A trait has input types and an output type. It can be defined on classes and structs.
 #[derive(Clone)]
@@ -57,6 +59,8 @@ impl Trait {
 
         let full_name = format!("{}\\{}", path, statement.name);
 
+        let output = Type::analyse(&statement.output, context, path)?;
+
         // Analyse default def, if provided.
         let default_definition = if with_default_definition {
             let def = module
@@ -75,9 +79,13 @@ impl Trait {
                 };
 
                 match Evaluation::analyse(&def.expr, &scope) {
-                    Ok(eval) => Some(eval),
+                    Ok(mut eval) => {
+                        // coerce_type(&output, &mut eval, &statement.name, &scope)?;
+                        // check_type_fits(&eval.typ(&scope)?, &output, &statement.name)?;
+                        Some(eval)
+                    },
                     // If the evaluation can't be analysed without the context of a struct or class,
-                    // then it isn't suitable as a default definition of the trait.
+                    // then it isn't suitable as a default definition of the trait. We'll ignore it.
                     Err(_) => None,
                 }
             } else {
@@ -91,7 +99,7 @@ impl Trait {
             full_name,
             interface: context.interfaces.resolve(path, "")?,
             inputs,
-            output: Type::analyse(&statement.output, context, path)?,
+            output,
             default_definition,
         };
 
