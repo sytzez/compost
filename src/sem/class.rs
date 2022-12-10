@@ -63,7 +63,7 @@ impl Class {
                 .into_iter()
                 .collect();
 
-            let evaluation = Evaluation::analyse(&def_statement.expr, &scope)?;
+            let evaluation = Evaluation::analyse(def_statement.expr.clone(), &scope)?;
 
             definitions.push((trayt, evaluation));
         }

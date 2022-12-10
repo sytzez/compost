@@ -24,6 +24,7 @@ pub enum Evaluation {
     Literal(RawValue),
     Local(String),
     FriendlyField(FriendlyField),
+    Match(MatchEvaluation),
     Zelf,
     // only for internal use
     ClassConstructor(Rc<Class>),
@@ -43,9 +44,16 @@ pub struct TraitEvaluation {
     pub inputs: Vec<(String, Evaluation)>,
 }
 
+#[derive(Clone, Debug)]
+pub struct MatchEvaluation {
+    pub local_name: String,
+    pub subject: Box<Evaluation>,
+    pub branches: Vec<(Type, Box<Evaluation>)>,
+}
+
 impl Evaluation {
-    pub fn analyse(expr: &Expression, scope: &SemanticScope) -> CResult<Self> {
-        let eval = match expr.clone() {
+    pub fn analyse(expr: Expression, scope: &SemanticScope) -> CResult<Self> {
+        let eval = match expr {
             Expression::Binary(call) => {
                 let trait_path = match call.op {
                     BinaryOp::Add => "Op\\Add",
@@ -55,8 +63,8 @@ impl Evaluation {
                 };
                 let trayt = scope.context.traits.resolve(trait_path, "")?;
 
-                let mut lhs = Evaluation::analyse(&call.lhs, scope)?;
-                let mut rhs = Evaluation::analyse(&call.rhs, scope)?;
+                let mut lhs = Evaluation::analyse(*call.lhs, scope)?;
+                let mut rhs = Evaluation::analyse(*call.rhs, scope)?;
 
                 let left_type = lhs.typ(scope)?;
                 let right_type = rhs.typ(scope)?;
@@ -82,7 +90,7 @@ impl Evaluation {
                 })
             }
             Expression::Def(call) => {
-                let subject = Evaluation::analyse(&call.subject, scope)?;
+                let subject = Evaluation::analyse(*call.subject, scope)?;
 
                 // Make a temporary trait table using only traits defined on the subject.
                 let mut trait_name_table = Table::new("Trait");
@@ -95,7 +103,7 @@ impl Evaluation {
 
                 let mut inputs = vec![];
                 for (param_name, expr) in call.inputs.into_iter() {
-                    let eval = Evaluation::analyse(&expr, scope)?;
+                    let eval = Evaluation::analyse(expr, scope)?;
 
                     inputs.push((param_name, eval));
                 }
@@ -114,7 +122,7 @@ impl Evaluation {
 
                 let mut inputs = vec![];
                 for (param_name, expr) in call.inputs.into_iter() {
-                    let eval = Evaluation::analyse(&expr, scope)?;
+                    let eval = Evaluation::analyse(expr, scope)?;
 
                     inputs.push((param_name, eval));
                 }
@@ -141,6 +149,22 @@ impl Evaluation {
                 // TODO: check if locals is a struct, if it is of the same type as self, if it has the friendly field
 
                 Evaluation::FriendlyField(ff)
+            }
+            Expression::Match(call) => {
+                let mut branches = vec![];
+                for (type_statement, expr) in call.branches {
+                    let typ = Type::analyse(&type_statement, &scope.context, &scope.path)?;
+                    let eval = Box::new(Evaluation::analyse(*expr, scope)?);
+                    branches.push((typ, eval));
+                }
+
+                let match_eval = MatchEvaluation {
+                    local_name: call.local_name,
+                    subject: Box::new(Evaluation::analyse(*call.subject, scope)?),
+                    branches,
+                };
+
+                Evaluation::Match(match_eval)
             }
             Expression::Zelf => Evaluation::Zelf,
         };

@@ -72,7 +72,7 @@ impl Struct {
                 scope.locals.insert(friendly_local.0, friendly_local.1);
             }
 
-            let evaluation = Evaluation::analyse(&def_statement.expr, &scope)?;
+            let evaluation = Evaluation::analyse(def_statement.expr.clone(), &scope)?;
 
             definitions.push((trayt, evaluation));
         }

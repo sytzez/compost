@@ -78,7 +78,7 @@ impl Trait {
                     )),
                 };
 
-                match Evaluation::analyse(&def.expr, &scope) {
+                match Evaluation::analyse(def.expr.clone(), &scope) {
                     Ok(mut eval) => {
                         // coerce_type(&output, &mut eval, &statement.name, &scope)?;
                         // check_type_fits(&eval.typ(&scope)?, &output, &statement.name)?;

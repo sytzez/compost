@@ -55,7 +55,7 @@ impl Let {
             zelf: None,
         };
 
-        let mut evaluation = Evaluation::analyse(&statement.expr, &scope)?;
+        let mut evaluation = Evaluation::analyse(statement.expr.clone(), &scope)?;
         coerce_type(&lett.output, &mut evaluation, &statement.name, &scope)?;
         // check_type_fits(&evaluation.typ(&scope)?, &lett.output, &statement.name)?;
 
