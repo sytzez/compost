@@ -41,16 +41,21 @@ pub fn evaluate(
             }
         }
         Evaluation::Match(call) => {
-            let subject = evaluate(&call.subject, locals.clone(), zelf);
+            let subject = evaluate(&call.subject, locals.clone(), zelf.clone());
 
+            // Find the matching branch.
             let branch = call
                 .branches
                 .iter()
-                .find(|(typ, _)| subject.fits_type(typ))
+                .find(|(typ, _)| subject.satisfies_type(typ))
                 .map(|(_, branch)| branch)
                 .unwrap_or_else(|| unreachable!("None of the branches for {} matched!", call.local_name));
 
-            // TODO: add matched local_name to locals
+            // Add the subject to scope.
+            let locals = locals
+                .into_iter()
+                .chain([(call.local_name.to_string(), subject)])
+                .collect();
 
             evaluate(branch, locals, zelf)
         }

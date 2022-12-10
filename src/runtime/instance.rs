@@ -11,6 +11,7 @@ use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use crate::sem::typ::Type;
 
 /// An instantiated class or struct, or a raw value.
 #[derive(Debug)]
@@ -48,6 +49,44 @@ impl Instance {
             Instance::Struct(instance) => instance.fields(),
             Instance::Class(instance) => instance.dependencies(),
             Instance::Raw(_) => unreachable!(),
+        }
+    }
+
+    /// Whether the current instance satisfies the given type.
+    pub fn satisfies_type(&self, typ: &Type) -> bool {
+        match typ {
+            Type::Trait(trayt) => {
+                let trayt_name = &trayt.as_ref().borrow().full_name;
+                match self {
+                    Instance::Class(class) => {
+                        class.class()
+                            .definitions
+                            .iter()
+                            .any(|(trayt, _)| &trayt.as_ref().borrow().full_name == trayt_name)
+                    },
+                    Instance::Struct(strukt) => {
+                        strukt.strukt()
+                            .definitions
+                            .iter()
+                            .any(|(trayt, _)| &trayt.as_ref().borrow().full_name == trayt_name)
+                    },
+                    Instance::Raw(_) => false,
+                }
+            },
+            Type::Raw(raw_type) => {
+                if let Instance::Raw(val) = self {
+                     match raw_type {
+                         RawType::Int => matches!(val, RawValue::Int(_)),
+                         RawType::String => matches!(val, RawValue::String(_)),
+                     }
+                } else {
+                    false
+                }
+            }
+            Type::And(a, b) => self.satisfies_type(a) && self.satisfies_type(b),
+            Type::Or(a, b) => self.satisfies_type(a) || self.satisfies_type(b),
+            Type::Zelf => todo!(),
+            Type::Void => true,
         }
     }
 

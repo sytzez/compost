@@ -11,7 +11,7 @@ use crate::sem::semantic_analyser::SemanticScope;
 use crate::sem::strukt::Struct;
 use crate::sem::table::Table;
 use crate::sem::trayt::Trait;
-use crate::sem::typ::Type;
+use crate::sem::typ::{combine_types, Type};
 use crate::sem::type_checking::check_types;
 use crate::sem::type_coercion::{coerce_type, coerce_types};
 use std::rc::Rc;
@@ -206,11 +206,25 @@ impl Evaluation {
             }
             Evaluation::Literal(raw_value) => Type::Raw(raw_value.into()),
             Evaluation::Local(name) => scope.locals.get(name).unwrap().clone(),
-            Evaluation::FriendlyField(ff) => scope
-                .locals
-                .get(&format!("{}.{}", ff.local_name, ff.field_name))
-                .unwrap()
-                .clone(),
+            Evaluation::FriendlyField(ff) => {
+                scope
+                    .locals
+                    .get(&format!("{}.{}", ff.local_name, ff.field_name))
+                    .unwrap()
+                    .clone()
+            },
+            Evaluation::Match(call) => {
+                let mut types = vec![];
+                for (typ, branch) in &call.branches {
+                    // Add matched type to scope for each branch to determine the output type.
+                    let mut scope = scope.clone();
+                    scope.locals.insert(call.local_name.clone(), typ.clone());
+
+                    types.push(branch.typ(&scope)?)
+                }
+
+                combine_types(types)
+            }
             Evaluation::Zelf => match &scope.zelf {
                 Some(typ) => typ.clone(),
                 None => return error(ErrorMessage::NoSelf),
