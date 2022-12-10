@@ -13,7 +13,9 @@ pub fn check_types(
         let input = inputs.iter().find(|(input_name, _)| input_name == name);
 
         if let Some((_, input)) = input {
-            check_type_fits(&input.typ(scope)?, typ, name)?
+            if check_type_fits(&input.typ(scope)?, typ).is_err() {
+                return error(ErrorMessage::TypeMismatch(name.clone(), typ.clone(), input.typ(scope)?))
+            }
         } else {
             return error(ErrorMessage::MissingInput(name.clone()));
         }
@@ -22,23 +24,23 @@ pub fn check_types(
 }
 
 /// Checks whether the given type is suitable to be used where the expected type is required.
-pub fn check_type_fits(given: &Type, expected: &Type, name: &str) -> CResult<()> {
+pub fn check_type_fits(given: &Type, expected: &Type) -> Result<(), ()> {
     match expected {
         Type::Void => Ok(()),
         Type::Raw(_) | Type::Zelf | Type::Trait(_) => {
             if type_contains(given, expected) {
                 Ok(())
             } else {
-                error(ErrorMessage::TypeMismatch(name.to_string()))
+                Err(())
             }
         }
-        Type::Or(a, b) => match check_type_fits(given, a, name) {
+        Type::Or(a, b) => match check_type_fits(given, a,) {
             Ok(()) => Ok(()),
-            Err(_) => check_type_fits(given, b, name),
+            Err(_) => check_type_fits(given, b),
         },
         Type::And(a, b) => {
-            check_type_fits(given, a, name)?;
-            check_type_fits(given, b, name)
+            check_type_fits(given, a)?;
+            check_type_fits(given, b)
         }
     }
 }
@@ -64,7 +66,6 @@ pub fn type_contains(given: &Type, contained: &Type) -> bool {
 
 #[cfg(test)]
 mod test {
-    use crate::error::{error, ErrorMessage};
     use crate::sem::trayt::Trait;
     use crate::sem::typ::Type;
     use crate::sem::type_checking::check_type_fits;
@@ -92,53 +93,53 @@ mod test {
             Box::new(Type::Trait(trait_b.clone())),
         );
 
-        assert_eq!(check_type_fits(&a, &a, ""), Ok(()), "Trait A fits Trait A",);
+        assert_eq!(check_type_fits(&a, &a), Ok(()), "Trait A fits Trait A",);
 
         assert_eq!(
-            check_type_fits(&a, &b, ""),
-            error(ErrorMessage::TypeMismatch("".to_string())),
+            check_type_fits(&a, &b),
+            Err(()),
             "Trait A doesn't fit Trait B",
         );
 
         assert_eq!(
-            check_type_fits(&a, &a_or_b, ""),
+            check_type_fits(&a, &a_or_b),
             Ok(()),
             "Trait A fits Trait A or Trait B",
         );
 
         assert_eq!(
-            check_type_fits(&a, &a_and_b, ""),
-            error(ErrorMessage::TypeMismatch("".to_string())),
+            check_type_fits(&a, &a_and_b),
+            Err(()),
             "Trait A doesn't fit Trait A and Trait B",
         );
 
         assert_eq!(
-            check_type_fits(&a_and_b, &a, ""),
+            check_type_fits(&a_and_b, &a),
             Ok(()),
             "Trait A and Trait B fits Trait A",
         );
 
         assert_eq!(
-            check_type_fits(&a_and_b, &b, ""),
+            check_type_fits(&a_and_b, &b),
             Ok(()),
             "Trait A and Trait B fits Trait B",
         );
 
         assert_eq!(
-            check_type_fits(&a_and_b, &b_and_a, ""),
+            check_type_fits(&a_and_b, &b_and_a),
             Ok(()),
             "Trait A and Trait B fits Trait B and Trait A",
         );
 
         assert_eq!(
-            check_type_fits(&a_and_b, &a_or_b, ""),
+            check_type_fits(&a_and_b, &a_or_b),
             Ok(()),
             "Trait A and Trait B fits Trait A or Trait B",
         );
 
         assert_eq!(
-            check_type_fits(&a_or_b, &a_and_b, ""),
-            error(ErrorMessage::TypeMismatch("".to_string())),
+            check_type_fits(&a_or_b, &a_and_b),
+            Err(()),
             "Trait A or Trait B doesn't fit Trait A and Trait B",
         );
     }

@@ -1,8 +1,9 @@
 use crate::lex::token::Token;
 use crate::lex::tokenizer::get_position_of_token;
+use crate::sem::typ::Type;
 
 /// An error during compilation.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct CompilationError {
     pub message: ErrorMessage,
     pub context: Option<ErrorContext>,
@@ -24,7 +25,7 @@ impl CompilationError {
 }
 
 /// A compilation error message.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum ErrorMessage {
     UnexpectedChar(String),
     UnexpectedToken(Token),
@@ -39,7 +40,7 @@ pub enum ErrorMessage {
     UnknownRawType(String),
     UndefinedTrait(String),
     MissingInput(String),
-    TypeMismatch(String),
+    TypeMismatch(String, Type, Type),
 }
 
 impl From<&ErrorMessage> for String {
@@ -73,7 +74,9 @@ impl From<&ErrorMessage> for String {
                 format!("Trait '{}' is not available for this type", trait_name)
             }
             ErrorMessage::MissingInput(name) => format!("Missing input for '{}'", name),
-            ErrorMessage::TypeMismatch(name) => format!("Type mismatch for '{}'", name),
+            ErrorMessage::TypeMismatch(name, expected, given) => {
+                format!("Type mismatch for '{}'.\n  Expected: {}\n  Got: {}", name, expected, given)
+            },
         }
     }
 }

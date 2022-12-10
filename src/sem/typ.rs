@@ -4,6 +4,7 @@ use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::trayt::{interface_type, Trait};
 use std::cell::RefCell;
 use std::collections::BTreeSet;
+use std::fmt::{Display, Formatter};
 use std::rc::Rc;
 
 #[derive(PartialEq, Clone, Debug)]
@@ -104,6 +105,24 @@ impl Type {
                     .map(|s| s.to_string())
                     .collect(),
             },
+        }
+    }
+}
+
+impl Display for Type {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Type::Trait(t) => write!(f, "{}", t.borrow().full_name),
+            Type::Raw(t) => {
+                match t {
+                    RawType::Int => write!(f, "int"),
+                    RawType::String => write!(f, "string"),
+                }
+            }
+            Type::And(a, b) => write!(f, "{} & {}", a, b),
+            Type::Or(a, b) => write!(f, "{} | {}", a, b),
+            Type::Zelf => write!(f, "Self"),
+            Type::Void => write!(f, "?"),
         }
     }
 }

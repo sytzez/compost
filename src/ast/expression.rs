@@ -162,7 +162,7 @@ impl Parser for Expression {
                                 _ => return tokens.unexpected_token_error(),
                             }
                         }
-                        _ => return tokens.unexpected_token_error(),
+                        _ => break,
                     }
                 }
                 _ => break,

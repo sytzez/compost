@@ -9,6 +9,7 @@ mod LinkedList
         NodeString: String # A representation of the current node as a string.
         Reverse: Self
         Unshift: Self
+        Concat: (other: Self) -> Self
         Print: String
     defs
         Last: Self
@@ -69,6 +70,13 @@ mod NumberList
                         prev: .Unshift.Reverse
                 ?
                     Self
+        LinkedList\Concat
+            match prev: other.Prev
+                Self
+                    .Push(pushed: other.First.Value)
+                    .Concat(other: other.Unshift)
+                ?
+                    .Push(pushed: other.Value)
 
 
 lets
@@ -78,10 +86,18 @@ lets
         .Push(pushed: 3)
         .Push(pushed: 4)
 
+    Reversed: NumberList
+        MyNumberList.Reverse
+
+    Together: NumberList
+        MyNumberList.Concat(other: Reversed)
+
     Main: String
         MyNumberList.Print
         + ' (total: ' + MyNumberList.Sum.String + ')'
-        + '. Reversed: ' + MyNumberList.Reverse.Print
-        + ' (total: ' + MyNumberList.Reverse.Sum.String + ')'
+        + '. Reversed: ' + Reversed.Print
+        + ' (total: ' + Reversed.Sum.String + ')'
+        + '. Together: ' + Together.Print
+        + ' (total: ' + Together.Sum.String + ')'
 
-#> 1, 2, 3, 4 (total: 10). Reversed: 4, 3, 2, 1 (total: 10)
+#> 1, 2, 3, 4 (total: 10). Reversed: 4, 3, 2, 1 (total: 10). Together: 1, 2, 3, 4, 4, 3, 2, 1 (total: 20)

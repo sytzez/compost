@@ -31,7 +31,7 @@ pub fn coerce_type(
 ) -> CResult<()> {
     let eval_type = eval.typ(scope)?;
 
-    if check_type_fits(&eval_type, typ, name) == Ok(()) {
+    if check_type_fits(&eval_type, typ).is_ok() {
         // If the type already fits, don't do anything.
         return Ok(());
     } else if let Type::Raw(raw_type) = eval_type {

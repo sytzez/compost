@@ -102,6 +102,15 @@ impl Evaluation {
 
                 let trayt = scope.context.traits.resolve(&trait_name, "")?;
 
+                // Resolve all 'Self' types within input types with the current subject.
+                let subject_type = subject.typ(scope)?;
+                let input_types = trayt
+                    .borrow()
+                    .inputs
+                    .iter()
+                    .map(|(name, typ)| (name.clone(), resolve_self_types(typ.clone(), &subject_type)))
+                    .collect::<Vec<_>>();
+
                 let mut inputs = vec![];
                 for (param_name, expr) in call.inputs.into_iter() {
                     let eval = Evaluation::analyse(expr, scope)?;
@@ -109,8 +118,8 @@ impl Evaluation {
                     inputs.push((param_name, eval));
                 }
 
-                coerce_types(&trayt.borrow().inputs, &mut inputs, scope)?;
-                check_types(&trayt.borrow().inputs, &inputs, scope)?;
+                coerce_types(&input_types, &mut inputs, scope)?;
+                check_types(&input_types, &inputs, scope)?;
 
                 Evaluation::Trait(TraitEvaluation {
                     trayt,
@@ -181,10 +190,10 @@ impl Evaluation {
             Expression::Zelf => Evaluation::Zelf,
             Expression::Void => Evaluation::Void,
         };
-
         Ok(eval)
     }
 
+    /// Returns the type of the result of this evaluation.
     pub fn typ(&self, scope: &SemanticScope) -> CResult<Type> {
         let typ = match self {
             Evaluation::Let(call) => call.lett.borrow().output.clone(),
@@ -235,7 +244,26 @@ impl Evaluation {
             Evaluation::ClassConstructor(class) => class.interface(),
             Evaluation::StructConstructor(strukt) => strukt.interface(),
         };
-
         Ok(typ)
+    }
+}
+
+/// Replace self types with specific type.
+fn resolve_self_types(typ: Type, self_type: &Type) -> Type {
+    match typ {
+        Type::Zelf => self_type.clone(),
+        Type::Or(a, b) => {
+            Type::Or(
+                Box::new(resolve_self_types(*a, self_type)),
+                Box::new(resolve_self_types(*b, self_type)),
+            )
+        }
+        Type::And(a, b) => {
+            Type::And(
+                Box::new(resolve_self_types(*a, self_type)),
+                Box::new(resolve_self_types(*b, self_type)),
+            )
+        }
+        _ => typ,
     }
 }
