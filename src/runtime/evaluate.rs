@@ -42,12 +42,13 @@ pub fn evaluate(
         }
         Evaluation::Match(call) => {
             let subject = evaluate(&call.subject, locals.clone(), zelf.clone());
+            let is_self = matches!(*call.subject, Evaluation::Zelf);
 
             // Find the matching branch.
             let branch = call
                 .branches
                 .iter()
-                .find(|(typ, _)| subject.satisfies_type(typ))
+                .find(|(typ, _)| subject.satisfies_type(typ, is_self))
                 .map(|(_, branch)| branch)
                 .unwrap_or_else(|| unreachable!("None of the branches for {} matched!", call.local_name));
 

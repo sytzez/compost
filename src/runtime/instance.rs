@@ -59,7 +59,7 @@ impl Instance {
     }
 
     /// Whether the current instance satisfies the given type.
-    pub fn satisfies_type(&self, typ: &Type) -> bool {
+    pub fn satisfies_type(&self, typ: &Type, is_self: bool) -> bool {
         match typ {
             Type::Trait(trayt) => {
                 let trayt_name = &trayt.as_ref().borrow().full_name;
@@ -89,9 +89,13 @@ impl Instance {
                     false
                 }
             }
-            Type::And(a, b) => self.satisfies_type(a) && self.satisfies_type(b),
-            Type::Or(a, b) => self.satisfies_type(a) || self.satisfies_type(b),
-            Type::Zelf => todo!(),
+            Type::And(a, b) => {
+                self.satisfies_type(a, is_self) && self.satisfies_type(b, is_self)
+            }
+            Type::Or(a, b) => {
+                self.satisfies_type(a, is_self) || self.satisfies_type(b, is_self)
+            }
+            Type::Zelf => is_self,
             Type::Void => true,
         }
     }

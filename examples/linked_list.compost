@@ -50,6 +50,6 @@ lets
                     next: ?
 
     Main: Int
-        MyNumberList.String + ' (total: ' + MyNumberList.Sum + ')'
+        ' (total: ' + MyNumberList.Sum.String + ')'
 
 #> 1, 2, 3 (total: 6)
