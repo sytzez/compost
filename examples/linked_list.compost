@@ -1,0 +1,55 @@
+mod LinkedList
+    class
+        next: Self | ?
+    traits
+        Next: Self
+        First: Self
+        Last: Self
+        Length: Int
+        NodeString: String # A representation of the current node as a string.
+        Reverse: Self # TODO: implement
+    defs
+        First: self
+        Last
+            match next: .Next
+                Self: next.Last
+                ?: self
+        Length
+            match next: .Next
+                Self: next.Length + 1
+                ?: 1
+        String:
+            match next .Next
+                Self: .NodeString + ', ' + next.String
+                ?: .NodeString
+
+mod NumberList
+    class
+        value: Int
+        next: Self | ?
+    traits
+        Value: Int
+        Sum: Int
+    defs
+        Value: value
+        Sum
+            match next .Next
+                Self: next.Sum + .Value
+                ?: .Value
+        LinkedList\Next: next
+        LinkedList\NodeString: .Value.String
+
+lets
+    MyNumberedList: NumberedList
+        NumberedList
+            value: 1
+            next: NumberedList
+                value: 2
+                next: NumberedList
+                    value: 3
+                    next: ?
+
+    Main: Int
+        MyNumberedList.String + ' (total: ' + MyNumberedList.Sum + ')'
+
+#> 1, 2, 3 (total: 6)

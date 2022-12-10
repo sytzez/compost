@@ -41,3 +41,11 @@ fn test_types() {
         "Hello, Bob. Hello, Fifi. Bob (20). Fifi (3)",
     )
 }
+
+#[test]
+fn test_linked_list() {
+    assert_eq!(
+        run_file("examples/linked_list.compost"),
+        "1, 2, 3 (total: 6)",
+    )
+}
