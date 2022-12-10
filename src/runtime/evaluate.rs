@@ -55,7 +55,9 @@ pub fn evaluate(
                 .iter()
                 .find(|(typ, _)| subject.satisfies_type(typ, is_self))
                 .map(|(_, branch)| branch)
-                .unwrap_or_else(|| unreachable!("None of the branches for {} matched!", call.local_name));
+                .unwrap_or_else(|| {
+                    unreachable!("None of the branches for {} matched!", call.local_name)
+                });
 
             // Add the subject to scope.
             let locals = locals

@@ -7,11 +7,11 @@ use crate::runtime::raw_operation::raw_operation;
 use crate::runtime::struct_instance::StructInstance;
 use crate::sem::semantic_analyser::SemanticContext;
 use crate::sem::trayt::Trait;
+use crate::sem::typ::Type;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::sem::typ::Type;
 
 /// An instantiated class or struct, or a raw value.
 #[derive(Debug)]
@@ -43,7 +43,12 @@ impl Instance {
             .iter()
             .find(|(t, _)| t == &trayt)
             .map(|(_, eval)| eval)
-            .unwrap_or_else(|| panic!("Couldn't find trait {} on instance", trayt.as_ref().borrow().full_name));
+            .unwrap_or_else(|| {
+                panic!(
+                    "Couldn't find trait {} on instance",
+                    trayt.as_ref().borrow().full_name
+                )
+            });
 
         inputs.extend(self.locals());
 
@@ -64,37 +69,31 @@ impl Instance {
             Type::Trait(trayt) => {
                 let trayt_name = &trayt.as_ref().borrow().full_name;
                 match self {
-                    Instance::Class(class) => {
-                        class.class()
-                            .definitions
-                            .iter()
-                            .any(|(trayt, _)| &trayt.as_ref().borrow().full_name == trayt_name)
-                    },
-                    Instance::Struct(strukt) => {
-                        strukt.strukt()
-                            .definitions
-                            .iter()
-                            .any(|(trayt, _)| &trayt.as_ref().borrow().full_name == trayt_name)
-                    },
+                    Instance::Class(class) => class
+                        .class()
+                        .definitions
+                        .iter()
+                        .any(|(trayt, _)| &trayt.as_ref().borrow().full_name == trayt_name),
+                    Instance::Struct(strukt) => strukt
+                        .strukt()
+                        .definitions
+                        .iter()
+                        .any(|(trayt, _)| &trayt.as_ref().borrow().full_name == trayt_name),
                     _ => false,
                 }
-            },
+            }
             Type::Raw(raw_type) => {
                 if let Instance::Raw(val) = self {
-                     match raw_type {
-                         RawType::Int => matches!(val, RawValue::Int(_)),
-                         RawType::String => matches!(val, RawValue::String(_)),
-                     }
+                    match raw_type {
+                        RawType::Int => matches!(val, RawValue::Int(_)),
+                        RawType::String => matches!(val, RawValue::String(_)),
+                    }
                 } else {
                     false
                 }
             }
-            Type::And(a, b) => {
-                self.satisfies_type(a, is_self) && self.satisfies_type(b, is_self)
-            }
-            Type::Or(a, b) => {
-                self.satisfies_type(a, is_self) || self.satisfies_type(b, is_self)
-            }
+            Type::And(a, b) => self.satisfies_type(a, is_self) && self.satisfies_type(b, is_self),
+            Type::Or(a, b) => self.satisfies_type(a, is_self) || self.satisfies_type(b, is_self),
             Type::Zelf => is_self,
             Type::Void => true,
         }
@@ -128,7 +127,7 @@ impl Instance {
                     false
                 }
             }
-            Instance::Void => matches!(other, Instance::Void)
+            Instance::Void => matches!(other, Instance::Void),
         }
     }
 

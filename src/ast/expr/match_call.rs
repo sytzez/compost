@@ -33,7 +33,11 @@ impl Parser for MatchCall {
             branches.push((type_statement, branch));
         }
 
-        let call = MatchCall { local_name, subject, branches };
+        let call = MatchCall {
+            local_name,
+            subject,
+            branches,
+        };
         Ok(call)
     }
 }

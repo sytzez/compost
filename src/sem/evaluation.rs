@@ -154,11 +154,13 @@ impl Evaluation {
             Expression::Match(call) => {
                 let mut branches = vec![];
                 for (type_statement, expr) in call.branches {
-                    let typ = Type::analyse(&type_statement, &scope.context, &scope.path)?;
+                    let typ = Type::analyse(&type_statement, scope.context, scope.path)?;
 
                     // Add the matched local to the scope for this branch.
                     let mut branch_scope = scope.clone();
-                    branch_scope.locals.insert(call.local_name.clone(), typ.clone());
+                    branch_scope
+                        .locals
+                        .insert(call.local_name.clone(), typ.clone());
 
                     let eval = Box::new(Evaluation::analyse(*expr, &branch_scope)?);
 
@@ -208,13 +210,11 @@ impl Evaluation {
             }
             Evaluation::Literal(raw_value) => Type::Raw(raw_value.into()),
             Evaluation::Local(name) => scope.locals.get(name).unwrap().clone(),
-            Evaluation::FriendlyField(ff) => {
-                scope
-                    .locals
-                    .get(&format!("{}.{}", ff.local_name, ff.field_name))
-                    .unwrap()
-                    .clone()
-            },
+            Evaluation::FriendlyField(ff) => scope
+                .locals
+                .get(&format!("{}.{}", ff.local_name, ff.field_name))
+                .unwrap()
+                .clone(),
             Evaluation::Match(call) => {
                 let mut types = vec![];
                 for (typ, branch) in &call.branches {

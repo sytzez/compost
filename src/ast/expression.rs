@@ -3,10 +3,10 @@ use crate::ast::raw_value::RawValue;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Lit, Op, Token};
 
+use crate::ast::expr::match_call::MatchCall;
+
 use crate::lex::tokens::Tokens;
 use std::collections::HashMap;
-use crate::ast::expr::match_call::MatchCall;
-use crate::ast::type_statement::TypeStatement;
 
 /// An expression within the abstract syntax tree.
 #[derive(Clone, Debug)]
@@ -105,9 +105,7 @@ impl Parser for Expression {
                     inputs: [].into(),
                 })
             }
-            Token::Kw(Kw::Match) => {
-                Expression::Match(MatchCall::parse(tokens)?)
-            }
+            Token::Kw(Kw::Match) => Expression::Match(MatchCall::parse(tokens)?),
             Token::Op(Op::Question) => {
                 tokens.step();
                 return Ok(Expression::Void);

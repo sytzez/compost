@@ -4,7 +4,7 @@ use crate::ast::let_statement::LetStatement;
 use crate::error::CResult;
 use crate::sem::evaluation::Evaluation;
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
-use crate::sem::type_checking::{check_type_fits, check_types};
+
 use crate::sem::type_coercion::coerce_type;
 
 // A 'let' defines a constant instance or a function.
