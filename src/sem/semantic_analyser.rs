@@ -29,6 +29,7 @@ impl SemanticContext {
 }
 
 // All available symbols inside a scope
+#[derive(Clone)]
 pub struct SemanticScope<'a> {
     pub context: &'a SemanticContext,
     pub path: &'a str,

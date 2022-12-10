@@ -154,7 +154,13 @@ impl Evaluation {
                 let mut branches = vec![];
                 for (type_statement, expr) in call.branches {
                     let typ = Type::analyse(&type_statement, &scope.context, &scope.path)?;
-                    let eval = Box::new(Evaluation::analyse(*expr, scope)?);
+
+                    // Add the matched local to the scope for this branch.
+                    let mut branch_scope = scope.clone();
+                    branch_scope.locals.insert(call.local_name.clone(), typ.clone());
+
+                    let eval = Box::new(Evaluation::analyse(*expr, &branch_scope)?);
+
                     branches.push((typ, eval));
                 }
 
@@ -163,6 +169,9 @@ impl Evaluation {
                     subject: Box::new(Evaluation::analyse(*call.subject, scope)?),
                     branches,
                 };
+
+                // TODO: check if branches cover all possibilities by combining all branch types with & and checking
+                // that it covers the complete subject type.
 
                 Evaluation::Match(match_eval)
             }

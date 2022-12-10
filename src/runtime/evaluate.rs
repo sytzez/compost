@@ -40,6 +40,20 @@ pub fn evaluate(
                 unreachable!("{}.{}", ff.local_name, ff.field_name)
             }
         }
+        Evaluation::Match(call) => {
+            let subject = evaluate(&call.subject, locals.clone(), zelf);
+
+            let branch = call
+                .branches
+                .iter()
+                .find(|(typ, _)| subject.fits_type(typ))
+                .map(|(_, branch)| branch)
+                .unwrap_or_else(|| unreachable!("None of the branches for {} matched!", call.local_name));
+
+            // TODO: add matched local_name to locals
+
+            evaluate(branch, locals, zelf)
+        }
         Evaluation::Zelf => Rc::clone(&zelf.unwrap()),
         Evaluation::ClassConstructor(class) => {
             let instance = ClassInstance::new(class, locals);
