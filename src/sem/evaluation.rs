@@ -244,6 +244,13 @@ impl Evaluation {
             Evaluation::ClassConstructor(class) => class.interface(),
             Evaluation::StructConstructor(strukt) => strukt.interface(),
         };
+
+        // Substitute 'Self' for actual type if possible
+        let typ = match &scope.zelf {
+            Some(self_typ) => resolve_self_types(typ, self_typ),
+            None => typ,
+        };
+
         Ok(typ)
     }
 }
