@@ -29,8 +29,6 @@ pub fn check_type_fits(given: &Type, expected: &Type, name: &str) -> CResult<()>
             if type_contains(given, expected) {
                 Ok(())
             } else {
-                dbg!(given);
-                dbg!(expected);
                 error(ErrorMessage::TypeMismatch(name.to_string()))
             }
         }

@@ -8,6 +8,7 @@ mod LinkedList
         Length: Int
         NodeString: String # A representation of the current node as a string.
         Reverse: Self # TODO: implement
+        Print: String
     defs
         Last: Self
         First
@@ -18,9 +19,9 @@ mod LinkedList
             match prev: .Prev
                 Self: prev.Length + 1
                 ?: 1
-        String:
+        Print:
             match prev .Prev
-                Self: prev.String + ', ' + .NodeString
+                Self: prev.Print + ', ' + .NodeString
                 ?: .NodeString
 
 mod NumberList
@@ -51,6 +52,6 @@ lets
         .Push(pushed: 3)
 
     Main: Int
-        ' (total: ' + MyNumberList.Sum.String + ')'
+        MyNumberList.Print + ' (total: ' + MyNumberList.Sum.String + ')'
 
 #> 1, 2, 3 (total: 6)
