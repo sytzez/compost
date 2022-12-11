@@ -17,15 +17,15 @@ pub fn raw_operation(
         "Op\\Div" => div(value, &rhs(inputs)),
         "Op\\Neg" => neg(value),
         "String" => to_string(value),
-        _ => unreachable!("No such raw trait: {}", trayt),
+        _ => panic!("No such raw trait: {}", trayt),
     }
 }
 
 fn rhs(inputs: HashMap<String, Rc<Instance>>) -> RawValue {
-    if let Instance::Raw(value) = inputs.get("rhs").unwrap().borrow() {
+    if let Instance::Raw(value) = inputs.get("rhs").expect("No RHS given").borrow() {
         value.clone()
     } else {
-        unreachable!()
+        panic!("RHS is not a raw value")
     }
 }
 
@@ -33,7 +33,7 @@ fn int(value: &RawValue) -> i64 {
     if let RawValue::Int(value) = value {
         *value
     } else {
-        unreachable!()
+        panic!("Value is not an int")
     }
 }
 
@@ -41,7 +41,7 @@ fn string(value: &RawValue) -> &str {
     if let RawValue::String(value) = value {
         value
     } else {
-        unreachable!()
+        panic!("Value is not a string")
     }
 }
 
@@ -55,34 +55,34 @@ fn add(value: &RawValue, rhs: &RawValue) -> RawValue {
 fn sub(value: &RawValue, rhs: &RawValue) -> RawValue {
     match value {
         RawValue::Int(value) => RawValue::Int(*value - int(rhs)),
-        RawValue::String(_) => unreachable!(),
+        RawValue::String(_) => panic!("Subtraction not supported by string"),
     }
 }
 
 fn mul(value: &RawValue, rhs: &RawValue) -> RawValue {
     match value {
         RawValue::Int(value) => RawValue::Int(*value * int(rhs)),
-        RawValue::String(_) => unreachable!(),
+        RawValue::String(_) => panic!("Multiplication not supported by string"),
     }
 }
 
 fn div(value: &RawValue, rhs: &RawValue) -> RawValue {
     match value {
         RawValue::Int(value) => RawValue::Int(*value / int(rhs)),
-        RawValue::String(_) => unreachable!(),
+        RawValue::String(_) => panic!("Division not supported by string"),
     }
 }
 
 fn neg(value: &RawValue) -> RawValue {
     match value {
         RawValue::Int(value) => RawValue::Int(-*value),
-        RawValue::String(_) => unreachable!(),
+        RawValue::String(_) => panic!("Negation not supported by string"),
     }
 }
 
 fn to_string(value: &RawValue) -> RawValue {
     match value {
         RawValue::Int(value) => RawValue::String(value.to_string()),
-        RawValue::String(_) => unreachable!(),
+        RawValue::String(value) => RawValue::String(value.to_string()),
     }
 }

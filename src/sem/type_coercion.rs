@@ -53,8 +53,6 @@ fn coerce_raw_to_struct(
         RawType::String => "String",
     };
 
-    println!("Doing {} coercion", lett_name);
-
     let lett = scope.context.lets.resolve(lett_name, scope.path)?;
 
     let inputs = [("value".to_string(), eval.clone())].into();

@@ -8,7 +8,7 @@ mod LinkedList
         Length: Int
         NodeString: String # A representation of the current node as a string.
         Reverse: Self
-        Unshift: Self
+        Shift: Self
         Concat: (other: Self) -> Self
         Print: String
     defs
@@ -46,14 +46,14 @@ mod NumberList
                 ?: .Value
         LinkedList\Prev: prev
         LinkedList\NodeString: .Value.String
-        LinkedList\Unshift
+        LinkedList\Shift
             match prev: .Prev
                 Self
                     match prevPrev: prev.Prev
                         Self
                             NumberList
                                 value: .Value
-                                prev: .Prev.Unshift
+                                prev: .Prev.Shift
                         ?
                             NumberList
                                 value: .Value
@@ -67,14 +67,14 @@ mod NumberList
                 Self
                     NumberList
                         value: .First.Value
-                        prev: .Unshift.Reverse
+                        prev: .Shift.Reverse
                 ?
                     Self
         LinkedList\Concat
             match prev: other.Prev
                 Self
                     .Push(pushed: other.First.Value)
-                    .Concat(other: other.Unshift)
+                    .Concat(other: other.Shift)
                 ?
                     .Push(pushed: other.Value)
 

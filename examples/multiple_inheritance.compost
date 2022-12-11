@@ -1,0 +1,61 @@
+#########################
+#                       #
+#      Animal      Egg  #
+#     /      \      .   #
+#    /        \    .    #
+#  Mammal   Amphibian   #
+#    \        /         #
+#     \      /          #
+#     Platypus          #
+#                       #
+#########################
+
+mod Animal
+    traits
+        Name: String
+        SpeciesName: String
+        ChildsName: String
+    defs
+        ChildsName: 'Child of ' + .Name
+
+mod Mammal
+    traits
+        RegulateBodyTemperature: String
+    defs
+        Animal\Name: ?
+        Animal\SpeciesName: ?
+        Animal\ChildsName: ?
+
+mod Amphibian
+    traits
+        LayEgg: Egg
+    defs
+        Animal\Name: ?
+        Animal\SpeciesName: ?
+        Animal\ChildsName: ?
+
+mod Egg
+    class(embryo: Amphibian)
+    traits(Hatch: Amphibian)
+    defs(Hatch: embryo)
+
+mod Platypus
+    class
+        name: String
+    defs
+        Animal\Name: name
+        Animal\SpeciesName: 'Platypus'
+        Amphibian\LayEgg
+            Egg(embryo: Platypus(name: .ChildsName))
+        Mammal\RegulateBodyTemperature: 'Regulating...'
+
+lets
+    FullInformation: (animal: Animal) -> String
+        animal.Name + ' (species: ' + animal.SpeciesName + ')'
+
+    MyPlatypus: Platypus
+        Platypus(name: 'Perry')
+
+    Main: String
+        FullInformation
+            animal: MyPlatypus.LayEgg.Hatch
