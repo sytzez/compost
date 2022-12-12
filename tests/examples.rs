@@ -57,3 +57,11 @@ fn test_multiple_inheritance() {
         "Child of Perry (species: Platypus)",
     )
 }
+
+#[test]
+fn test_if() {
+    assert_eq!(
+        run_file("examples/if.compost"),
+        "Yes",
+    )
+}
