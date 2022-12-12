@@ -29,6 +29,7 @@ cargo run examples/functions_and_constants.compost
 - Full encapsulation of implementation details behind 'traits'
 - Automatic trait implementations
 - Polymorphism
+- Multiple inheritance through automatic trait implementations
 - Complex types using `&` and `|`
 - Static type checking
 - Type coercion
@@ -307,47 +308,77 @@ lets
 #> BottomRight of A: 30, 15. Width and Height of B: 5, 10
 ```
 
-### Class 'Inheritance'
+### Multiple Inheritance
 
-Instead of having classical OOP inheritance, Compost mimics inheritance by letting you define the traits on one class on other classes.
-This works the exact same way as classes define traits from classless modules as shown in the section above.
+Compost inheritance works by (automatically) implementing another module's traits. 
+You can implement as many traits from different modules as you like, allowing multiple inheritance.
+You can also use the `using` keyword to automatically implement all traits from a module that can be automatically implemented.
 
-This allows a lot of flexibility. It allows full polymorphism since any class instance can be substituted by the instance of another class
-as long as it defines all of its traits. It also allows 'inheriting' from multiple classes, since a class can define an unlimited amount of traits.
+Because types are based on which traits are implemented, sub-classes can be substituted from the super-class,
+allowing full polymorphism.
 
 ```
-mod Rectangle
-    class(x: Int, y: Int, width: Int, height: Int)
-    traits(X: Int, Y: Int, Width: Int, Height: Int, Area: Int)
-    defs
-        X: x
-        Y: y
-        Width: width
-        Height: height
-        Area: .Width * .Height
+#########################
+#                       #
+#      Animal      Egg  #
+#     /      \      .   #
+#    /        \    .    #
+#  Mammal   Amphibian   #
+#    \        /         #
+#     \      /          #
+#     Platypus          #
+#                       #
+#########################
 
-# Square 'inherits' from Rectangle by defining some of its traits.
-# The remaining traits are 'inherited' from the Rectangle class.
-# The Square implements the Rectangle type because if defines all of its traits.
-mod Square
-    class(x: Int, y: Int, size: Int)
+mod Animal
+    traits
+        Name: String
+        SpeciesName: String
+        ChildsName: String
     defs
-        Rectangle\X: x
-        Rectangle\Y: y
-        # We 'override' the Width and Height from Rectangle.
-        Rectangle\Width: size
-        Rectangle\Height: size
-        # Rectangle\Area is automatically defined by the Rectangle module.
+        ChildsName: 'Child of ' + .Name
+
+mod Mammal
+    using(Animal\*)
+    traits
+        RegulateBodyTemperature: String
+    defs
+        Mammal\RegulateBodyTemperature: 'Regulating...'
+
+mod Amphibian
+    using(Animal\*)
+    traits(LayEgg: Egg)
+
+mod Egg
+    class(embryo: Amphibian)
+    traits(Hatch: Amphibian)
+    defs(Hatch: embryo)
+
+mod Platypus
+    using
+        Mammal\*
+        Amphibian\*
+    class
+        name: String
+    defs
+        Animal\Name: name
+        Animal\SpeciesName: 'Platypus'
+        Amphibian\LayEgg
+            Egg
+                embryo: Platypus(name: .ChildsName)
 
 lets
-    Main: Int
-        Square
-            x: 1
-            y: 1
-            size: 10
-        .Area
+    FullInformation: (animal: Animal) -> String
+        animal.Name + ' (species: ' + animal.SpeciesName + ')'
 
-#> 100
+    MyPlatypus: Platypus
+        Platypus(name: 'Perry')
+
+    Main: String
+        FullInformation
+            animal: MyPlatypus.LayEgg.Hatch
+
+#> Child of Perry (species: Platypus)
 ```
 
 ### Structs
