@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use crate::ast::expression::{BinaryOp, Expression, FriendlyField};
+use crate::ast::expression::{BinaryOp, Expression, FriendlyField, UnaryOp};
 use crate::ast::raw_value::RawValue;
 use crate::ast::type_statement::RawType;
 use crate::error::ErrorMessage::NoResolution;
@@ -61,6 +61,11 @@ impl Evaluation {
                     BinaryOp::Sub => "Op\\Sub",
                     BinaryOp::Mul => "Op\\Mul",
                     BinaryOp::Div => "Op\\Div",
+                    BinaryOp::Eq => "Op\\Eq",
+                    BinaryOp::Lt => "Op\\Lt",
+                    BinaryOp::Gt => "Op\\Gt",
+                    BinaryOp::And => "Op\\And",
+                    BinaryOp::Or => "Op\\Or",
                 };
                 let trayt = scope.context.traits.resolve(trait_path, "")?;
 
@@ -88,6 +93,21 @@ impl Evaluation {
                     trayt,
                     subject: Box::new(lhs),
                     inputs,
+                })
+            }
+            Expression::Unary(call) => {
+                let trait_path = match call.op {
+                    UnaryOp::Neg => "Op\\Neg",
+                    UnaryOp::Not => "Op\\Not",
+                };
+                let trayt = scope.context.traits.resolve(trait_path, "")?;
+
+                let subject = Evaluation::analyse(*call.subject, scope)?;
+
+                Evaluation::Trait(TraitEvaluation {
+                    trayt,
+                    subject: Box::new(subject),
+                    inputs: vec![],
                 })
             }
             Expression::Def(call) => {

@@ -12,6 +12,7 @@ use std::collections::HashMap;
 #[derive(Clone, Debug)]
 pub enum Expression {
     Binary(BinaryCall),
+    Unary(UnaryCall),
     Let(LetCall),
     Def(DefCall),
     Literal(RawValue),
@@ -27,6 +28,12 @@ pub struct BinaryCall {
     pub op: BinaryOp,
     pub lhs: Box<Expression>,
     pub rhs: Box<Expression>,
+}
+
+#[derive(Clone, Debug)]
+pub struct UnaryCall {
+    pub op: UnaryOp,
+    pub subject: Box<Expression>,
 }
 
 #[derive(Clone, Debug)]
@@ -55,6 +62,17 @@ pub enum BinaryOp {
     Sub,
     Mul,
     Div,
+    Eq,
+    Lt,
+    Gt,
+    And,
+    Or,
+}
+
+#[derive(Clone, Debug)]
+pub enum UnaryOp {
+    Neg,
+    Not,
 }
 
 impl Parser for Expression {
@@ -99,10 +117,9 @@ impl Parser for Expression {
 
                 let expr = Expression::parse(tokens)?;
 
-                Expression::Def(DefCall {
-                    name: "Op\\Neg".to_string(),
+                Expression::Unary(UnaryCall {
+                    op: UnaryOp::Neg,
                     subject: Box::new(expr),
-                    inputs: [].into(),
                 })
             }
             Token::Kw(Kw::Match) => Expression::Match(MatchCall::parse(tokens)?),
@@ -118,7 +135,8 @@ impl Parser for Expression {
             expr = match tokens.token().clone() {
                 Token::Op(op) => {
                     match op {
-                        Op::Add | Op::Sub | Op::Mul | Op::Div => {
+                        Op::Add | Op::Sub | Op::Mul | Op::Div | Op::Eq | Op::Lt | Op::Gt | Op::And
+                        | Op::Or => {
                             tokens.step();
 
                             let rhs = Expression::parse(tokens)?;
@@ -129,6 +147,11 @@ impl Parser for Expression {
                                     Op::Sub => BinaryOp::Sub,
                                     Op::Mul => BinaryOp::Mul,
                                     Op::Div => BinaryOp::Div,
+                                    Op::Eq => BinaryOp::Eq,
+                                    Op::Lt => BinaryOp::Lt,
+                                    Op::Gt => BinaryOp::Gt,
+                                    Op::And => BinaryOp::And,
+                                    Op::Or => BinaryOp::Or,
                                     _ => unreachable!(),
                                 },
                                 lhs: Box::new(expr),

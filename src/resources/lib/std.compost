@@ -5,6 +5,11 @@ mod Op
         Mul: (rhs: Self) -> Self
         Div: (rhs: Self) -> Self
         Neg: Self
+        Eq: (rhs: Self) -> Bool
+        Lt: (rhs: Self) -> Bool
+        Gt: (rhs: Self) -> Bool
+        And: (rhs: Self) -> Self
+        Or: (rhs: Self) -> Self
 
 mod Math
     traits
@@ -19,6 +24,7 @@ mod String
         value: string
     defs
         Op\Add: String(value: value + rhs.value)
+        Op\Eq: Bool(value: value = rhs.value)
 
 mod Int
     struct
@@ -29,4 +35,15 @@ mod Int
         Op\Mul: Int(value: value * rhs.value)
         Op\Div: Int(value: value / rhs.value)
         Op\Neg: Int(value: -value)
+        Op\Eq: Bool(value: value = rhs.value)
+        Op\Lt: Bool(value: value < rhs.value)
+        Op\Gt: Bool(value: value > rhs.value)
         String: String(value: value.String)
+
+mod Bool
+    struct
+        value: bool
+    defs
+        Op\Eq: Bool(value: value = rhs.value)
+        Op\And: Bool(value: value & rhs.value)
+        Op\Or: Bool(value: value | rhs.value)

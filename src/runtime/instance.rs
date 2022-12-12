@@ -87,6 +87,7 @@ impl Instance {
                     match raw_type {
                         RawType::Int => matches!(val, RawValue::Int(_)),
                         RawType::String => matches!(val, RawValue::String(_)),
+                        RawType::Bool => matches!(val, RawValue::Bool(_)),
                     }
                 } else {
                     false
@@ -122,6 +123,7 @@ impl Instance {
                     match raw_value {
                         RawValue::Int(_) => matches!(other, RawValue::Int(_)),
                         RawValue::String(_) => matches!(other, RawValue::String(_)),
+                        RawValue::Bool(_) => matches!(other, RawValue::Bool(_)),
                     }
                 } else {
                     false
@@ -136,6 +138,11 @@ impl Instance {
             let result = match raw_value {
                 RawValue::String(value) => value.clone(),
                 RawValue::Int(value) => value.to_string(),
+                RawValue::Bool(value) => if *value {
+                    "true"
+                } else {
+                    "false"
+                }.to_string(),
             };
 
             return Ok(result);

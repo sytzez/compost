@@ -21,6 +21,7 @@ pub enum TypeStatement {
 pub enum RawType {
     Int,
     String,
+    Bool,
 }
 
 impl Parser for TypeStatement {
@@ -65,6 +66,7 @@ impl From<&RawValue> for RawType {
         match value {
             RawValue::String(_) => RawType::String,
             RawValue::Int(_) => RawType::Int,
+            RawValue::Bool(_) => RawType::Bool,
         }
     }
 }

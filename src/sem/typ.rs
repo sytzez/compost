@@ -95,12 +95,17 @@ impl Type {
                 .collect(),
             Type::Raw(raw_type) => match raw_type {
                 RawType::Int => [
-                    "Op\\Add", "Op\\Sub", "Op\\Mul", "Op\\Div", "Op\\Neg", "String",
+                    "Op\\Add", "Op\\Sub", "Op\\Mul", "Op\\Div", "Op\\Neg", "Op\\Eq", "Op\\Lt",
+                    "Op\\Gt", "String",
                 ]
                 .into_iter()
                 .map(|s| s.to_string())
                 .collect(),
-                RawType::String => ["Op\\Add", "String"]
+                RawType::String => ["Op\\Add", "Op\\Eq", "String"]
+                    .into_iter()
+                    .map(|s| s.to_string())
+                    .collect(),
+                RawType::Bool => ["Op\\Eq", "Op\\And", "Op\\Or"]
                     .into_iter()
                     .map(|s| s.to_string())
                     .collect(),
@@ -113,12 +118,11 @@ impl Display for Type {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Type::Trait(t) => write!(f, "{}", t.borrow().full_name),
-            Type::Raw(t) => {
-                match t {
-                    RawType::Int => write!(f, "int"),
-                    RawType::String => write!(f, "string"),
-                }
-            }
+            Type::Raw(t) => match t {
+                RawType::Int => write!(f, "int"),
+                RawType::String => write!(f, "string"),
+                RawType::Bool => write!(f, "bool"),
+            },
             Type::And(a, b) => write!(f, "{} & {}", a, b),
             Type::Or(a, b) => write!(f, "{} | {}", a, b),
             Type::Zelf => write!(f, "Self"),

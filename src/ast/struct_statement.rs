@@ -46,6 +46,7 @@ fn parse_field(tokens: &mut Tokens) -> CResult<(String, RawType)> {
     let typ = match type_name.borrow() {
         "int" => RawType::Int,
         "string" => RawType::String,
+        "bool" => RawType::Bool,
         _ => return tokens.error(ErrorMessage::UnknownRawType(type_name.clone())),
     };
 

@@ -50,6 +50,7 @@ fn coerce_raw_to_struct(
     let lett_name = match raw_type {
         RawType::Int => "Int",
         RawType::String => "String",
+        RawType::Bool => "Bool",
     };
 
     let lett = scope.context.lets.resolve(lett_name, scope.path)?;
