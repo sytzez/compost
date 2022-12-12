@@ -157,4 +157,15 @@ impl Instance {
 
         self.call(string_trait, [].into()).to_string(context)
     }
+
+    pub fn to_bool(self: &Rc<Self>) -> bool {
+        if let Instance::Raw(RawValue::Bool(value)) = self.borrow() {
+            return *value
+        } else if let Instance::Struct(strukt) = self.borrow() {
+            if let RawValue::Bool(value) = strukt.field("value") {
+                return *value
+            }
+        }
+        panic!("Can't resolve instance to bool")
+    }
 }

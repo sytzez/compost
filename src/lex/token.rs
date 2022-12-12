@@ -275,9 +275,9 @@ mod test {
         assert_eq!(next_token("Self "), Ok((Some(Token::Kw(Kw::Zelf)), 4)));
         assert_eq!(next_token("match "), Ok((Some(Token::Kw(Kw::Match)), 5)));
         assert_eq!(next_token("using "), Ok((Some(Token::Kw(Kw::Using)), 5)));
-        assert_eq!(next_token("if "), Ok((Some(Token::Kw(Kw::Using)), 2)));
-        assert_eq!(next_token("then "), Ok((Some(Token::Kw(Kw::Using)), 4)));
-        assert_eq!(next_token("else "), Ok((Some(Token::Kw(Kw::Using)), 4)));
+        assert_eq!(next_token("if "), Ok((Some(Token::Kw(Kw::If)), 2)));
+        assert_eq!(next_token("then "), Ok((Some(Token::Kw(Kw::Then)), 4)));
+        assert_eq!(next_token("else "), Ok((Some(Token::Kw(Kw::Else)), 4)));
     }
 
     #[test]

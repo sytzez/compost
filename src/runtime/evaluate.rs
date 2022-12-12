@@ -70,6 +70,15 @@ pub fn evaluate(
 
             evaluate(branch, locals, zelf)
         }
+        Evaluation::IfElse(call) => {
+            let condition = evaluate(&call.condition, locals.clone(), zelf.clone());
+
+            if condition.to_bool() {
+                evaluate(&call.iff, locals.clone(), zelf.clone())
+            } else {
+                evaluate(&call.els, locals.clone(), zelf.clone())
+            }
+        }
         Evaluation::Zelf => Rc::clone(&zelf.unwrap()),
         Evaluation::Void => Rc::new(Instance::Void),
         Evaluation::ClassConstructor(class) => {
