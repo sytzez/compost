@@ -49,3 +49,11 @@ fn test_linked_list() {
         "1, 2, 3, 4 (total: 10). Reversed: 4, 3, 2, 1 (total: 10). Together: 1, 2, 3, 4, 4, 3, 2, 1 (total: 20)",
     )
 }
+
+#[test]
+fn test_multiple_inheritance() {
+    assert_eq!(
+        run_file("examples/multiple_inheritance.compost"),
+        "Child of Perry (species: Platypus)",
+    )
+}

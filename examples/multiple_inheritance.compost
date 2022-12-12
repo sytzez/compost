@@ -57,3 +57,5 @@ lets
     Main: String
         FullInformation
             animal: MyPlatypus.LayEgg.Hatch
+
+#> Child of Perry (species: Platypus)
