@@ -25,6 +25,7 @@ pub enum Evaluation {
     Local(String),
     FriendlyField(FriendlyField),
     Match(MatchEvaluation),
+    IfElse(IfElseEvaluation),
     Zelf,
     Void,
     // only for internal use
@@ -50,6 +51,13 @@ pub struct MatchEvaluation {
     pub local_name: String,
     pub subject: Box<Evaluation>,
     pub branches: Vec<(Type, Box<Evaluation>)>,
+}
+
+#[derive(Clone,Debug)]
+pub struct IfElseEvaluation {
+    pub condition: Box<Evaluation>,
+    pub iff: Box<Evaluation>,
+    pub els: Box<Evaluation>,
 }
 
 impl Evaluation {
@@ -209,6 +217,24 @@ impl Evaluation {
 
                 Evaluation::Match(match_eval)
             }
+            Expression::IfElse(call) => {
+                let condition = Box::new(Evaluation::analyse(*call.condition, scope)?);
+
+                let condition_type = condition.typ(scope)?;
+
+                // Verify that the condition expression returns a boolean.
+                if condition_type != Type::Raw(RawType::Bool)
+                    && !condition_type.callable_traits(scope).iter().any(|typ| typ == "Bool") {
+                    return error(ErrorMessage::TypeMismatch("if condition".to_string(), Type::Raw(RawType::Bool), condition_type));
+                }
+
+                let iff = Box::new(Evaluation::analyse(*call.iff, scope)?);
+                let els = Box::new(Evaluation::analyse(*call.els, scope)?);
+
+                let if_else_eval = IfElseEvaluation { condition, iff, els };
+
+                Evaluation::IfElse(if_else_eval)
+            }
             Expression::Zelf => Evaluation::Zelf,
             Expression::Void => Evaluation::Void,
         };
@@ -253,6 +279,12 @@ impl Evaluation {
                 }
 
                 combine_types(types)
+            }
+            Evaluation::IfElse(call) => {
+                Type::Or(
+                    Box::new(call.iff.typ(scope)?),
+                    Box::new(call.els.typ(scope)?),
+                )
             }
             Evaluation::Zelf => match &scope.zelf {
                 Some(typ) => typ.clone(),

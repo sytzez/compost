@@ -7,6 +7,7 @@ use crate::ast::expr::match_call::MatchCall;
 
 use crate::lex::tokens::Tokens;
 use std::collections::HashMap;
+use crate::ast::expr::if_else_call::IfElseCall;
 
 /// An expression within the abstract syntax tree.
 #[derive(Clone, Debug)]
@@ -19,6 +20,7 @@ pub enum Expression {
     Local(String),
     FriendlyField(FriendlyField),
     Match(MatchCall),
+    IfElse(IfElseCall),
     Zelf,
     Void,
 }
@@ -123,6 +125,7 @@ impl Parser for Expression {
                 })
             }
             Token::Kw(Kw::Match) => Expression::Match(MatchCall::parse(tokens)?),
+            Token::Kw(Kw::If) => Expression::IfElse(IfElseCall::parse(tokens)?),
             Token::Op(Op::Question) => {
                 tokens.step();
                 return Ok(Expression::Void);

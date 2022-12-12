@@ -27,6 +27,9 @@ pub enum Kw {
     Zelf,
     Match,
     Using,
+    If,
+    Then,
+    Else,
 }
 
 /// Operators.
@@ -134,6 +137,9 @@ fn next_local_token(code: &str) -> SizedToken {
         "lets" => Token::Kw(Kw::Lets),
         "match" => Token::Kw(Kw::Match),
         "using" => Token::Kw(Kw::Using),
+        "if" => Token::Kw(Kw::If),
+        "then" => Token::Kw(Kw::Then),
+        "else" => Token::Kw(Kw::Else),
         _ => Token::Local(str.to_string()),
     };
 
@@ -269,6 +275,9 @@ mod test {
         assert_eq!(next_token("Self "), Ok((Some(Token::Kw(Kw::Zelf)), 4)));
         assert_eq!(next_token("match "), Ok((Some(Token::Kw(Kw::Match)), 5)));
         assert_eq!(next_token("using "), Ok((Some(Token::Kw(Kw::Using)), 5)));
+        assert_eq!(next_token("if "), Ok((Some(Token::Kw(Kw::Using)), 2)));
+        assert_eq!(next_token("then "), Ok((Some(Token::Kw(Kw::Using)), 4)));
+        assert_eq!(next_token("else "), Ok((Some(Token::Kw(Kw::Using)), 4)));
     }
 
     #[test]
