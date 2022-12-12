@@ -9,7 +9,7 @@ use crate::sem::evaluation::Evaluation;
 
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::typ::{combine_types, Type};
-
+use crate::sem::type_coercion::coerce_type;
 
 
 /// A trait has input types and an output type. It can be defined on classes and structs.
@@ -79,8 +79,8 @@ impl Trait {
                 };
 
                 match Evaluation::analyse(def.expr.clone(), &scope) {
-                    Ok(eval) => {
-                        // coerce_type(&output, &mut eval, &statement.name, &scope)?;
+                    Ok(mut eval) => {
+                        coerce_type(&output, &mut eval, &scope)?;
                         // check_type_fits(&eval.typ(&scope)?, &output, &statement.name)?;
                         Some(eval)
                     }

@@ -37,7 +37,7 @@ pub fn evaluate(
                 Rc::new(Instance::Raw(value.clone()))
             } else {
                 dbg!(instance);
-                unreachable!("{}.{}", ff.local_name, ff.field_name)
+                panic!("Friendly field does not exist: {}.{}", ff.local_name, ff.field_name)
             }
         }
         Evaluation::Match(call) => {

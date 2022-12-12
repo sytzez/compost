@@ -11,6 +11,7 @@ use crate::sem::typ::{combine_types, Type};
 use std::rc::Rc;
 use std::string::String;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use crate::sem::type_coercion::coerce_type;
 
 static ID: AtomicUsize = AtomicUsize::new(0);
 
@@ -67,7 +68,8 @@ impl Class {
                 .into_iter()
                 .collect();
 
-            let evaluation = Evaluation::analyse(def_statement.expr.clone(), &scope)?;
+            let mut evaluation = Evaluation::analyse(def_statement.expr.clone(), &scope)?;
+            coerce_type(&trayt.borrow().output, &mut evaluation, &scope)?;
 
             definitions.push((trayt, evaluation));
         }
