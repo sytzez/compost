@@ -343,7 +343,7 @@ mod Mammal
     traits
         RegulateBodyTemperature: String
     defs
-        Mammal\RegulateBodyTemperature: 'Regulating...'
+        RegulateBodyTemperature: 'Regulating...'
 
 mod Amphibian
     using(Animal\*)
