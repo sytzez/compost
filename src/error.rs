@@ -75,8 +75,11 @@ impl From<&ErrorMessage> for String {
             }
             ErrorMessage::MissingInput(name) => format!("Missing input for '{}'", name),
             ErrorMessage::TypeMismatch(name, expected, given) => {
-                format!("Type mismatch for '{}'.\n  Expected: {}\n  Got: {}", name, expected, given)
-            },
+                format!(
+                    "Type mismatch for '{}'.\n  Expected: {}\n  Got: {}",
+                    name, expected, given
+                )
+            }
         }
     }
 }

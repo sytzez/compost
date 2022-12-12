@@ -128,7 +128,9 @@ impl Evaluation {
                     .borrow()
                     .inputs
                     .iter()
-                    .map(|(name, typ)| (name.clone(), resolve_self_types(typ.clone(), &subject_type)))
+                    .map(|(name, typ)| {
+                        (name.clone(), resolve_self_types(typ.clone(), &subject_type))
+                    })
                     .collect::<Vec<_>>();
 
                 let mut inputs = vec![];
@@ -219,7 +221,8 @@ impl Evaluation {
             Evaluation::Let(call) => call.lett.borrow().output.clone(),
             Evaluation::Trait(call) => {
                 if let Type::Raw(raw_type) = call.subject.typ(scope)? {
-                    let raw_type = raw_operation_output_type(&raw_type, &call.trayt.borrow().full_name)?;
+                    let raw_type =
+                        raw_operation_output_type(&raw_type, &call.trayt.borrow().full_name)?;
                     Type::Raw(raw_type)
                 } else {
                     let output = &call.trayt.borrow().output;
@@ -274,25 +277,21 @@ impl Evaluation {
 fn resolve_self_types(typ: Type, self_type: &Type) -> Type {
     match typ {
         Type::Zelf => self_type.clone(),
-        Type::Or(a, b) => {
-            Type::Or(
-                Box::new(resolve_self_types(*a, self_type)),
-                Box::new(resolve_self_types(*b, self_type)),
-            )
-        }
-        Type::And(a, b) => {
-            Type::And(
-                Box::new(resolve_self_types(*a, self_type)),
-                Box::new(resolve_self_types(*b, self_type)),
-            )
-        }
+        Type::Or(a, b) => Type::Or(
+            Box::new(resolve_self_types(*a, self_type)),
+            Box::new(resolve_self_types(*b, self_type)),
+        ),
+        Type::And(a, b) => Type::And(
+            Box::new(resolve_self_types(*a, self_type)),
+            Box::new(resolve_self_types(*b, self_type)),
+        ),
         _ => typ,
     }
 }
 
 pub fn raw_operation_output_type(input: &RawType, trayt: &str) -> CResult<RawType> {
     let typ = match trayt {
-        "Op\\Add" | "Op\\Sub" | "Op\\Mul" | "Op\\Div" | "Op\\Neg" => input.clone(),
+        "Op\\Add" | "Op\\Sub" | "Op\\Mul" | "Op\\Div" | "Op\\Neg" => *input,
         "Op\\Eq" | "Op\\Lt" | "Op\\Gt" | "Op\\And" | "Op\\Or" => RawType::Bool,
         "String" => RawType::String,
         _ => return error(ErrorMessage::UndefinedTrait(trayt.to_string())),

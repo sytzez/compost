@@ -145,11 +145,7 @@ fn to_string(value: &RawValue) -> RawValue {
     let string = match value {
         RawValue::Int(value) => value.to_string(),
         RawValue::String(value) => value.to_string(),
-        RawValue::Bool(value) => if *value {
-            "true"
-        } else {
-            "false"
-        }.to_string(),
+        RawValue::Bool(value) => if *value { "true" } else { "false" }.to_string(),
     };
     RawValue::String(string)
 }

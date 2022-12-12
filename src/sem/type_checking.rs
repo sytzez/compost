@@ -14,7 +14,11 @@ pub fn check_types(
 
         if let Some((_, input)) = input {
             if check_type_fits(&input.typ(scope)?, typ).is_err() {
-                return error(ErrorMessage::TypeMismatch(name.clone(), typ.clone(), input.typ(scope)?))
+                return error(ErrorMessage::TypeMismatch(
+                    name.clone(),
+                    typ.clone(),
+                    input.typ(scope)?,
+                ));
             }
         } else {
             return error(ErrorMessage::MissingInput(name.clone()));
@@ -34,7 +38,7 @@ pub fn check_type_fits(given: &Type, expected: &Type) -> Result<(), ()> {
                 Err(())
             }
         }
-        Type::Or(a, b) => match check_type_fits(given, a,) {
+        Type::Or(a, b) => match check_type_fits(given, a) {
             Ok(()) => Ok(()),
             Err(_) => check_type_fits(given, b),
         },

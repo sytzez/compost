@@ -138,11 +138,7 @@ impl Instance {
             let result = match raw_value {
                 RawValue::String(value) => value.clone(),
                 RawValue::Int(value) => value.to_string(),
-                RawValue::Bool(value) => if *value {
-                    "true"
-                } else {
-                    "false"
-                }.to_string(),
+                RawValue::Bool(value) => if *value { "true" } else { "false" }.to_string(),
             };
 
             return Ok(result);

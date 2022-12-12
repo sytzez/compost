@@ -135,7 +135,14 @@ impl Parser for Expression {
             expr = match tokens.token().clone() {
                 Token::Op(op) => {
                     match op {
-                        Op::Add | Op::Sub | Op::Mul | Op::Div | Op::Eq | Op::Lt | Op::Gt | Op::And
+                        Op::Add
+                        | Op::Sub
+                        | Op::Mul
+                        | Op::Div
+                        | Op::Eq
+                        | Op::Lt
+                        | Op::Gt
+                        | Op::And
                         | Op::Or => {
                             tokens.step();
 

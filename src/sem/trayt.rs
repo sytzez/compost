@@ -11,7 +11,6 @@ use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::typ::{combine_types, Type};
 use crate::sem::type_coercion::coerce_type;
 
-
 /// A trait has input types and an output type. It can be defined on classes and structs.
 #[derive(Clone)]
 pub struct Trait {

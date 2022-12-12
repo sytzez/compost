@@ -8,10 +8,10 @@ use crate::sem::lett::Let;
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::trayt::{interface_type, Trait};
 use crate::sem::typ::{combine_types, Type};
+use crate::sem::type_coercion::coerce_type;
 use std::rc::Rc;
 use std::string::String;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use crate::sem::type_coercion::coerce_type;
 
 static ID: AtomicUsize = AtomicUsize::new(0);
 

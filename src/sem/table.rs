@@ -55,7 +55,7 @@ impl<T> Table<T> {
 
         let mut result = vec![];
         for (item_path, item) in &self.items {
-            if item_path.len() > len && &item_path[0..len] == path {
+            if item_path.len() > len && item_path[0..len] == path {
                 result.push(Rc::clone(item))
             }
         }

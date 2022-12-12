@@ -23,11 +23,7 @@ pub fn coerce_types(
 }
 
 /// Coerces raw literals into stdlib structs where possible.
-pub fn coerce_type(
-    typ: &Type,
-    eval: &mut Evaluation,
-    scope: &SemanticScope,
-) -> CResult<()> {
+pub fn coerce_type(typ: &Type, eval: &mut Evaluation, scope: &SemanticScope) -> CResult<()> {
     let eval_type = eval.typ(scope)?;
 
     if check_type_fits(&eval_type, typ).is_ok() {

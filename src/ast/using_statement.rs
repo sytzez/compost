@@ -11,7 +11,7 @@ pub struct SingleUsingStatement {
 
 /// All lines of a 'using' statement
 pub struct UsingStatement {
-    pub lines: Vec<SingleUsingStatement>
+    pub lines: Vec<SingleUsingStatement>,
 }
 
 impl Parser for UsingStatement {
