@@ -219,13 +219,8 @@ impl Evaluation {
             Evaluation::Let(call) => call.lett.borrow().output.clone(),
             Evaluation::Trait(call) => {
                 if let Type::Raw(raw_type) = call.subject.typ(scope)? {
-                    if &call.trayt.borrow().full_name == "String" {
-                        // If this is a cast to raw string, return string
-                        Type::Raw(RawType::String)
-                    } else {
-                        // If this is an operation on a raw type, the return type is the same raw type.
-                        Type::Raw(raw_type)
-                    }
+                    let raw_type = raw_operation_output_type(&raw_type, &call.trayt.borrow().full_name)?;
+                    Type::Raw(raw_type)
                 } else {
                     let output = &call.trayt.borrow().output;
 
@@ -293,4 +288,14 @@ fn resolve_self_types(typ: Type, self_type: &Type) -> Type {
         }
         _ => typ,
     }
+}
+
+pub fn raw_operation_output_type(input: &RawType, trayt: &str) -> CResult<RawType> {
+    let typ = match trayt {
+        "Op\\Add" | "Op\\Sub" | "Op\\Mul" | "Op\\Div" | "Op\\Neg" => input.clone(),
+        "Op\\Eq" | "Op\\Lt" | "Op\\Gt" | "Op\\And" | "Op\\Or" => RawType::Bool,
+        "String" => RawType::String,
+        _ => return error(ErrorMessage::UndefinedTrait(trayt.to_string())),
+    };
+    Ok(typ)
 }
