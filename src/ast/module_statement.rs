@@ -4,6 +4,7 @@ use crate::ast::let_statement::{LetStatement, LetsStatement};
 use crate::ast::parser::{parse_global, Parser};
 use crate::ast::struct_statement::StructStatement;
 use crate::ast::trait_statement::{TraitStatement, TraitsStatement};
+use crate::ast::using_statement::{SingleUsingStatement, UsingStatement};
 use crate::error::{CResult, ErrorMessage};
 use crate::lex::token::{Kw, Token};
 
@@ -17,6 +18,7 @@ pub struct ModuleStatement {
     pub traits: Vec<TraitStatement>,
     pub defs: Vec<DefStatement>,
     pub lets: Vec<LetStatement>,
+    pub using: Vec<SingleUsingStatement>,
 }
 
 impl ModuleStatement {
@@ -28,6 +30,7 @@ impl ModuleStatement {
             traits: vec![],
             defs: vec![],
             lets: vec![],
+            using: vec![],
         }
     }
 }
@@ -53,7 +56,6 @@ impl Parser for ModuleStatement {
                 if statement.strukt.is_some() {
                     return tokens.error(ErrorMessage::ClassAndStruct(statement.name));
                 }
-
                 statement.class = Some(class);
             } else if let Some(strukt) = StructStatement::maybe_parse(tokens)? {
                 if statement.strukt.is_some() {
@@ -62,7 +64,6 @@ impl Parser for ModuleStatement {
                 if statement.class.is_some() {
                     return tokens.error(ErrorMessage::ClassAndStruct(statement.name));
                 }
-
                 statement.strukt = Some(strukt);
             } else if let Some(mut traits) = TraitsStatement::maybe_parse(tokens)? {
                 statement.traits.append(&mut traits.traits);
@@ -70,6 +71,8 @@ impl Parser for ModuleStatement {
                 statement.defs.append(&mut defs.defs);
             } else if let Some(mut lets) = LetsStatement::maybe_parse(tokens)? {
                 statement.lets.append(&mut lets.lets);
+            } else if let Some(mut using) = UsingStatement::maybe_parse(tokens)? {
+                statement.using.append(&mut using.lines);
             } else {
                 return tokens.unexpected_token_error();
             }

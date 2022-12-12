@@ -28,7 +28,7 @@ impl<T> Table<T> {
 
         // Check shortest match first, then longer ones.
         for match_len in path.len()..=self.longest_path {
-            for (item_path, item) in self.items.iter() {
+            for (item_path, item) in &self.items {
                 if item_path.len() == match_len {
                     let start = item_path.len() - path.len();
                     let shortened_item_path = &item_path[start..];
@@ -46,6 +46,21 @@ impl<T> Table<T> {
         } else {
             error(ErrorMessage::NoResolution(self.name, name.into()))
         }
+    }
+
+    /// Resolves all matches within a given path.
+    pub fn resolve_wildcard(&self, name: &str) -> CResult<Vec<Rc<T>>> {
+        let path = Self::path(name);
+        let len = path.len();
+
+        let mut result = vec![];
+        for (item_path, item) in &self.items {
+            if item_path.len() > len && &item_path[0..len] == path {
+                result.push(Rc::clone(item))
+            }
+        }
+
+        Ok(result)
     }
 
     pub fn declare(&mut self, name: &str, item: T) -> CResult<Rc<T>> {

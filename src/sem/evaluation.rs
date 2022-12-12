@@ -75,9 +75,9 @@ impl Evaluation {
 
                 // If one is raw and the other is not, coerce one side into a struct.
                 if left_is_raw && !right_is_raw {
-                    coerce_type(&right_type, &mut lhs, "", scope)?;
+                    coerce_type(&right_type, &mut lhs, scope)?;
                 } else if right_is_raw && !left_is_raw {
-                    coerce_type(&left_type, &mut rhs, "", scope)?;
+                    coerce_type(&left_type, &mut rhs, scope)?;
                 }
 
                 let inputs = vec![("rhs".into(), rhs)];

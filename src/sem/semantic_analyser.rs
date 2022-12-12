@@ -68,11 +68,11 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
 
     // Fill module interfaces, made up of the module's own traits and def traits from other modules.
     // By this point, all trait identifiers have been populated.
-    for module in ast.mods.iter() {
+    for module in &ast.mods {
         let mut interface = vec![];
 
         // The module's own traits.
-        for trait_statement in module.traits.iter() {
+        for trait_statement in &module.traits {
             let trayt = context
                 .traits
                 .resolve(&trait_statement.name, &module.name)?;
@@ -81,10 +81,21 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         }
 
         // Traits added on from other modules through defs.
-        for def in module.defs.iter() {
+        for def in &module.defs {
             let trayt = context.traits.resolve(&def.name, &module.name)?;
 
             interface.push(trayt);
+        }
+
+        // Traits added on through using statements.
+        for using in &module.using {
+            if using.wildcard {
+                let mut trayts = context.traits.resolve_wildcard(&using.name)?;
+                interface.append(&mut trayts);
+            } else {
+                let trayt = context.traits.resolve(&using.name, "")?;
+                interface.push(trayt);
+            }
         }
 
         let output = interface_type(&interface);
@@ -112,18 +123,18 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     loop {
         let mut added_num_of_traits: usize = 0;
 
-        for module in ast.mods.iter() {
+        for module in &ast.mods {
             let own_interface = context.interfaces.resolve(&module.name, "")?;
 
             let mut related_interfaces = vec![];
 
-            for def in module.defs.iter() {
+            for def in &module.defs {
                 let trayt = context.traits.resolve(&def.name, &module.name)?;
 
                 related_interfaces.push(Rc::clone(&trayt.borrow().interface));
             }
 
-            for related_interface in related_interfaces.iter() {
+            for related_interface in &related_interfaces {
                 for trayt in related_interface.borrow().iter() {
                     if own_interface.borrow().iter().any(|t| t == trayt) {
                         continue;
@@ -151,7 +162,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // ==========================================================================================
 
     // Populate global let identifiers and types.
-    for let_statement in ast.lets.iter() {
+    for let_statement in &ast.lets {
         let lett = Let::analyse_just_types(let_statement, &context, "")?;
 
         context
@@ -159,9 +170,9 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
             .declare(&let_statement.name, RefCell::new(lett))?;
     }
 
-    for module in ast.mods.iter() {
+    for module in &ast.mods {
         // Analyse trait input and output types, and default definitions.
-        for trait_statement in module.traits.iter() {
+        for trait_statement in &module.traits {
             let trayt = Trait::analyse(trait_statement, module, &context, false)?;
 
             context
@@ -171,7 +182,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         }
 
         // Populate module let identifiers.
-        for let_statement in module.lets.iter() {
+        for let_statement in &module.lets {
             let name = format!("{}\\{}", module.name, let_statement.name);
 
             let lett = Let::analyse_just_types(let_statement, &context, &module.name)?;
@@ -224,15 +235,15 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
     // ==========================================================================================
 
     // Analyse global let expressions.
-    for let_statement in ast.lets.iter() {
+    for let_statement in &ast.lets {
         let lett = Let::analyse(let_statement, &context, "")?;
 
         context.lets.resolve(&let_statement.name, "")?.replace(lett);
     }
 
-    for module in ast.mods.iter() {
+    for module in &ast.mods {
         // Analyse module let expressions.
-        for let_statement in module.lets.iter() {
+        for let_statement in &module.lets {
             let lett = Let::analyse(let_statement, &context, &module.name)?;
 
             context
@@ -242,7 +253,7 @@ pub fn analyse_ast(ast: AbstractSyntaxTree) -> CResult<SemanticContext> {
         }
 
         // Re-analyse traits with default definitions.
-        for trait_statement in module.traits.iter() {
+        for trait_statement in &module.traits {
             let trayt = Trait::analyse(trait_statement, module, &context, true)?;
 
             context

@@ -15,7 +15,7 @@ pub fn coerce_types(
         let typ = types.iter().find(|(type_name, _)| type_name == name);
 
         if let Some((_, typ)) = typ {
-            coerce_type(typ, eval, name, scope)?;
+            coerce_type(typ, eval, scope)?;
         }
     }
 
@@ -26,7 +26,6 @@ pub fn coerce_types(
 pub fn coerce_type(
     typ: &Type,
     eval: &mut Evaluation,
-    name: &str,
     scope: &SemanticScope,
 ) -> CResult<()> {
     let eval_type = eval.typ(scope)?;

@@ -21,18 +21,16 @@ mod Animal
 mod Mammal
     traits
         RegulateBodyTemperature: String
+    using
+        Animal\*
     defs
-        Animal\Name: ?
-        Animal\SpeciesName: ?
-        Animal\ChildsName: ?
+        Mammal\RegulateBodyTemperature: 'Regulating...'
 
 mod Amphibian
     traits
         LayEgg: Egg
-    defs
-        Animal\Name: ?
-        Animal\SpeciesName: ?
-        Animal\ChildsName: ?
+    using
+        Animal\*
 
 mod Egg
     class(embryo: Amphibian)
@@ -42,12 +40,13 @@ mod Egg
 mod Platypus
     class
         name: String
+    using
+        Mammal\*
     defs
         Animal\Name: name
         Animal\SpeciesName: 'Platypus'
         Amphibian\LayEgg
             Egg(embryo: Platypus(name: .ChildsName))
-        Mammal\RegulateBodyTemperature: 'Regulating...'
 
 lets
     FullInformation: (animal: Animal) -> String
