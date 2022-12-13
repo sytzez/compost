@@ -108,6 +108,7 @@ impl Parser for Expression {
                 Expression::Literal(match lit {
                     Lit::String(value) => RawValue::String(value),
                     Lit::Number(value) => RawValue::Int(value as i64),
+                    Lit::Boolean(value) => RawValue::Bool(value),
                 })
             }
             Token::Op(Op::Dot) => {

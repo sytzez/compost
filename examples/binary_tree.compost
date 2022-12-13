@@ -1,0 +1,92 @@
+mod BinaryTreeItem
+    using
+        Op\Lt
+        Op\Gt
+        Op\Eq
+        String
+
+mod BinaryTree
+    class
+        item: BinaryTreeItem
+        leftNode: Self | ?
+        rightNode: Self | ?
+    traits
+        Insert: (insertedItem: BinaryTreeItem) -> Self
+        Contains: (givenItem: BinaryTreeItem) -> Bool
+        Invert: Self
+        Max: BinaryTreeItem
+        Min: BinaryTreeItem
+        Size: Int
+    defs
+        Insert
+            if insertedItem < item
+            then
+                match node: leftNode
+                    Self
+                        BinaryTree
+                            item: item
+                            leftNode: node.Insert(insertedItem: insertedItem)
+                            rightNode: rightNode
+                    ?
+                        BinaryTree
+                            item: item
+                            leftNode: BinaryTree
+                                item: insertedItem
+                                leftNode: ?
+                                rightNode: ?
+                            rightNode: rightNode
+            else if insertedItem > item
+            then
+                match node: rightNode
+                    Self
+                        BinaryTree
+                            item: item
+                            leftNode: leftNode
+                            rightNode: node.Insert(insertedItem: insertedItem)
+                    ?
+                        BinaryTree
+                            item: item
+                            leftNode: leftNode
+                            rightNode: BinaryTree
+                                item: insertedItem
+                                leftNode: ?
+                                rightNode: ?
+            else Self
+        Contains
+            item = (givenItem) # TODO: get this working without parentheses. Problem is levels.
+            | match node: leftNode
+                Self: node.Contains(givenItem: givenItem)
+                ?:    false
+            | match node: rightNode
+                Self: node.Contains(givenItem: givenItem)
+                ?:    false
+        Max
+            match node: rightNode
+                Self: node.Max
+                ?:    item
+        Min
+            match node: leftNode
+                Self: node.Min
+                ?:    item
+        Size
+            match node: leftNode
+                Self: node.Size
+                ?:    Int(value: 0) #  TODO: get coercion working here. Problem because both branches return different type.
+            + match node: rightNode
+                Self: node.Size
+                ?:    Int(value: 0)
+            + 1
+
+lets
+    Tree: BinaryTree
+        BinaryTree
+            item: 1
+            leftNode: ?
+            rightNode: ?
+        .Insert(insertedItem: 2)
+        .Insert(insertedItem: -1)
+
+    Main: String
+        Tree.Size.String + ' '
+        + Tree.Min.String + ' '
+        + Tree.Max.String + ' '

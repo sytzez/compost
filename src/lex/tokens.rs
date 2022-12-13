@@ -59,6 +59,7 @@ impl Tokens {
 
     /// Create an unexpected token error at the current position
     pub fn unexpected_token_error<T>(&self) -> CResult<T> {
+        // panic!("");
         Err(CompilationError {
             message: ErrorMessage::UnexpectedToken(self.token().clone()),
             context: Some(ErrorContext::Token(self.position)),

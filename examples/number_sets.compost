@@ -1,0 +1,17 @@
+mod EvenNumber
+    class
+        base: Int
+    defs
+        Int: base * 2
+
+mod OddNUmber
+    class
+        base: Int
+    defs
+        Int: base * 2 + 1
+
+mod NumberSet
+    traits
+        Contains: (number: Int) -> Bool
+
+mod EvenNumberSet

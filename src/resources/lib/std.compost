@@ -47,3 +47,4 @@ mod Bool
         Op\Eq: Bool(value: value = rhs.value)
         Op\And: Bool(value: value & rhs.value)
         Op\Or: Bool(value: value | rhs.value)
+        Bool: Self

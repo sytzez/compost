@@ -54,6 +54,7 @@ pub enum Op {
 pub enum Lit {
     String(String),
     Number(usize),
+    Boolean(bool),
 }
 
 /// The type of level syntax.
@@ -140,6 +141,8 @@ fn next_local_token(code: &str) -> SizedToken {
         "if" => Token::Kw(Kw::If),
         "then" => Token::Kw(Kw::Then),
         "else" => Token::Kw(Kw::Else),
+        "false" => Token::Lit(Lit::Boolean(false)),
+        "true" => Token::Lit(Lit::Boolean(true)),
         _ => Token::Local(str.to_string()),
     };
 
@@ -278,6 +281,8 @@ mod test {
         assert_eq!(next_token("if "), Ok((Some(Token::Kw(Kw::If)), 2)));
         assert_eq!(next_token("then "), Ok((Some(Token::Kw(Kw::Then)), 4)));
         assert_eq!(next_token("else "), Ok((Some(Token::Kw(Kw::Else)), 4)));
+        assert_eq!(next_token("true "), Ok((Some(Token::Lit(Lit::Boolean(true))), 4)));
+        assert_eq!(next_token("false "), Ok((Some(Token::Lit(Lit::Boolean(false))), 5)));
     }
 
     #[test]
