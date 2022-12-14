@@ -23,6 +23,13 @@ impl CompilationError {
             None => message,
         }
     }
+
+    pub fn context(self, context: ErrorContext) -> Self {
+        CompilationError {
+            message: self.message,
+            context: Some(context),
+        }
+    }
 }
 
 /// A compilation error message.
@@ -82,7 +89,7 @@ impl From<&ErrorMessage> for String {
             ErrorMessage::MissingInput(name) => format!("Missing input for '{}'", name),
             ErrorMessage::TypeMismatch(name, expected, given) => {
                 format!(
-                    "Type mismatch for '{}'.\n  Expected: {}\n  Got: {}",
+                    "Type mismatch for '{}'.\n  Expected: {}\n  Got: {}\n",
                     name, expected, given
                 )
             }
@@ -91,7 +98,7 @@ impl From<&ErrorMessage> for String {
 }
 
 /// Where the error occurred.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum ErrorContext {
     Character(usize),
     Token(usize),

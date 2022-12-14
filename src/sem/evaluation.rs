@@ -63,6 +63,7 @@ pub struct IfElseEvaluation {
 
 impl Evaluation {
     pub fn analyse(statement: ExpressionStatement, scope: &SemanticScope) -> CResult<Self> {
+        let error_context = statement.error_context();
         let eval = match statement.expression {
             Expression::Binary(call) => {
                 let trait_path = match call.op {
@@ -149,8 +150,10 @@ impl Evaluation {
                     inputs.push((param_name, eval));
                 }
 
-                coerce_types(&input_types, &mut inputs, scope)?;
-                check_types(&input_types, &inputs, scope)?;
+                coerce_types(&input_types, &mut inputs, scope)
+                    .map_err(|e| e.context(error_context.clone()))?;
+                check_types(&input_types, &inputs, scope)
+                    .map_err(|e| e.context(error_context.clone()))?;
 
                 Evaluation::Trait(TraitEvaluation {
                     trayt,
@@ -168,8 +171,10 @@ impl Evaluation {
                     inputs.push((param_name, eval));
                 }
 
-                coerce_types(&lett.borrow().inputs, &mut inputs, scope)?;
-                check_types(&lett.borrow().inputs, &inputs, scope)?;
+                coerce_types(&lett.borrow().inputs, &mut inputs, scope)
+                    .map_err(|e| e.context(error_context.clone()))?;
+                check_types(&lett.borrow().inputs, &inputs, scope)
+                    .map_err(|e| e.context(error_context.clone()))?;
 
                 Evaluation::Let(LetEvaluation { lett, inputs })
             }

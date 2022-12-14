@@ -1,5 +1,5 @@
 use crate::error::ErrorContext::TokenRange;
-use crate::error::{CResult, CompilationError, ErrorMessage};
+use crate::error::{CResult, CompilationError, ErrorMessage, ErrorContext};
 use std::ops::Range;
 
 pub(crate) mod abstract_syntax_tree;
@@ -18,10 +18,15 @@ pub(crate) mod using_statement;
 
 pub(crate) trait Statement {
     fn token_range(&self) -> &Range<usize>;
+
+    fn error_context(&self) -> ErrorContext {
+        TokenRange(self.token_range().clone())
+    }
+
     fn error<T>(&self, message: ErrorMessage) -> CResult<T> {
         Err(CompilationError {
             message,
-            context: Some(TokenRange(self.token_range().clone())),
+            context: Some(self.error_context()),
         })
     }
 }
