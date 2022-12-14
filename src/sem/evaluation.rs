@@ -5,7 +5,7 @@ use crate::ast::raw_value::RawValue;
 use crate::ast::type_statement::RawType;
 use crate::ast::Statement;
 use crate::error::ErrorMessage::NoResolution;
-use crate::error::{error, CResult, ErrorMessage};
+use crate::error::{error, CResult, ErrorMessage, CompilationError};
 use crate::sem::class::Class;
 use crate::sem::lett::Let;
 use crate::sem::semantic_analyser::SemanticScope;
@@ -64,6 +64,8 @@ pub struct IfElseEvaluation {
 impl Evaluation {
     pub fn analyse(statement: ExpressionStatement, scope: &SemanticScope) -> CResult<Self> {
         let error_context = statement.error_context();
+        let err_mapper = |e: CompilationError| e.context(error_context.clone());
+
         let eval = match statement.expression {
             Expression::Binary(call) => {
                 let trait_path = match call.op {
@@ -77,7 +79,8 @@ impl Evaluation {
                     BinaryOp::And => "Op\\And",
                     BinaryOp::Or => "Op\\Or",
                 };
-                let trayt = scope.context.traits.resolve(trait_path, "")?;
+                let trayt = scope.context.traits.resolve(trait_path, "")
+                    .map_err(err_mapper)?;
 
                 let mut lhs = Evaluation::analyse(*call.lhs, scope)?;
                 let mut rhs = Evaluation::analyse(*call.rhs, scope)?;
@@ -110,7 +113,8 @@ impl Evaluation {
                     UnaryOp::Neg => "Op\\Neg",
                     UnaryOp::Not => "Op\\Not",
                 };
-                let trayt = scope.context.traits.resolve(trait_path, "")?;
+                let trayt = scope.context.traits.resolve(trait_path, "")
+                    .map_err(err_mapper)?;
 
                 let subject = Evaluation::analyse(*call.subject, scope)?;
 
@@ -128,9 +132,11 @@ impl Evaluation {
                 for trait_name in subject.typ(scope)?.callable_traits(scope).into_iter() {
                     trait_name_table.declare(&trait_name, trait_name.clone())?;
                 }
-                let trait_name = trait_name_table.resolve(&call.name, "")?;
+                let trait_name = trait_name_table.resolve(&call.name, "")
+                    .map_err(err_mapper)?;
 
-                let trayt = scope.context.traits.resolve(&trait_name, "")?;
+                let trayt = scope.context.traits.resolve(&trait_name, "")
+                    .map_err(err_mapper)?;
 
                 // Resolve all 'Self' types within input types with the current subject.
                 let subject_type = subject.typ(scope)?;
@@ -150,10 +156,8 @@ impl Evaluation {
                     inputs.push((param_name, eval));
                 }
 
-                coerce_types(&input_types, &mut inputs, scope)
-                    .map_err(|e| e.context(error_context.clone()))?;
-                check_types(&input_types, &inputs, scope)
-                    .map_err(|e| e.context(error_context.clone()))?;
+                coerce_types(&input_types, &mut inputs, scope).map_err(err_mapper)?;
+                check_types(&input_types, &inputs, scope).map_err(err_mapper)?;
 
                 Evaluation::Trait(TraitEvaluation {
                     trayt,
@@ -162,7 +166,8 @@ impl Evaluation {
                 })
             }
             Expression::Let(call) => {
-                let lett = scope.context.lets.resolve(&call.name, scope.path)?;
+                let lett = scope.context.lets.resolve(&call.name, scope.path)
+                    .map_err(err_mapper)?;
 
                 let mut inputs = vec![];
                 for (param_name, expr) in call.inputs.into_iter() {
@@ -171,17 +176,15 @@ impl Evaluation {
                     inputs.push((param_name, eval));
                 }
 
-                coerce_types(&lett.borrow().inputs, &mut inputs, scope)
-                    .map_err(|e| e.context(error_context.clone()))?;
-                check_types(&lett.borrow().inputs, &inputs, scope)
-                    .map_err(|e| e.context(error_context.clone()))?;
+                coerce_types(&lett.borrow().inputs, &mut inputs, scope).map_err(err_mapper)?;
+                check_types(&lett.borrow().inputs, &inputs, scope).map_err(err_mapper)?;
 
                 Evaluation::Let(LetEvaluation { lett, inputs })
             }
             Expression::Literal(value) => Evaluation::Literal(value),
             Expression::Local(ref name) => {
                 if !scope.locals.contains_key(name) {
-                    return statement.error(NoResolution("Local Variable", name.clone()));
+                    return statement.error(NoResolution("local variable", name.clone()));
                 }
 
                 Evaluation::Local(name.clone())
@@ -191,7 +194,7 @@ impl Evaluation {
                     Some(local) => local,
                     None => {
                         return statement
-                            .error(NoResolution("Local Variable", ff.local_name.clone()))
+                            .error(NoResolution("local variable", ff.local_name.clone()))
                     }
                 };
 
