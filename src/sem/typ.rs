@@ -1,11 +1,12 @@
-use crate::ast::type_statement::{RawType, TypeStatement};
-use crate::error::{error, CResult, ErrorMessage};
+use crate::ast::type_statement::{RawType, TypeStatement, TypeStatementType};
+use crate::error::{CResult, ErrorMessage};
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::trayt::{interface_type, Trait};
 use std::cell::RefCell;
 use std::collections::BTreeSet;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
+use crate::ast::Statement;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Type {
@@ -41,33 +42,33 @@ impl Type {
         context: &SemanticContext,
         path: &str,
     ) -> CResult<Self> {
-        let typ = match statement {
-            TypeStatement::Name(name) => {
+        let typ = match &statement.typ {
+            TypeStatementType::Name(name) => {
                 if let Ok(interface) = context.interfaces.resolve(name, path) {
                     interface_type(interface.borrow().as_ref())
                 } else if let Ok(trayt) = context.traits.resolve(name, path) {
                     Type::Trait(trayt)
                 } else {
-                    return error(ErrorMessage::NoModuleOrTrait(name.clone()));
+                    return statement.error(ErrorMessage::NoModuleOrTrait(name.clone()));
                 }
             }
-            TypeStatement::AtName(name) => {
+            TypeStatementType::AtName(name) => {
                 if let Ok(trayt) = context.traits.resolve(name, path) {
                     Type::Trait(trayt)
                 } else {
-                    return error(ErrorMessage::NoTrait(name.clone()));
+                    return statement.error(ErrorMessage::NoTrait(name.clone()));
                 }
             }
-            TypeStatement::And(a, b) => Type::And(
+            TypeStatementType::And(a, b) => Type::And(
                 Box::new(Type::analyse(a, context, path)?),
                 Box::new(Type::analyse(b, context, path)?),
             ),
-            TypeStatement::Or(a, b) => Type::Or(
+            TypeStatementType::Or(a, b) => Type::Or(
                 Box::new(Type::analyse(a, context, path)?),
                 Box::new(Type::analyse(b, context, path)?),
             ),
-            TypeStatement::Zelf => Type::Zelf,
-            TypeStatement::Void => Type::Void,
+            TypeStatementType::Zelf => Type::Zelf,
+            TypeStatementType::Void => Type::Void,
         };
 
         Ok(typ)

@@ -1,5 +1,5 @@
 use crate::ast::expression::Expression;
-use crate::ast::parser::Parser;
+use crate::ast::parser::Parse;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
 use crate::lex::tokens::Tokens;
@@ -13,7 +13,7 @@ pub struct IfElseCall {
     pub els: Box<Expression>,
 }
 
-impl Parser for IfElseCall {
+impl Parse for IfElseCall {
     fn matches(tokens: &Tokens) -> bool {
         matches!(tokens.token(), Token::Kw(Kw::If))
     }

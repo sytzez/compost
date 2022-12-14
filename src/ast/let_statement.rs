@@ -1,5 +1,7 @@
+use std::ops::Range;
 use crate::ast::expression::Expression;
-use crate::ast::parser::{parse_global, parse_in_out_types, Parser};
+use crate::ast::parser::{parse_global, parse_in_out_types, Parse};
+use crate::ast::Statement;
 use crate::ast::type_statement::TypeStatement;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
@@ -12,6 +14,7 @@ pub struct LetStatement {
     pub parameters: Vec<(String, TypeStatement)>,
     pub output: TypeStatement,
     pub expr: Expression,
+    token_range: Range<usize>,
 }
 
 /// The lets keywords and its lets.
@@ -25,7 +28,7 @@ impl LetsStatement {
     }
 }
 
-impl Parser for LetsStatement {
+impl Parse for LetsStatement {
     fn matches(tokens: &Tokens) -> bool {
         matches!(tokens.token(), Token::Kw(Kw::Lets))
     }
@@ -37,9 +40,7 @@ impl Parser for LetsStatement {
         let mut statement = LetsStatement::new();
 
         while tokens.deeper_than(base_level) {
-            let lett = parse_let(tokens)?;
-
-            statement.lets.push(lett)
+            statement.lets.push(parse_let(tokens)?)
         }
 
         Ok(statement)
@@ -48,14 +49,25 @@ impl Parser for LetsStatement {
 
 fn parse_let(tokens: &mut Tokens) -> CResult<LetStatement> {
     let base_level = tokens.level();
+    let token_start = tokens.position();
+
+    tokens.expect("the name of a let (Starting with an upper-case letter)");
     let name = parse_global(tokens)?;
     let (parameters, output) = parse_in_out_types(tokens, base_level)?;
     let expr = Expression::parse(tokens)?;
+
     let statement = LetStatement {
         name,
         parameters,
         output,
         expr,
+        token_range: token_start..tokens.position(),
     };
     Ok(statement)
+}
+
+impl Statement for LetStatement {
+    fn token_range(&self) -> &Range<usize> {
+        &self.token_range
+    }
 }

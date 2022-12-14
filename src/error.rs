@@ -1,3 +1,4 @@
+use std::ops::Range;
 use crate::lex::token::Token;
 use crate::lex::tokenizer::get_position_of_token;
 use crate::sem::typ::Type;
@@ -28,7 +29,7 @@ impl CompilationError {
 #[derive(Debug, PartialEq)]
 pub enum ErrorMessage {
     UnexpectedChar(String),
-    UnexpectedToken(Token),
+    UnexpectedToken(Token, Option<String>),
     NoSelf,
     NoResolution(&'static str, String),
     DoubleDeclaration(&'static str, String),
@@ -47,7 +48,10 @@ impl From<&ErrorMessage> for String {
     fn from(message: &ErrorMessage) -> Self {
         match message {
             ErrorMessage::UnexpectedChar(char) => format!("Unexpected character {}", char),
-            ErrorMessage::UnexpectedToken(token) => format!("Unexpected token {:?}", token),
+            ErrorMessage::UnexpectedToken(token, expectation) => match expectation {
+                Some(expectation) => format!("Unexpected token {:?}, expecting {}", token, expectation),
+                None => format!("Unexpected token {:?}", token),
+            }
             ErrorMessage::NoSelf => "Can't use 'Self' in global scope".to_string(),
             ErrorMessage::NoResolution(typ, name) => {
                 format!("No resolution for {} '{}'", typ, name)
@@ -89,7 +93,7 @@ impl From<&ErrorMessage> for String {
 pub enum ErrorContext {
     Character(usize),
     Token(usize),
-    Syntax,
+    TokenRange(Range<usize>),
 }
 
 impl ErrorContext {
@@ -97,7 +101,7 @@ impl ErrorContext {
         match self {
             ErrorContext::Character(position) => *position,
             ErrorContext::Token(token_number) => get_position_of_token(code, *token_number),
-            ErrorContext::Syntax => todo!(),
+            ErrorContext::TokenRange(range) => get_position_of_token(code, range.start),
         }
     }
 }

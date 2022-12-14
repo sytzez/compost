@@ -1,4 +1,4 @@
-use crate::ast::parser::{parse_global, Parser};
+use crate::ast::parser::{parse_global, Parse};
 use crate::ast::raw_value::RawValue;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Lit, Op, Token};
@@ -77,7 +77,7 @@ pub enum UnaryOp {
     Not,
 }
 
-impl Parser for Expression {
+impl Parse for Expression {
     fn matches(_tokens: &Tokens) -> bool {
         true
     }
@@ -86,6 +86,7 @@ impl Parser for Expression {
         let base_level = tokens.level();
 
         // Parse first token
+        tokens.expect("an expression");
         let mut expr = match tokens.token().clone() {
             Token::Kw(Kw::Zelf) => {
                 tokens.step();
@@ -172,10 +173,8 @@ impl Parser for Expression {
                         Op::Dot => {
                             tokens.step();
 
-                            // Needs cloning to prevent immutable borrow errors.
-                            let token = tokens.token().clone();
-
-                            match (expr, token) {
+                            tokens.expect("a trait name or a friendly field name");
+                            match (expr, tokens.token().clone()) {
                                 (Expression::Local(local_name), Token::Local(field_name)) => {
                                     tokens.step();
 

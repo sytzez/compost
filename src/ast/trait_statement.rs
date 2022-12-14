@@ -1,4 +1,4 @@
-use crate::ast::parser::{parse_global, parse_in_out_types, Parser};
+use crate::ast::parser::{parse_global, parse_in_out_types, Parse};
 use crate::ast::type_statement::TypeStatement;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
@@ -23,7 +23,7 @@ impl TraitsStatement {
     }
 }
 
-impl Parser for TraitsStatement {
+impl Parse for TraitsStatement {
     fn matches(tokens: &Tokens) -> bool {
         matches!(tokens.token(), Token::Kw(Kw::Traits))
     }

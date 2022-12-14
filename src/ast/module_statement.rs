@@ -1,7 +1,9 @@
+use std::ops::Range;
 use crate::ast::class_statement::ClassStatement;
 use crate::ast::def_statement::{DefStatement, DefsStatement};
+use crate::ast::Statement;
 use crate::ast::let_statement::{LetStatement, LetsStatement};
-use crate::ast::parser::{parse_global, Parser};
+use crate::ast::parser::{parse_global, Parse};
 use crate::ast::struct_statement::StructStatement;
 use crate::ast::trait_statement::{TraitStatement, TraitsStatement};
 use crate::ast::using_statement::{SingleUsingStatement, UsingStatement};
@@ -19,6 +21,7 @@ pub struct ModuleStatement {
     pub defs: Vec<DefStatement>,
     pub lets: Vec<LetStatement>,
     pub using: Vec<SingleUsingStatement>,
+    token_range: Range<usize>,
 }
 
 impl ModuleStatement {
@@ -31,17 +34,19 @@ impl ModuleStatement {
             defs: vec![],
             lets: vec![],
             using: vec![],
+            token_range: Range::default(),
         }
     }
 }
 
-impl Parser for ModuleStatement {
+impl Parse for ModuleStatement {
     fn matches(tokens: &Tokens) -> bool {
         matches!(tokens.token(), Token::Kw(Kw::Mod))
     }
 
     fn parse(tokens: &mut Tokens) -> CResult<Self> {
         let base_level = tokens.level();
+        let token_start = tokens.position();
         tokens.step();
 
         let name = parse_global(tokens)?;
@@ -49,20 +54,22 @@ impl Parser for ModuleStatement {
         let mut statement = ModuleStatement::new(name);
 
         while tokens.deeper_than(base_level) {
+            tokens.expect("class, struct, traits, defs, lets or using");
+
             if let Some(class) = ClassStatement::maybe_parse(tokens)? {
                 if statement.class.is_some() {
-                    return tokens.error(ErrorMessage::DuplicateClass(statement.name));
+                    return class.error(ErrorMessage::DuplicateClass(statement.name));
                 }
                 if statement.strukt.is_some() {
-                    return tokens.error(ErrorMessage::ClassAndStruct(statement.name));
+                    return class.error(ErrorMessage::ClassAndStruct(statement.name));
                 }
                 statement.class = Some(class);
             } else if let Some(strukt) = StructStatement::maybe_parse(tokens)? {
                 if statement.strukt.is_some() {
-                    return tokens.error(ErrorMessage::DuplicateStruct(statement.name));
+                    return strukt.error(ErrorMessage::DuplicateStruct(statement.name));
                 }
                 if statement.class.is_some() {
-                    return tokens.error(ErrorMessage::ClassAndStruct(statement.name));
+                    return strukt.error(ErrorMessage::ClassAndStruct(statement.name));
                 }
                 statement.strukt = Some(strukt);
             } else if let Some(mut traits) = TraitsStatement::maybe_parse(tokens)? {
@@ -78,6 +85,14 @@ impl Parser for ModuleStatement {
             }
         }
 
+        statement.token_range = token_start..tokens.position();
+
         Ok(statement)
+    }
+}
+
+impl Statement for ModuleStatement {
+    fn token_range(&self) -> &Range<usize> {
+        &self.token_range
     }
 }

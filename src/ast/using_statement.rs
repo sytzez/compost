@@ -1,4 +1,4 @@
-use crate::ast::parser::{parse_global, Parser};
+use crate::ast::parser::{parse_global, Parse};
 use crate::error::CResult;
 use crate::lex::token::{Kw, Op, Token};
 use crate::lex::tokens::Tokens;
@@ -14,7 +14,7 @@ pub struct UsingStatement {
     pub lines: Vec<SingleUsingStatement>,
 }
 
-impl Parser for UsingStatement {
+impl Parse for UsingStatement {
     fn matches(tokens: &Tokens) -> bool {
         matches!(tokens.token(), Token::Kw(Kw::Using))
     }

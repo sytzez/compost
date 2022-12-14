@@ -1,12 +1,20 @@
-use crate::ast::parser::{parse_global, Parser};
+use std::ops::Range;
+use crate::ast::parser::{parse_global, Parse};
 use crate::ast::raw_value::RawValue;
+use crate::ast::Statement;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Op, Token};
 
 use crate::lex::tokens::Tokens;
 
 #[derive(Clone, Debug)]
-pub enum TypeStatement {
+pub struct TypeStatement {
+    pub typ: TypeStatementType,
+    token_range: Range<usize>,
+}
+
+#[derive(Clone, Debug)]
+pub enum TypeStatementType {
     Name(String),
     AtName(String),
     And(Box<TypeStatement>, Box<TypeStatement>),
@@ -24,7 +32,13 @@ pub enum RawType {
     Bool,
 }
 
-impl Parser for TypeStatement {
+impl Statement for TypeStatement {
+    fn token_range(&self) -> &Range<usize> {
+        &self.token_range
+    }
+}
+
+impl Parse for TypeStatement {
     fn matches(tokens: &Tokens) -> bool {
         matches!(
             tokens.token(),
@@ -33,11 +47,14 @@ impl Parser for TypeStatement {
     }
 
     fn parse(tokens: &mut Tokens) -> CResult<Self> {
+        let token_start = tokens.position();
+
+        tokens.expect("a trait name, @ followed by a trait name, a module name, 'Self' or '?'");
         let typ = match tokens.token_and_step() {
-            Token::Kw(Kw::Zelf) => TypeStatement::Zelf,
-            Token::Global(name) => TypeStatement::Name(name.clone()),
-            Token::Op(Op::Question) => TypeStatement::Void,
-            Token::Op(Op::At) => TypeStatement::AtName(parse_global(tokens)?),
+            Token::Kw(Kw::Zelf) => TypeStatementType::Zelf,
+            Token::Global(name) => TypeStatementType::Name(name.clone()),
+            Token::Op(Op::Question) => TypeStatementType::Void,
+            Token::Op(Op::At) => TypeStatementType::AtName(parse_global(tokens)?),
             _ => return tokens.unexpected_token_error(),
         };
 
@@ -45,19 +62,26 @@ impl Parser for TypeStatement {
             Token::Op(op @ (Op::And | Op::Or)) => {
                 tokens.step();
 
-                let lhs = Box::new(typ);
+                let lhs = Box::new(TypeStatement {
+                    typ,
+                    token_range: token_start..tokens.position(),
+                });
                 let rhs = Box::new(TypeStatement::parse(tokens)?);
 
                 match op {
-                    Op::And => TypeStatement::And(lhs, rhs),
-                    Op::Or => TypeStatement::Or(lhs, rhs),
+                    Op::And => TypeStatementType::And(lhs, rhs),
+                    Op::Or => TypeStatementType::Or(lhs, rhs),
                     _ => unreachable!(),
                 }
             }
             _ => typ,
         };
 
-        Ok(typ)
+        let statement = TypeStatement {
+            typ,
+            token_range: token_start..tokens.position(),
+        };
+        Ok(statement)
     }
 }
 

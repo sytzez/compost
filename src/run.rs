@@ -1,5 +1,5 @@
 use crate::ast::abstract_syntax_tree::AbstractSyntaxTree;
-use crate::ast::parser::Parser;
+use crate::ast::parser::Parse;
 use crate::error::CResult;
 use crate::lex::tokenizer::tokenize;
 use crate::runtime::evaluate::evaluate;

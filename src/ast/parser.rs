@@ -5,7 +5,7 @@ use crate::lex::token::{Op, Token};
 use crate::lex::tokens::Tokens;
 
 /// Something that can be created by parsing tokens.
-pub trait Parser
+pub trait Parse
 where
     Self: Sized,
 {
@@ -54,6 +54,7 @@ pub fn parse_in_out_types(
     let mut output = None;
 
     while tokens.deeper_than(base_level) {
+        tokens.expect("an input parameter name or an output type");
         if let Some(typ) = TypeStatement::maybe_parse(tokens)? {
             output = Some(typ);
             break;
@@ -85,6 +86,7 @@ pub fn parse_in_out_types(
 
 /// Parses a parameter name and type.
 pub fn parse_parameter(tokens: &mut Tokens) -> CResult<(String, TypeStatement)> {
+    tokens.expect("Parameter name (lower case)");
     let name = parse_local(tokens)?;
     let typ = TypeStatement::parse(tokens)?;
     Ok((name, typ))

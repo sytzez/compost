@@ -1,3 +1,7 @@
+use std::ops::Range;
+use crate::error::{CompilationError, CResult, ErrorMessage};
+use crate::error::ErrorContext::TokenRange;
+
 pub(crate) mod abstract_syntax_tree;
 pub(crate) mod class_statement;
 pub(crate) mod def_statement;
@@ -11,3 +15,13 @@ pub(crate) mod struct_statement;
 pub(crate) mod trait_statement;
 pub(crate) mod type_statement;
 pub(crate) mod using_statement;
+
+pub(crate) trait Statement {
+    fn token_range(&self) -> &Range<usize>;
+    fn error<T>(&self, message: ErrorMessage) -> CResult<T> {
+        Err(CompilationError {
+            message,
+            context: Some(TokenRange(self.token_range().clone())),
+        })
+    }
+}

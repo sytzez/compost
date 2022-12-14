@@ -1,5 +1,5 @@
 use crate::ast::expression::Expression;
-use crate::ast::parser::{parse_local, Parser};
+use crate::ast::parser::{parse_local, Parse};
 use crate::ast::type_statement::TypeStatement;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
@@ -13,7 +13,7 @@ pub struct MatchCall {
     pub branches: Vec<(TypeStatement, Box<Expression>)>,
 }
 
-impl Parser for MatchCall {
+impl Parse for MatchCall {
     fn matches(tokens: &Tokens) -> bool {
         matches!(tokens.token(), Token::Kw(Kw::Match))
     }

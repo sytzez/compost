@@ -1,6 +1,6 @@
 use crate::ast::let_statement::{LetStatement, LetsStatement};
 use crate::ast::module_statement::ModuleStatement;
-use crate::ast::parser::Parser;
+use crate::ast::parser::Parse;
 use crate::error::CResult;
 use crate::lex::token::Token;
 use crate::lex::tokens::Tokens;
@@ -20,7 +20,7 @@ impl AbstractSyntaxTree {
     }
 }
 
-impl Parser for AbstractSyntaxTree {
+impl Parse for AbstractSyntaxTree {
     fn matches(_tokens: &Tokens) -> bool {
         true
     }
@@ -29,6 +29,7 @@ impl Parser for AbstractSyntaxTree {
         let mut ast = AbstractSyntaxTree::new();
 
         while tokens.still_more() {
+            tokens.expect("'mod' or 'lets'");
             if let Some(module) = ModuleStatement::maybe_parse(tokens)? {
                 ast.mods.push(module)
             } else if let Some(mut lets) = LetsStatement::maybe_parse(tokens)? {
