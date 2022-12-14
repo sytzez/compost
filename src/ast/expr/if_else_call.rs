@@ -1,4 +1,4 @@
-use crate::ast::expression::Expression;
+use crate::ast::expression::{Expression, ExpressionStatement};
 use crate::ast::parser::Parse;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
@@ -8,9 +8,9 @@ use crate::lex::tokens::Tokens;
 /// to be an else clause, in order to always have an output value.
 #[derive(Clone, Debug)]
 pub struct IfElseCall {
-    pub condition: Box<Expression>,
-    pub iff: Box<Expression>,
-    pub els: Box<Expression>,
+    pub condition: Box<ExpressionStatement>,
+    pub iff: Box<ExpressionStatement>,
+    pub els: Box<ExpressionStatement>,
 }
 
 impl Parse for IfElseCall {
@@ -21,21 +21,21 @@ impl Parse for IfElseCall {
     fn parse(tokens: &mut Tokens) -> CResult<Self> {
         tokens.step();
 
-        let condition = Expression::parse(tokens)?;
+        let condition = ExpressionStatement::parse(tokens)?;
 
         if ! matches!(tokens.token(), Token::Kw(Kw::Then)) {
             return tokens.unexpected_token_error();
         }
         tokens.step();
 
-        let iff = Expression::parse(tokens)?;
+        let iff = ExpressionStatement::parse(tokens)?;
 
         if ! matches!(tokens.token(), Token::Kw(Kw::Else)) {
             return tokens.unexpected_token_error();
         }
         tokens.step();
 
-        let els = Expression::parse(tokens)?;
+        let els = ExpressionStatement::parse(tokens)?;
 
         let call = IfElseCall {
             condition: Box::new(condition),

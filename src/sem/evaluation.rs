@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use crate::ast::expression::{BinaryOp, Expression, FriendlyField, UnaryOp};
+use crate::ast::expression::{BinaryOp, Expression, ExpressionStatement, FriendlyField, UnaryOp};
 use crate::ast::raw_value::RawValue;
 use crate::ast::type_statement::RawType;
 use crate::error::ErrorMessage::NoResolution;
@@ -15,6 +15,7 @@ use crate::sem::typ::{combine_types, Type};
 use crate::sem::type_checking::check_types;
 use crate::sem::type_coercion::{coerce_type, coerce_types};
 use std::rc::Rc;
+use crate::ast::Statement;
 
 /// A semantically analysed expression that can be evaluated.
 #[derive(Clone, Debug)]
@@ -61,8 +62,8 @@ pub struct IfElseEvaluation {
 }
 
 impl Evaluation {
-    pub fn analyse(expr: Expression, scope: &SemanticScope) -> CResult<Self> {
-        let eval = match expr {
+    pub fn analyse(statement: ExpressionStatement, scope: &SemanticScope) -> CResult<Self> {
+        let eval = match statement.expression {
             Expression::Binary(call) => {
                 let trait_path = match call.op {
                     BinaryOp::Add => "Op\\Add",
@@ -173,22 +174,22 @@ impl Evaluation {
                 Evaluation::Let(LetEvaluation { lett, inputs })
             }
             Expression::Literal(value) => Evaluation::Literal(value),
-            Expression::Local(name) => {
-                if !scope.locals.contains_key(&name) {
-                    return error(NoResolution("Local Variable", name));
+            Expression::Local(ref name) => {
+                if !scope.locals.contains_key(name) {
+                    return statement.error(NoResolution("Local Variable", name.clone()));
                 }
 
-                Evaluation::Local(name)
+                Evaluation::Local(name.clone())
             }
-            Expression::FriendlyField(ff) => {
+            Expression::FriendlyField(ref ff) => {
                 let _local = match scope.locals.get(&ff.local_name) {
                     Some(local) => local,
-                    None => return error(NoResolution("Local Variable", ff.local_name)),
+                    None => return statement.error(NoResolution("Local Variable", ff.local_name.clone())),
                 };
 
                 // TODO: check if locals is a struct, if it is of the same type as self, if it has the friendly field
 
-                Evaluation::FriendlyField(ff)
+                Evaluation::FriendlyField(ff.clone())
             }
             Expression::Match(call) => {
                 let mut branches = vec![];
@@ -217,19 +218,19 @@ impl Evaluation {
 
                 Evaluation::Match(match_eval)
             }
-            Expression::IfElse(call) => {
-                let condition = Box::new(Evaluation::analyse(*call.condition, scope)?);
+            Expression::IfElse(ref call) => {
+                let condition = Box::new(Evaluation::analyse(*call.condition.clone(), scope)?);
 
                 let condition_type = condition.typ(scope)?;
 
                 // Verify that the condition expression returns a boolean.
                 if condition_type != Type::Raw(RawType::Bool)
                     && !condition_type.callable_traits(scope).iter().any(|typ| typ == "Bool") {
-                    return error(ErrorMessage::TypeMismatch("if condition".to_string(), Type::Raw(RawType::Bool), condition_type));
+                    return statement.error(ErrorMessage::TypeMismatch("if condition".to_string(), Type::Raw(RawType::Bool), condition_type));
                 }
 
-                let iff = Box::new(Evaluation::analyse(*call.iff, scope)?);
-                let els = Box::new(Evaluation::analyse(*call.els, scope)?);
+                let iff = Box::new(Evaluation::analyse(*call.iff.clone(), scope)?);
+                let els = Box::new(Evaluation::analyse(*call.els.clone(), scope)?);
 
                 let if_else_eval = IfElseEvaluation { condition, iff, els };
 

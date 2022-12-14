@@ -1,5 +1,5 @@
 use std::ops::Range;
-use crate::ast::expression::Expression;
+use crate::ast::expression::{Expression, ExpressionStatement};
 use crate::ast::parser::{parse_global, Parse};
 use crate::ast::Statement;
 use crate::error::CResult;
@@ -10,7 +10,7 @@ use crate::lex::tokens::Tokens;
 /// A single def.
 pub struct DefStatement {
     pub name: String,
-    pub expr: Expression,
+    pub expr: ExpressionStatement,
     token_range: Range<usize>,
 }
 
@@ -45,7 +45,7 @@ fn parse_def(tokens: &mut Tokens) -> CResult<DefStatement> {
     let token_start = tokens.position();
     tokens.expect("trait name for definition (Starting with upper-case letter)");
     let name = parse_global(tokens)?;
-    let expr = Expression::parse(tokens)?;
+    let expr = ExpressionStatement::parse(tokens)?;
     let statement = DefStatement {
         name,
         expr,

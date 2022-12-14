@@ -1,4 +1,4 @@
-use crate::ast::expression::Expression;
+use crate::ast::expression::{Expression, ExpressionStatement};
 use crate::ast::parser::{parse_local, Parse};
 use crate::ast::type_statement::TypeStatement;
 use crate::error::CResult;
@@ -9,8 +9,8 @@ use crate::lex::tokens::Tokens;
 #[derive(Clone, Debug)]
 pub struct MatchCall {
     pub local_name: String,
-    pub subject: Box<Expression>,
-    pub branches: Vec<(TypeStatement, Box<Expression>)>,
+    pub subject: Box<ExpressionStatement>,
+    pub branches: Vec<(TypeStatement, Box<ExpressionStatement>)>,
 }
 
 impl Parse for MatchCall {
@@ -23,12 +23,12 @@ impl Parse for MatchCall {
         tokens.step();
 
         let local_name = parse_local(tokens)?;
-        let subject = Box::new(Expression::parse(tokens)?);
+        let subject = Box::new(ExpressionStatement::parse(tokens)?);
         let mut branches = vec![];
 
         while tokens.deeper_than(base_level) {
             let type_statement = TypeStatement::parse(tokens)?;
-            let branch = Box::new(Expression::parse(tokens)?);
+            let branch = Box::new(ExpressionStatement::parse(tokens)?);
 
             branches.push((type_statement, branch));
         }

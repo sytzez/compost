@@ -1,5 +1,5 @@
 use std::ops::Range;
-use crate::ast::expression::Expression;
+use crate::ast::expression::{Expression, ExpressionStatement};
 use crate::ast::parser::{parse_global, parse_in_out_types, Parse};
 use crate::ast::Statement;
 use crate::ast::type_statement::TypeStatement;
@@ -13,7 +13,7 @@ pub struct LetStatement {
     pub name: String,
     pub parameters: Vec<(String, TypeStatement)>,
     pub output: TypeStatement,
-    pub expr: Expression,
+    pub expr: ExpressionStatement,
     token_range: Range<usize>,
 }
 
@@ -54,7 +54,7 @@ fn parse_let(tokens: &mut Tokens) -> CResult<LetStatement> {
     tokens.expect("the name of a let (Starting with an upper-case letter)");
     let name = parse_global(tokens)?;
     let (parameters, output) = parse_in_out_types(tokens, base_level)?;
-    let expr = Expression::parse(tokens)?;
+    let expr = ExpressionStatement::parse(tokens)?;
 
     let statement = LetStatement {
         name,

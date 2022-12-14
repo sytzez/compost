@@ -7,7 +7,15 @@ use crate::ast::expr::match_call::MatchCall;
 
 use crate::lex::tokens::Tokens;
 use std::collections::HashMap;
+use std::ops::Range;
 use crate::ast::expr::if_else_call::IfElseCall;
+use crate::ast::Statement;
+
+#[derive(Clone, Debug)]
+pub struct ExpressionStatement {
+    pub expression: Expression,
+    token_range: Range<usize>,
+}
 
 /// An expression within the abstract syntax tree.
 #[derive(Clone, Debug)]
@@ -28,27 +36,27 @@ pub enum Expression {
 #[derive(Clone, Debug)]
 pub struct BinaryCall {
     pub op: BinaryOp,
-    pub lhs: Box<Expression>,
-    pub rhs: Box<Expression>,
+    pub lhs: Box<ExpressionStatement>,
+    pub rhs: Box<ExpressionStatement>,
 }
 
 #[derive(Clone, Debug)]
 pub struct UnaryCall {
     pub op: UnaryOp,
-    pub subject: Box<Expression>,
+    pub subject: Box<ExpressionStatement>,
 }
 
 #[derive(Clone, Debug)]
 pub struct LetCall {
     pub name: String,
-    pub inputs: HashMap<String, Expression>,
+    pub inputs: HashMap<String, ExpressionStatement>,
 }
 
 #[derive(Clone, Debug)]
 pub struct DefCall {
     pub name: String,
-    pub subject: Box<Expression>,
-    pub inputs: HashMap<String, Expression>,
+    pub subject: Box<ExpressionStatement>,
+    pub inputs: HashMap<String, ExpressionStatement>,
 }
 
 // A reference to the protected field of another instance of the self struct
@@ -77,13 +85,14 @@ pub enum UnaryOp {
     Not,
 }
 
-impl Parse for Expression {
+impl Parse for ExpressionStatement {
     fn matches(_tokens: &Tokens) -> bool {
         true
     }
 
     fn parse(tokens: &mut Tokens) -> CResult<Self> {
         let base_level = tokens.level();
+        let token_start = tokens.position();
 
         // Parse first token
         tokens.expect("an expression");
@@ -119,7 +128,7 @@ impl Parse for Expression {
             Token::Op(Op::Sub) => {
                 tokens.step();
 
-                let expr = Expression::parse(tokens)?;
+                let expr = ExpressionStatement::parse(tokens)?;
 
                 Expression::Unary(UnaryCall {
                     op: UnaryOp::Neg,
@@ -130,7 +139,11 @@ impl Parse for Expression {
             Token::Kw(Kw::If) => Expression::IfElse(IfElseCall::parse(tokens)?),
             Token::Op(Op::Question) => {
                 tokens.step();
-                return Ok(Expression::Void);
+                let statement = ExpressionStatement {
+                    expression: Expression::Void,
+                    token_range: token_start..tokens.position(),
+                };
+                return Ok(statement);
             }
             _ => return tokens.unexpected_token_error(),
         };
@@ -151,7 +164,11 @@ impl Parse for Expression {
                         | Op::Or => {
                             tokens.step();
 
-                            let rhs = Expression::parse(tokens)?;
+                            let lhs = ExpressionStatement {
+                                expression: expr,
+                                token_range: token_start..tokens.position(),
+                            };
+                            let rhs = ExpressionStatement::parse(tokens)?;
 
                             Expression::Binary(BinaryCall {
                                 op: match op {
@@ -166,7 +183,7 @@ impl Parse for Expression {
                                     Op::Or => BinaryOp::Or,
                                     _ => unreachable!(),
                                 },
-                                lhs: Box::new(expr),
+                                lhs: Box::new(lhs),
                                 rhs: Box::new(rhs),
                             })
                         }
@@ -186,9 +203,14 @@ impl Parse for Expression {
                                 (expr, Token::Global(_)) => {
                                     let call = parse_let_call(tokens)?;
 
+                                    let subject = ExpressionStatement {
+                                        expression: expr,
+                                        token_range: token_start..tokens.position(),
+                                    };
+
                                     Expression::Def(DefCall {
                                         name: call.name,
-                                        subject: Box::new(expr),
+                                        subject: Box::new(subject),
                                         inputs: call.inputs,
                                     })
                                 }
@@ -202,7 +224,11 @@ impl Parse for Expression {
             }
         }
 
-        Ok(expr)
+        let statement = ExpressionStatement {
+            expression: expr,
+            token_range: token_start..tokens.position(),
+        };
+        Ok(statement)
     }
 }
 
@@ -221,7 +247,7 @@ fn parse_let_call(tokens: &mut Tokens) -> CResult<LetCall> {
         if let Token::Local(param_name) = token {
             tokens.step();
 
-            let expr = Expression::parse(tokens)?;
+            let expr = ExpressionStatement::parse(tokens)?;
 
             inputs.insert(param_name, expr);
         } else {
@@ -232,4 +258,10 @@ fn parse_let_call(tokens: &mut Tokens) -> CResult<LetCall> {
     let call = LetCall { name, inputs };
 
     Ok(call)
+}
+
+impl Statement for ExpressionStatement {
+    fn token_range(&self) -> &Range<usize> {
+        &self.token_range
+    }
 }
