@@ -13,7 +13,6 @@ mod BinaryTree
     traits
         Insert: (insertedItem: BinaryTreeItem) -> Self
         Contains: (givenItem: BinaryTreeItem) -> Bool
-        Invert: Self
         Max: BinaryTreeItem
         Min: BinaryTreeItem
         Size: Int
@@ -53,7 +52,7 @@ mod BinaryTree
                                 rightNode: ?
             else Self
         Contains
-            item = (givenItem) # TODO: get this working without parentheses. Problem is levels.
+            item = (givenItem) # TODO: get this working without parentheses. Problem is with levels.
             | match node: leftNode
                 Self: node.Contains(givenItem: givenItem)
                 ?:    false
@@ -89,4 +88,6 @@ lets
     Main: String
         Tree.Size.String + ' '
         + Tree.Min.String + ' '
-        + Tree.Max.String + ' '
+        + Tree.Max.String
+
+#> 3 -1 2

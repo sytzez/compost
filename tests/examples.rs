@@ -60,8 +60,10 @@ fn test_multiple_inheritance() {
 
 #[test]
 fn test_if() {
-    assert_eq!(
-        run_file("examples/if.compost"),
-        "Yes",
-    )
+    assert_eq!(run_file("examples/if.compost"), "Yes")
+}
+
+#[test]
+fn test_binary_tree() {
+    assert_eq!(run_file("examples/binary_tree.compost"), "3 -1 2")
 }
