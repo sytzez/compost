@@ -8,21 +8,21 @@ use std::rc::Rc;
 /// Evaluate an evaluation into an instance.
 pub fn evaluate(
     eval: &Evaluation,
-    locals: HashMap<String, Rc<Instance>>,
-    zelf: Option<Rc<Instance>>,
+    locals: &HashMap<String, Rc<Instance>>,
+    zelf: &Option<Rc<Instance>>,
 ) -> Rc<Instance> {
     match eval {
         Evaluation::Let(call) => {
-            let locals = evaluate_inputs(&call.inputs, &locals, &zelf);
+            let locals = evaluate_inputs(&call.inputs, locals, zelf);
 
             let eval = &call.lett.borrow().evaluation;
 
-            evaluate(eval, locals, None)
+            evaluate(eval, &locals, &None)
         }
         Evaluation::Trait(call) => {
-            let subject = evaluate(&call.subject, locals.clone(), zelf.clone());
+            let subject = evaluate(&call.subject, locals, zelf);
 
-            let inputs = evaluate_inputs(&call.inputs, &locals, &zelf);
+            let inputs = evaluate_inputs(&call.inputs, locals, zelf);
 
             subject.call(Rc::clone(&call.trayt), inputs)
         }
@@ -44,7 +44,7 @@ pub fn evaluate(
             }
         }
         Evaluation::Match(call) => {
-            let subject = evaluate(&call.subject, locals.clone(), zelf.clone());
+            let subject = evaluate(&call.subject, locals, &zelf);
 
             // Check if the subject is of the same type as 'self' in this scope
             let is_self = match &zelf {
@@ -64,34 +64,35 @@ pub fn evaluate(
 
             // Add the subject to scope.
             let locals = locals
+                .clone()
                 .into_iter()
                 .chain([(call.local_name.to_string(), subject)])
                 .collect();
 
-            evaluate(branch, locals, zelf)
+            evaluate(branch, &locals, zelf)
         }
         Evaluation::IfElse(call) => {
-            let condition = evaluate(&call.condition, locals.clone(), zelf.clone());
+            let condition = evaluate(&call.condition, locals, zelf);
 
             if condition.to_bool() {
-                evaluate(&call.iff, locals.clone(), zelf.clone())
+                evaluate(&call.iff, locals, zelf)
             } else {
-                evaluate(&call.els, locals.clone(), zelf.clone())
+                evaluate(&call.els, locals, zelf)
             }
         }
-        Evaluation::Zelf => Rc::clone(&zelf.unwrap()),
+        Evaluation::Zelf => Rc::clone(zelf.as_ref().unwrap()),
         Evaluation::Void => Rc::new(Instance::Void),
         Evaluation::ClassConstructor(class) => {
-            let instance = ClassInstance::new(class, locals);
+            let instance = ClassInstance::new(class, locals.clone());
 
             Rc::new(Instance::Class(instance))
         }
         Evaluation::StructConstructor(strukt) => {
             let fields = locals
-                .into_iter()
+                .iter()
                 .map(|(name, instance)| {
                     if let Instance::Raw(value) = instance.as_ref() {
-                        (name, value.clone())
+                        (name.to_string(), value.clone())
                     } else {
                         unreachable!()
                     }
@@ -112,6 +113,6 @@ fn evaluate_inputs(
 ) -> HashMap<String, Rc<Instance>> {
     inputs
         .iter()
-        .map(|(name, eval)| (name.clone(), evaluate(eval, locals.clone(), zelf.clone())))
+        .map(|(name, eval)| (name.clone(), evaluate(eval, locals, zelf)))
         .collect()
 }

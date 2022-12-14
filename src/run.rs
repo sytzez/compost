@@ -31,7 +31,7 @@ fn run(code: &str) -> CResult<String> {
 
     let main_let = context.lets.resolve("Main", "")?;
 
-    let result = evaluate(&main_let.borrow().evaluation, [].into(), None);
+    let result = evaluate(&main_let.borrow().evaluation, &[].into(), &None);
 
     let string = result.to_string(&context)?;
 

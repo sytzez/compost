@@ -52,7 +52,7 @@ impl Instance {
 
         inputs.extend(self.locals());
 
-        evaluate(evaluation, inputs, Some(Rc::clone(self)))
+        evaluate(evaluation, &inputs, &Some(Rc::clone(self)))
     }
 
     fn locals(&self) -> HashMap<String, Rc<Instance>> {
