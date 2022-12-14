@@ -5,11 +5,11 @@ use crate::lex::token::{Kw, Lit, Op, Token};
 
 use crate::ast::expr::match_call::MatchCall;
 
+use crate::ast::expr::if_else_call::IfElseCall;
+use crate::ast::Statement;
 use crate::lex::tokens::Tokens;
 use std::collections::HashMap;
 use std::ops::Range;
-use crate::ast::expr::if_else_call::IfElseCall;
-use crate::ast::Statement;
 
 #[derive(Clone, Debug)]
 pub struct ExpressionStatement {
@@ -151,75 +151,73 @@ impl Parse for ExpressionStatement {
         // Parse further operations
         while tokens.deeper_than_or_eq(base_level) {
             expr = match tokens.token().clone() {
-                Token::Op(op) => {
-                    match op {
-                        Op::Add
-                        | Op::Sub
-                        | Op::Mul
-                        | Op::Div
-                        | Op::Eq
-                        | Op::Lt
-                        | Op::Gt
-                        | Op::And
-                        | Op::Or => {
-                            tokens.step();
+                Token::Op(op) => match op {
+                    Op::Add
+                    | Op::Sub
+                    | Op::Mul
+                    | Op::Div
+                    | Op::Eq
+                    | Op::Lt
+                    | Op::Gt
+                    | Op::And
+                    | Op::Or => {
+                        tokens.step();
 
-                            let lhs = ExpressionStatement {
-                                expression: expr,
-                                token_range: token_start..tokens.position(),
-                            };
-                            let rhs = ExpressionStatement::parse(tokens)?;
+                        let lhs = ExpressionStatement {
+                            expression: expr,
+                            token_range: token_start..tokens.position(),
+                        };
+                        let rhs = ExpressionStatement::parse(tokens)?;
 
-                            Expression::Binary(BinaryCall {
-                                op: match op {
-                                    Op::Add => BinaryOp::Add,
-                                    Op::Sub => BinaryOp::Sub,
-                                    Op::Mul => BinaryOp::Mul,
-                                    Op::Div => BinaryOp::Div,
-                                    Op::Eq => BinaryOp::Eq,
-                                    Op::Lt => BinaryOp::Lt,
-                                    Op::Gt => BinaryOp::Gt,
-                                    Op::And => BinaryOp::And,
-                                    Op::Or => BinaryOp::Or,
-                                    _ => unreachable!(),
-                                },
-                                lhs: Box::new(lhs),
-                                rhs: Box::new(rhs),
-                            })
-                        }
-                        Op::Dot => {
-                            tokens.step();
-
-                            tokens.expect("a trait name or a friendly field name");
-                            match (expr, tokens.token().clone()) {
-                                (Expression::Local(local_name), Token::Local(field_name)) => {
-                                    tokens.step();
-
-                                    Expression::FriendlyField(FriendlyField {
-                                        local_name,
-                                        field_name,
-                                    })
-                                }
-                                (expr, Token::Global(_)) => {
-                                    let call = parse_let_call(tokens)?;
-
-                                    let subject = ExpressionStatement {
-                                        expression: expr,
-                                        token_range: token_start..tokens.position(),
-                                    };
-
-                                    Expression::Def(DefCall {
-                                        name: call.name,
-                                        subject: Box::new(subject),
-                                        inputs: call.inputs,
-                                    })
-                                }
-                                _ => return tokens.unexpected_token_error(),
-                            }
-                        }
-                        _ => break,
+                        Expression::Binary(BinaryCall {
+                            op: match op {
+                                Op::Add => BinaryOp::Add,
+                                Op::Sub => BinaryOp::Sub,
+                                Op::Mul => BinaryOp::Mul,
+                                Op::Div => BinaryOp::Div,
+                                Op::Eq => BinaryOp::Eq,
+                                Op::Lt => BinaryOp::Lt,
+                                Op::Gt => BinaryOp::Gt,
+                                Op::And => BinaryOp::And,
+                                Op::Or => BinaryOp::Or,
+                                _ => unreachable!(),
+                            },
+                            lhs: Box::new(lhs),
+                            rhs: Box::new(rhs),
+                        })
                     }
-                }
+                    Op::Dot => {
+                        tokens.step();
+
+                        tokens.expect("a trait name or a friendly field name");
+                        match (expr, tokens.token().clone()) {
+                            (Expression::Local(local_name), Token::Local(field_name)) => {
+                                tokens.step();
+
+                                Expression::FriendlyField(FriendlyField {
+                                    local_name,
+                                    field_name,
+                                })
+                            }
+                            (expr, Token::Global(_)) => {
+                                let call = parse_let_call(tokens)?;
+
+                                let subject = ExpressionStatement {
+                                    expression: expr,
+                                    token_range: token_start..tokens.position(),
+                                };
+
+                                Expression::Def(DefCall {
+                                    name: call.name,
+                                    subject: Box::new(subject),
+                                    inputs: call.inputs,
+                                })
+                            }
+                            _ => return tokens.unexpected_token_error(),
+                        }
+                    }
+                    _ => break,
+                },
                 _ => break,
             }
         }

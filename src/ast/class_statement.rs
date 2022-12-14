@@ -1,7 +1,7 @@
-use std::ops::Range;
 use crate::ast::parser::{parse_parameter, Parse};
-use crate::ast::Statement;
 use crate::ast::type_statement::TypeStatement;
+use crate::ast::Statement;
+use std::ops::Range;
 
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};

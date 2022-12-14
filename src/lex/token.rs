@@ -281,8 +281,14 @@ mod test {
         assert_eq!(next_token("if "), Ok((Some(Token::Kw(Kw::If)), 2)));
         assert_eq!(next_token("then "), Ok((Some(Token::Kw(Kw::Then)), 4)));
         assert_eq!(next_token("else "), Ok((Some(Token::Kw(Kw::Else)), 4)));
-        assert_eq!(next_token("true "), Ok((Some(Token::Lit(Lit::Boolean(true))), 4)));
-        assert_eq!(next_token("false "), Ok((Some(Token::Lit(Lit::Boolean(false))), 5)));
+        assert_eq!(
+            next_token("true "),
+            Ok((Some(Token::Lit(Lit::Boolean(true))), 4))
+        );
+        assert_eq!(
+            next_token("false "),
+            Ok((Some(Token::Lit(Lit::Boolean(false))), 5))
+        );
     }
 
     #[test]

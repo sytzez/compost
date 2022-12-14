@@ -1,6 +1,6 @@
-use std::ops::Range;
-use crate::error::{CompilationError, CResult, ErrorMessage};
 use crate::error::ErrorContext::TokenRange;
+use crate::error::{CResult, CompilationError, ErrorMessage};
+use std::ops::Range;
 
 pub(crate) mod abstract_syntax_tree;
 pub(crate) mod class_statement;

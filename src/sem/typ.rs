@@ -1,4 +1,5 @@
 use crate::ast::type_statement::{RawType, TypeStatement, TypeStatementType};
+use crate::ast::Statement;
 use crate::error::{CResult, ErrorMessage};
 use crate::sem::semantic_analyser::{SemanticContext, SemanticScope};
 use crate::sem::trayt::{interface_type, Trait};
@@ -6,7 +7,6 @@ use std::cell::RefCell;
 use std::collections::BTreeSet;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
-use crate::ast::Statement;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Type {

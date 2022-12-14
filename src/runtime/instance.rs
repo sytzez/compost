@@ -160,10 +160,10 @@ impl Instance {
 
     pub fn to_bool(self: &Rc<Self>) -> bool {
         if let Instance::Raw(RawValue::Bool(value)) = self.borrow() {
-            return *value
+            return *value;
         } else if let Instance::Struct(strukt) = self.borrow() {
             if let RawValue::Bool(value) = strukt.field("value") {
-                return *value
+                return *value;
             }
         }
         panic!("Can't resolve instance to bool")

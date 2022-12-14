@@ -1,4 +1,4 @@
-use crate::ast::expression::{Expression, ExpressionStatement};
+use crate::ast::expression::ExpressionStatement;
 use crate::ast::parser::Parse;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
@@ -23,14 +23,14 @@ impl Parse for IfElseCall {
 
         let condition = ExpressionStatement::parse(tokens)?;
 
-        if ! matches!(tokens.token(), Token::Kw(Kw::Then)) {
+        if !matches!(tokens.token(), Token::Kw(Kw::Then)) {
             return tokens.unexpected_token_error();
         }
         tokens.step();
 
         let iff = ExpressionStatement::parse(tokens)?;
 
-        if ! matches!(tokens.token(), Token::Kw(Kw::Else)) {
+        if !matches!(tokens.token(), Token::Kw(Kw::Else)) {
             return tokens.unexpected_token_error();
         }
         tokens.step();

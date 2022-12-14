@@ -1,10 +1,10 @@
-use std::ops::Range;
-use crate::ast::expression::{Expression, ExpressionStatement};
+use crate::ast::expression::ExpressionStatement;
 use crate::ast::parser::{parse_global, parse_in_out_types, Parse};
-use crate::ast::Statement;
 use crate::ast::type_statement::TypeStatement;
+use crate::ast::Statement;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
+use std::ops::Range;
 
 use crate::lex::tokens::Tokens;
 

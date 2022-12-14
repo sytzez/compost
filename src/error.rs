@@ -1,7 +1,7 @@
-use std::ops::Range;
 use crate::lex::token::Token;
 use crate::lex::tokenizer::get_position_of_token;
 use crate::sem::typ::Type;
+use std::ops::Range;
 
 /// An error during compilation.
 #[derive(Debug, PartialEq)]
@@ -49,9 +49,11 @@ impl From<&ErrorMessage> for String {
         match message {
             ErrorMessage::UnexpectedChar(char) => format!("Unexpected character {}", char),
             ErrorMessage::UnexpectedToken(token, expectation) => match expectation {
-                Some(expectation) => format!("Unexpected token {:?}, expecting {}", token, expectation),
+                Some(expectation) => {
+                    format!("Unexpected token {:?}, expecting {}", token, expectation)
+                }
                 None => format!("Unexpected token {:?}", token),
-            }
+            },
             ErrorMessage::NoSelf => "Can't use 'Self' in global scope".to_string(),
             ErrorMessage::NoResolution(typ, name) => {
                 format!("No resolution for {} '{}'", typ, name)

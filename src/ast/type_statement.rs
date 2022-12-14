@@ -1,9 +1,9 @@
-use std::ops::Range;
 use crate::ast::parser::{parse_global, Parse};
 use crate::ast::raw_value::RawValue;
 use crate::ast::Statement;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Op, Token};
+use std::ops::Range;
 
 use crate::lex::tokens::Tokens;
 

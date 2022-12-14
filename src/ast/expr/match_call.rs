@@ -1,4 +1,4 @@
-use crate::ast::expression::{Expression, ExpressionStatement};
+use crate::ast::expression::ExpressionStatement;
 use crate::ast::parser::{parse_local, Parse};
 use crate::ast::type_statement::TypeStatement;
 use crate::error::CResult;

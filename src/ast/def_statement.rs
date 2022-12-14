@@ -1,9 +1,9 @@
-use std::ops::Range;
-use crate::ast::expression::{Expression, ExpressionStatement};
+use crate::ast::expression::ExpressionStatement;
 use crate::ast::parser::{parse_global, Parse};
 use crate::ast::Statement;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Token};
+use std::ops::Range;
 
 use crate::lex::tokens::Tokens;
 
@@ -34,9 +34,7 @@ impl Parse for DefsStatement {
             defs.push(parse_def(tokens)?)
         }
 
-        let statement = DefsStatement {
-            defs
-        };
+        let statement = DefsStatement { defs };
         Ok(statement)
     }
 }

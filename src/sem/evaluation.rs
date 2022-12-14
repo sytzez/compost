@@ -3,6 +3,7 @@ use std::cell::RefCell;
 use crate::ast::expression::{BinaryOp, Expression, ExpressionStatement, FriendlyField, UnaryOp};
 use crate::ast::raw_value::RawValue;
 use crate::ast::type_statement::RawType;
+use crate::ast::Statement;
 use crate::error::ErrorMessage::NoResolution;
 use crate::error::{error, CResult, ErrorMessage};
 use crate::sem::class::Class;
@@ -15,7 +16,6 @@ use crate::sem::typ::{combine_types, Type};
 use crate::sem::type_checking::check_types;
 use crate::sem::type_coercion::{coerce_type, coerce_types};
 use std::rc::Rc;
-use crate::ast::Statement;
 
 /// A semantically analysed expression that can be evaluated.
 #[derive(Clone, Debug)]
@@ -54,7 +54,7 @@ pub struct MatchEvaluation {
     pub branches: Vec<(Type, Box<Evaluation>)>,
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct IfElseEvaluation {
     pub condition: Box<Evaluation>,
     pub iff: Box<Evaluation>,
@@ -184,7 +184,10 @@ impl Evaluation {
             Expression::FriendlyField(ref ff) => {
                 let _local = match scope.locals.get(&ff.local_name) {
                     Some(local) => local,
-                    None => return statement.error(NoResolution("Local Variable", ff.local_name.clone())),
+                    None => {
+                        return statement
+                            .error(NoResolution("Local Variable", ff.local_name.clone()))
+                    }
                 };
 
                 // TODO: check if locals is a struct, if it is of the same type as self, if it has the friendly field
@@ -225,14 +228,26 @@ impl Evaluation {
 
                 // Verify that the condition expression returns a boolean.
                 if condition_type != Type::Raw(RawType::Bool)
-                    && !condition_type.callable_traits(scope).iter().any(|typ| typ == "Bool") {
-                    return statement.error(ErrorMessage::TypeMismatch("if condition".to_string(), Type::Raw(RawType::Bool), condition_type));
+                    && !condition_type
+                        .callable_traits(scope)
+                        .iter()
+                        .any(|typ| typ == "Bool")
+                {
+                    return statement.error(ErrorMessage::TypeMismatch(
+                        "if condition".to_string(),
+                        Type::Raw(RawType::Bool),
+                        condition_type,
+                    ));
                 }
 
                 let iff = Box::new(Evaluation::analyse(*call.iff.clone(), scope)?);
                 let els = Box::new(Evaluation::analyse(*call.els.clone(), scope)?);
 
-                let if_else_eval = IfElseEvaluation { condition, iff, els };
+                let if_else_eval = IfElseEvaluation {
+                    condition,
+                    iff,
+                    els,
+                };
 
                 Evaluation::IfElse(if_else_eval)
             }
@@ -281,12 +296,10 @@ impl Evaluation {
 
                 combine_types(types)
             }
-            Evaluation::IfElse(call) => {
-                Type::Or(
-                    Box::new(call.iff.typ(scope)?),
-                    Box::new(call.els.typ(scope)?),
-                )
-            }
+            Evaluation::IfElse(call) => Type::Or(
+                Box::new(call.iff.typ(scope)?),
+                Box::new(call.els.typ(scope)?),
+            ),
             Evaluation::Zelf => match &scope.zelf {
                 Some(typ) => typ.clone(),
                 None => return error(ErrorMessage::NoSelf),

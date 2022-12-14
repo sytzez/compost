@@ -1,14 +1,14 @@
-use std::ops::Range;
 use crate::ast::class_statement::ClassStatement;
 use crate::ast::def_statement::{DefStatement, DefsStatement};
-use crate::ast::Statement;
 use crate::ast::let_statement::{LetStatement, LetsStatement};
 use crate::ast::parser::{parse_global, Parse};
 use crate::ast::struct_statement::StructStatement;
 use crate::ast::trait_statement::{TraitStatement, TraitsStatement};
 use crate::ast::using_statement::{SingleUsingStatement, UsingStatement};
+use crate::ast::Statement;
 use crate::error::{CResult, ErrorMessage};
 use crate::lex::token::{Kw, Token};
+use std::ops::Range;
 
 use crate::lex::tokens::Tokens;
 

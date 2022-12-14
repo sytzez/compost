@@ -3,10 +3,10 @@ use crate::ast::type_statement::RawType;
 use crate::error::{CResult, ErrorMessage};
 use crate::lex::token::{Kw, Token};
 
+use crate::ast::Statement;
 use crate::lex::tokens::Tokens;
 use std::borrow::Borrow;
 use std::ops::Range;
-use crate::ast::Statement;
 
 /// The struct keyword and its fields.
 pub struct StructStatement {
