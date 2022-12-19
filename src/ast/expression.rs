@@ -1,4 +1,4 @@
-use crate::ast::parser::{parse_global, Parse};
+use crate::ast::parser::{Parse};
 use crate::ast::raw_value::RawValue;
 use crate::error::CResult;
 use crate::lex::token::{Kw, Lit, Op, Token};
@@ -10,6 +10,7 @@ use crate::ast::Statement;
 use crate::lex::tokens::Tokens;
 use std::collections::HashMap;
 use std::ops::Range;
+use crate::ast::expr::let_call::LetCall;
 
 #[derive(Clone, Debug)]
 pub struct ExpressionStatement {
@@ -44,12 +45,6 @@ pub struct BinaryCall {
 pub struct UnaryCall {
     pub op: UnaryOp,
     pub subject: Box<ExpressionStatement>,
-}
-
-#[derive(Clone, Debug)]
-pub struct LetCall {
-    pub name: String,
-    pub inputs: HashMap<String, ExpressionStatement>,
 }
 
 #[derive(Clone, Debug)]
@@ -103,7 +98,7 @@ impl Parse for ExpressionStatement {
                 Expression::Zelf
             }
             Token::Global(_) => {
-                let call = parse_let_call(tokens)?;
+                let call = LetCall::parse(tokens)?;
 
                 Expression::Let(call)
             }
@@ -200,7 +195,7 @@ impl Parse for ExpressionStatement {
                                 })
                             }
                             (expr, Token::Global(_)) => {
-                                let call = parse_let_call(tokens)?;
+                                let call = LetCall::parse(tokens)?;
 
                                 let subject = ExpressionStatement {
                                     expression: expr,
@@ -228,34 +223,6 @@ impl Parse for ExpressionStatement {
         };
         Ok(statement)
     }
-}
-
-// e.g.: Module\Function(param1: ..., param2: ...)
-// e.g.: Module\Constant
-fn parse_let_call(tokens: &mut Tokens) -> CResult<LetCall> {
-    let base_level = tokens.level();
-    let name = parse_global(tokens)?;
-
-    let mut inputs = HashMap::new();
-
-    while tokens.deeper_than(base_level) {
-        // Needs cloning to prevent immutable borrow errors.
-        let token = tokens.token().clone();
-
-        if let Token::Local(param_name) = token {
-            tokens.step();
-
-            let expr = ExpressionStatement::parse(tokens)?;
-
-            inputs.insert(param_name, expr);
-        } else {
-            break;
-        }
-    }
-
-    let call = LetCall { name, inputs };
-
-    Ok(call)
 }
 
 impl Statement for ExpressionStatement {
